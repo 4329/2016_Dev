@@ -1,2 +1,2 @@
 # 2016_Dev
-Development repository for the 2016 FRC season
+FRC Team 4329 (Lutheran Roboteers) Software development repository for the 2016 FRC season.
