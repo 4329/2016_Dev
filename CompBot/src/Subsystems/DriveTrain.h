@@ -20,6 +20,9 @@
  *
  * @author ExampleAuthor
  */
+
+class DriveTrain_Config;
+
 class DriveTrain: public Subsystem, public Configurable {
 private:
 	// It's desirable that everything possible is private except
