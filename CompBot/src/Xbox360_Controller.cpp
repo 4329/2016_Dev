@@ -69,12 +69,12 @@ XBOX360_Controller::~XBOX360_Controller()
 
 void XBOX360_Controller::RetrieveConfig()
 {
-	LSxDZ = Preferences::GetInstance()->GetFloat("XBox::DeadZone::LeftStick::X");
-	LSyDZ = Preferences::GetInstance()->GetFloat("XBox::DeadZone::LeftStick::Y");
-	RSxDZ = Preferences::GetInstance()->GetFloat("XBox::DeadZone::RightStick::X");
-	RSyDZ = Preferences::GetInstance()->GetFloat("XBox::DeadZone::RightStick::Y");
-	LtrigDZ = Preferences::GetInstance()->GetFloat("XBox::DeadZone::LeftTrigger");
-	RtrigDZ = Preferences::GetInstance()->GetFloat("XBox::DeadZone::RightTrigger");
+	LSxDZ = Preferences::GetInstance()->GetFloat("XBox::DeadZone::LeftStick::X",0.05);
+	LSyDZ = Preferences::GetInstance()->GetFloat("XBox::DeadZone::LeftStick::Y",0.05);
+	RSxDZ = Preferences::GetInstance()->GetFloat("XBox::DeadZone::RightStick::X",0.05);
+	RSyDZ = Preferences::GetInstance()->GetFloat("XBox::DeadZone::RightStick::Y",0.05);
+	LtrigDZ = Preferences::GetInstance()->GetFloat("XBox::DeadZone::LeftTrigger",0.05);
+	RtrigDZ = Preferences::GetInstance()->GetFloat("XBox::DeadZone::RightTrigger",0.05);
 }
 
 void XBOX360_Controller::Configure()
