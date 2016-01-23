@@ -8,7 +8,7 @@
 // update. Deleting the comments indicating the section will prevent
 // it from being updated in the future.
 
-
+#include "Robot.h"
 #include "RobotMap.h"
 #include "LiveWindow/LiveWindow.h"
 
@@ -47,7 +47,7 @@ void RobotMap::init() {
     driveTrainRobotDrive.reset(new RobotDrive(driveTrainLeftTalon1, driveTrainLeftTalon2,
               driveTrainRightTalon1, driveTrainRightTalon2));
     
-    driveTrainRobotDrive->SetSafetyEnabled(true);
+    driveTrainRobotDrive->SetSafetyEnabled(false);
     driveTrainRobotDrive->SetExpiration(0.1);
     driveTrainRobotDrive->SetSensitivity(0.5);
     driveTrainRobotDrive->SetMaxOutput(1.0);

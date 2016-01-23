@@ -53,6 +53,7 @@ public:
 	virtual ~DriveTrain();
 	virtual void RetrieveConfig();
 	virtual void Configure();
+	virtual void SaveConfig();
 
 	void InitDefaultCommand();
 

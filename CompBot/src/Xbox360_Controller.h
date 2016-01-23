@@ -107,6 +107,7 @@ public:
 	virtual ~XBOX360_Controller();
 	virtual void RetrieveConfig();
 	virtual void Configure();
+	virtual void SaveConfig();
 
 	void Set_DeadZones(float lxmin, float lymin, float rxmin, float rymin, float ltriggermin, float rtriggermin);
 

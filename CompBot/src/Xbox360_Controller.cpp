@@ -48,6 +48,7 @@ XBOX360_Controller::XBOX360_Controller(const char *name, uint32_t port) :
 	Assign_Move_FrontToBack(XBOX360_LEFT_Y);
 	Assign_Yaw(XBOX360_RIGHT_X);
 
+	RetrieveConfig();
 
 }
 
@@ -75,6 +76,16 @@ void XBOX360_Controller::RetrieveConfig()
 	RSyDZ = Preferences::GetInstance()->GetFloat("XBox::DeadZone::RightStick::Y",0.05);
 	LtrigDZ = Preferences::GetInstance()->GetFloat("XBox::DeadZone::LeftTrigger",0.05);
 	RtrigDZ = Preferences::GetInstance()->GetFloat("XBox::DeadZone::RightTrigger",0.05);
+}
+
+void XBOX360_Controller::SaveConfig()
+{
+	Preferences::GetInstance()->PutFloat("XBox::DeadZone::LeftStick::X",LSxDZ);
+	Preferences::GetInstance()->PutFloat("XBox::DeadZone::LeftStick::Y",LSyDZ);
+	Preferences::GetInstance()->PutFloat("XBox::DeadZone::RightStick::X",RSxDZ);
+	Preferences::GetInstance()->PutFloat("XBox::DeadZone::RightStick::Y",RSyDZ);
+	Preferences::GetInstance()->PutFloat("XBox::DeadZone::LeftTrigger",LtrigDZ);
+	Preferences::GetInstance()->PutFloat("XBox::DeadZone::RightTrigger",RtrigDZ);
 }
 
 void XBOX360_Controller::Configure()
