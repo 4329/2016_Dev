@@ -24,11 +24,22 @@ Teleop_Drive::Teleop_Drive(): Command() {
 
 // Called just before this Command runs the first time
 void Teleop_Drive::Initialize() {
-
+	Robot::driveTrain->Set_VoltageMode();
 }
 
 // Called repeatedly when this Command is scheduled to run
 void Teleop_Drive::Execute() {
+	axisState = Robot::oi->getDriverInterface()->Get_AxisState();
+	if (axisState.RTrigger > 0.0)
+	{
+		Robot::driveTrain->SetDrive_Arcade(axisState.Raw_LY,
+				axisState.Raw_LX, true);
+	} else
+	{
+		Robot::driveTrain->SetDrive_Arcade(axisState.Raw_LY,
+				axisState.Raw_LX, false);
+	}
+
 
 }
 
@@ -39,7 +50,7 @@ bool Teleop_Drive::IsFinished() {
 
 // Called once after isFinished returns true
 void Teleop_Drive::End() {
-
+	Robot::driveTrain->Stop();
 }
 
 // Called when another command which requires one or more of the same
