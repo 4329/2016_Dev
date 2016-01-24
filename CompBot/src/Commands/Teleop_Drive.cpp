@@ -32,12 +32,12 @@ void Teleop_Drive::Execute() {
 	axisState = Robot::oi->getDriverInterface()->Get_AxisState();
 	if (axisState.RTrigger > 0.0)
 	{
-		Robot::driveTrain->SetDrive_Arcade(axisState.Raw_LY,
-				axisState.Raw_LX, true);
+		Robot::driveTrain->SetDrive_Arcade(axisState.Raw_LX,
+				axisState.Raw_LY, true);
 	} else
 	{
-		Robot::driveTrain->SetDrive_Arcade(axisState.Raw_LY,
-				axisState.Raw_LX, false);
+		Robot::driveTrain->SetDrive_Arcade(axisState.Raw_LX,
+				axisState.Raw_LY, false);
 	}
 
 
