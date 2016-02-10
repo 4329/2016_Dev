@@ -103,11 +103,12 @@ typedef struct XBOX_ButtonState
 class XBOX360_Controller : public Joystick, public Configurable
 {
 public:
-	XBOX360_Controller(const char *name, uint32_t port);
+	XBOX360_Controller(std::string name, uint32_t port);
 	virtual ~XBOX360_Controller();
 	virtual void RetrieveConfig();
 	virtual void Configure();
 	virtual void SaveConfig();
+	virtual void CreateConfig();
 
 	void Set_DeadZones(float lxmin, float lymin, float rxmin, float rymin, float ltriggermin, float rtriggermin);
 
@@ -123,7 +124,6 @@ public:
 	XBOX_ButtonState Get_ButtonState();
 
 private:
-	std::string 	m_Name;
 	uint32_t		m_Port;
 
 	JoystickButton* m_RightStick;
