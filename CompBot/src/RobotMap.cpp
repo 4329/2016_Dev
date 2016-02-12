@@ -21,7 +21,10 @@ std::shared_ptr<CANTalon> RobotMap::driveTrainLeftTalon1;
 std::shared_ptr<RobotDrive> RobotMap::driveTrainRobotDrive;
 std::shared_ptr<Compressor> RobotMap::pneumaticsCompressor;
 std::shared_ptr<CANTalon> RobotMap::intakeIntakeTalon1;
-std::shared_ptr<CANTalon> RobotMap::intakeIntakeTalon2;
+
+std::shared_ptr<CANTalon> RobotMap::shooterTalon1;
+std::shared_ptr<CANTalon> RobotMap::shooterTalon2;
+
 std::shared_ptr<CANTalon> RobotMap::intakePivotTalon;
 std::shared_ptr<DoubleSolenoid> RobotMap::scalerScalerDblSolenoid;
 std::shared_ptr<PowerDistributionPanel> RobotMap::pDPPowerDistributionPanel;
@@ -58,14 +61,19 @@ void RobotMap::init() {
     pneumaticsCompressor.reset(new Compressor(Preferences::GetInstance()->GetInt("Pneumatics::Compressor::PCMID",0)));
     
     
-    intakeIntakeTalon1.reset(new CANTalon(Preferences::GetInstance()->GetInt("Intake::IntakeTalon1::CANID",5)));
+    intakeIntakeTalon1.reset(new CANTalon(Preferences::GetInstance()->GetInt("Intake::intakeTalon1::CANID",5)));
     lw->AddActuator("Intake", "IntakeTalon1", intakeIntakeTalon1);
     
-    intakeIntakeTalon2.reset(new CANTalon(Preferences::GetInstance()->GetInt("Intake::IntakeTalon2::CANID",6)));
-    lw->AddActuator("Intake", "IntakeTalon2", intakeIntakeTalon2);
-    
-    intakePivotTalon.reset(new CANTalon(Preferences::GetInstance()->GetInt("Intake::PivotTalon::CANID",7)));
+    intakePivotTalon.reset(new CANTalon(Preferences::GetInstance()->GetInt("Intake::pivotTalon::CANID",6)));
     lw->AddActuator("Intake", "PivotTalon", intakePivotTalon);
+
+    shooterTalon1.reset(new CANTalon(Preferences::GetInstance()->GetInt("Shooter::shooterTalon1::CANID",8)));
+    lw->AddActuator("Shooter", "shooterTalon1", shooterTalon1);
+
+
+    shooterTalon2.reset(new CANTalon(Preferences::GetInstance()->GetInt("Shooter::shooterTalon2::CANID",9)));
+    lw->AddActuator("Shooter", "shooterTalon2", shooterTalon2);
+    
     
     scalerScalerDblSolenoid.reset(new DoubleSolenoid(Preferences::GetInstance()->GetInt("Scaler::Scaler::PCMID",0),
     		Preferences::GetInstance()->GetInt("Scaler::Scaler::ForwardChannel",0),
