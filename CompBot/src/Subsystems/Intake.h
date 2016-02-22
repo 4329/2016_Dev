@@ -34,7 +34,7 @@ private:
 	Intake_Config *myConfig;
 	int home;
 	bool homeSet;
-	std::shared_ptr<DresselSensor> sensors;
+
 
 public:
 	Intake();
@@ -63,6 +63,7 @@ public:
 
     bool RobotHasBall();
     bool IsBallAtShooter();
+	std::shared_ptr<DresselSensor> sensors;
 };
 
 #endif

@@ -34,7 +34,11 @@
 #include "Commands/Lift.h"
 #include "Commands/Scale.h"
 #include "Commands/BrakeCmd.h"
-
+#include "Commands/Cal_Front_In.h"
+#include "Commands/Cal_Front_Out.h"
+#include "Commands/Cal_Shooter_In.h"
+#include "Commands/Cal_Shooter_Out.h"
+#include "Commands/Cal_Save.h"
 
 OI::OI() : Configurable("OI") {
     // Process operator interface input here.
@@ -77,6 +81,13 @@ OI::OI() : Configurable("OI") {
   //  operatorInterface->Assign_ButtonCommand(XBOX360_BUTTON::XBOX360_LEFT_BUMPER, new Lift(false),ButtonAction::ButtonAction_Pressed);
   //  operatorInterface->Assign_ButtonCommand(XBOX360_BUTTON::XBOX360_RIGHT_BUMPER, new Scale(false),ButtonAction::ButtonAction_Pressed);
     operatorInterface->Assign_ButtonCommand(XBOX360_BUTTON::XBOX360_A, new BrakeCmd(),ButtonAction::ButtonAction_Pressed);
+
+
+    SmartDashboard::PutData("Set Front In", new Cal_Front_In());
+    SmartDashboard::PutData("Set Front Out", new Cal_Front_Out());
+    SmartDashboard::PutData("Set Shooter In", new Cal_Shooter_In());
+    SmartDashboard::PutData("Set Shooter Out", new Cal_Shooter_Out());
+    SmartDashboard::PutData("Calibration Save", new Cal_Save());
 }
 
 OI::~OI()
