@@ -40,8 +40,8 @@ Brake::~Brake()
 void Brake::RetrieveConfig()
 {
 	PCMID = Preferences::GetInstance()->GetInt("Brake::PCMID",0);
-	Channel = Preferences::GetInstance()->GetInt("Brake::Channel",2);
-	ActiveIsEngaged = Preferences::GetInstance()->GetBoolean("Brake::ActiveIsEngaged",true);
+	Channel = Preferences::GetInstance()->GetInt("Brake::Channel",4);
+	ActiveIsEngaged = Preferences::GetInstance()->GetBoolean("Brake::ActiveIsEngaged",false);
 }
 
 void Brake::SaveConfig()
@@ -59,8 +59,8 @@ void Brake::Configure()
 void Brake::CreateConfig()
 {
 	Preferences::GetInstance()->PutInt("Brake::PCMID",0);
-	Preferences::GetInstance()->PutInt("Brake::Channel",2);
-	Preferences::GetInstance()->PutBoolean("Brake::ActiveIsEngaged",true);
+	Preferences::GetInstance()->PutInt("Brake::Channel",4);
+	Preferences::GetInstance()->PutBoolean("Brake::ActiveIsEngaged",false);
 }
 
 

@@ -365,43 +365,62 @@ void Shooter::CreateConfig()
 
 void Shooter::Fire(float value)
 {
+	shooterTalon2->SetControlMode(CANSpeedController::kSpeed);
+    shooterTalon2->EnableControl();
 	shooterTalon2->Set(value);
 	tgtRPM = value;
+	SmartDashboard::PutNumber("Shooter Firing RPM",tgtRPM);
 }
 
-void Shooter::Fire1()
+int Shooter::Fire1()
 {
+	shooterTalon2->SetControlMode(CANSpeedController::kSpeed);
+	shooterTalon2->EnableControl();
 	shooterTalon2->Set(myConfig->Shooter_Speed1);
 	tgtRPM = myConfig->Shooter_Speed1;
+	return tgtRPM;
 }
 
-void Shooter::Fire2()
+int Shooter::Fire2()
 {
+	shooterTalon2->SetControlMode(CANSpeedController::kSpeed);
+    shooterTalon2->EnableControl();
 	shooterTalon2->Set(myConfig->Shooter_Speed2);
 	tgtRPM = myConfig->Shooter_Speed2;
+	return tgtRPM;
 }
 
-void Shooter::Fire3()
+int Shooter::Fire3()
 {
+	shooterTalon2->SetControlMode(CANSpeedController::kSpeed);
+    shooterTalon2->EnableControl();
 	shooterTalon2->Set(myConfig->Shooter_Speed3);
 	tgtRPM = myConfig->Shooter_Speed3;
+	return tgtRPM;
 }
 
-void Shooter::Fire4()
+int Shooter::Fire4()
 {
+	shooterTalon2->SetControlMode(CANSpeedController::kSpeed);
+    shooterTalon2->EnableControl();
 	shooterTalon2->Set(myConfig->Shooter_Speed4);
 	tgtRPM = myConfig->Shooter_Speed4;
+	return tgtRPM;
 }
 
 bool Shooter::AtRPM()
 {
-	if (shooterTalon2->GetSpeed() <= tgtRPM) return true;
+	SmartDashboard::PutNumber("Shooter RPM",shooterTalon2->GetSpeed());
+	if (shooterTalon2->GetSpeed() <= tgtRPM)
+	{
+		return true;
+	}
 	return false;
 }
 
 void Shooter::Stop()
 {
 	shooterTalon2->Set(0);
-	//shooterTalon2->Disable();
+	shooterTalon2->Disable();
 	tgtRPM = 0;
 }

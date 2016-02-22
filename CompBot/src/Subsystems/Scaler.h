@@ -51,9 +51,11 @@ public:
 
 	void LiftRaise();
 	void LiftLower();
+	bool IsRaised();
 
 	void Extend();
 	void Retract();
+	bool IsExtended();
 
 };
 

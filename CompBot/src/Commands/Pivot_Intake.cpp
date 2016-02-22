@@ -34,7 +34,7 @@ void Pivot_Intake::Execute() {
 
 // Make this return true when this Command no longer needs to run execute()
 bool Pivot_Intake::IsFinished() {
-    return false;
+    return Robot::intake->IsPivotAtIntake();
 }
 
 // Called once after isFinished returns true

@@ -14,6 +14,7 @@
 #include "Commands/Subsystem.h"
 #include "WPILib.h"
 #include "../Configurable.h"
+#include "DresselSensor.h"
 
 /**
  *
@@ -33,6 +34,8 @@ private:
 	Intake_Config *myConfig;
 	int home;
 	bool homeSet;
+	std::shared_ptr<DresselSensor> sensors;
+
 public:
 	Intake();
 	virtual ~Intake();
@@ -44,16 +47,22 @@ public:
 	virtual void SaveConfig();
 	virtual void CreateConfig();
 
-	void SetIntake(bool in);
+	void SetIntake(bool in, float percent_speed = 1.0);
 	void StopIntake();
 
 	void SetPivotHome();
 	void SetPivotToHome();
+	bool IsPivotAtHome();
 	void SetPivotIntake();
+	bool IsPivotAtIntake();
 	void SetPivotLow();
+	bool IsPivotAtLow();
 
 	void SetPivot(float value);
     float Limit(float num);
+
+    bool RobotHasBall();
+    bool IsBallAtShooter();
 };
 
 #endif

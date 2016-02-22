@@ -45,10 +45,10 @@ public:
 	virtual void CreateConfig();
 
 	void Fire(float value);
-	void Fire1();
-	void Fire2();
-	void Fire3();
-	void Fire4();
+	int  Fire1();
+	int  Fire2();
+	int  Fire3();
+	int  Fire4();
 	void Stop();
 	bool AtRPM();
 };

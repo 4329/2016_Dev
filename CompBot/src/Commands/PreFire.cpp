@@ -25,6 +25,7 @@ PreFire::PreFire(): Command() {
 
 // Called just before this Command runs the first time
 void PreFire::Initialize() {
+	SmartDashboard::PutBoolean("Shooting",true);
 }
 
 // Called repeatedly when this Command is scheduled to run
@@ -34,7 +35,10 @@ void PreFire::Execute() {
 
 // Make this return true when this Command no longer needs to run execute()
 bool PreFire::IsFinished() {
-	if (Robot::dresselIR->IsInRange()) return false;
+	if (Robot::intake->IsBallAtShooter())
+	{
+		return false;
+	}
     return true;
 }
 

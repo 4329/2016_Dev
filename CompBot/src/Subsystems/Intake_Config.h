@@ -37,6 +37,7 @@ public:
 
 	float  Intake_IntakeOffset;
 	float  Intake_LowOffset;
+	float  Intake_Pivot_Error;
 	bool   Intake_pivotTalon_Enabled;
 	int    Intake_pivotTalon_CANID;
 	bool   Intake_pivotTalon_Reversed;

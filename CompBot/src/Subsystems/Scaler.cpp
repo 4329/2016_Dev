@@ -89,7 +89,7 @@ void Scaler::CreateConfig()
 
 void Scaler::LiftRaise()
 {
-	if (scalarFwdIsExtended)
+	if (liftFwdIsExtened)
 	{
 		scalerLiftDblSolenoid->Set(DoubleSolenoid::kForward);
 	} else
@@ -100,7 +100,7 @@ void Scaler::LiftRaise()
 
 void Scaler::LiftLower()
 {
-	if (scalarFwdIsExtended)
+	if (liftFwdIsExtened)
 	{
 		scalerLiftDblSolenoid->Set(DoubleSolenoid::kReverse);
 	} else
@@ -111,7 +111,7 @@ void Scaler::LiftLower()
 
 void Scaler::Extend()
 {
-	if (liftFwdIsExtened)
+	if (scalarFwdIsExtended)
 	{
 		scalerDblSolenoid->Set(DoubleSolenoid::kForward);
 	} else
@@ -122,11 +122,40 @@ void Scaler::Extend()
 
 void Scaler::Retract()
 {
-	if (liftFwdIsExtened)
+	if (scalarFwdIsExtended)
 	{
 		scalerDblSolenoid->Set(DoubleSolenoid::kReverse);
 	} else
 	{
 		scalerDblSolenoid->Set(DoubleSolenoid::kForward);
 	}
+}
+
+bool Scaler::IsRaised()
+{
+	if (liftFwdIsExtened)
+	{
+		if (scalerLiftDblSolenoid->Get() == DoubleSolenoid::kForward) return true;
+		return false;
+	} else
+	{
+		if (scalerLiftDblSolenoid->Get() == DoubleSolenoid::kReverse) return true;
+		return false;
+	}
+	return false;
+}
+
+
+bool Scaler::IsExtended()
+{
+	if (scalarFwdIsExtended)
+	{
+		if (scalerDblSolenoid->Get() == DoubleSolenoid::kForward) return true;
+		return false;
+	} else
+	{
+		if (scalerDblSolenoid->Get() == DoubleSolenoid::kReverse) return true;
+		return false;
+	}
+	return false;
 }

@@ -43,6 +43,7 @@ public:
 
 
 	static std::shared_ptr<AnalogInput> sensorIRdSensor;
+	static std::shared_ptr<AnalogInput> sensorIRdSensorFront;
 	static void init();
 };
 #endif
