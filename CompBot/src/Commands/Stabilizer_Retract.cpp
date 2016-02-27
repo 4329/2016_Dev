@@ -26,7 +26,7 @@ void Stabilizer_Retract::Initialize() {
 // Called repeatedly when this Command is scheduled to run
 void Stabilizer_Retract::Execute() {
 	if (Robot::stabilizer->IsDeployed()) {
-		Robot::stabilizer->Retract()();
+		Robot::stabilizer->Retract();
 	}
 }
 

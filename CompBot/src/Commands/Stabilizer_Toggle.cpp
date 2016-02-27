@@ -25,10 +25,11 @@ void Stabilizer_Toggle::Initialize() {
 
 // Called repeatedly when this Command is scheduled to run
 void Stabilizer_Toggle::Execute() {
-	if (Robot::stabilizer->IsDeployed()()) {
+	if(Robot::stabilizer->IsDeployed())
+	{
 		Robot::stabilizer->Retract();
 	} else {
-	Robot::stabilizer->Deploy();
+		Robot::stabilizer->Deploy();
 	}
 }
 
