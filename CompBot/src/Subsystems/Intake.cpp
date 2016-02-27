@@ -26,12 +26,11 @@ Intake::Intake() : Subsystem("Intake") , Configurable("Intake") {
 
     myConfig = new Intake_Config();
     homeSet = false;
-	if (!ConfigExists()) CreateConfig();
+    sensors.reset( new DresselSensor());
+    if (!ConfigExists()) CreateConfig();
 
     RetrieveConfig();
 	Configure();
-
-	sensors.reset( new DresselSensor());
 
 }
 

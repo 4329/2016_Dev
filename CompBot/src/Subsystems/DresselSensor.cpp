@@ -7,7 +7,6 @@
 DresselSensor::DresselSensor() : Configurable("DresselSensor")  {
     iRdSensorShooter = RobotMap::sensorIRdSensor;
     iRdSensorFront   = RobotMap::sensorIRdSensorFront;
-
     if (!ConfigExists()) CreateConfig();
 
     RetrieveConfig();
