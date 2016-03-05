@@ -23,6 +23,9 @@ private:
 	float  FrontQuality;
 	float  RearQuality;
 
+	int    FrontSize;
+	int    RearSize;
+
 	bool   FrontEnable;
 	bool   RearEnable;
 

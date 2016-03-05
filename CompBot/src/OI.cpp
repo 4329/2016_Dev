@@ -87,6 +87,7 @@ OI::OI() : Configurable("OI") {
     operatorInterface->Assign_ButtonCommand(XBOX360_BUTTON::XBOX360_A, new Pivot_Low(),ButtonAction::ButtonAction_Pressed);
 
     driverInterface->Assign_ButtonCommand(XBOX360_BUTTON::XBOX360_A, new Stabilizer_Toggle(),ButtonAction::ButtonAction_Pressed);
+    driverInterface->Assign_ButtonCommand(XBOX360_BUTTON::XBOX360_LEFT_BUMPER, new SwitchCam(),ButtonAction::ButtonAction_Pressed);
 /*
     SmartDashboard::PutData("Set Front In", new Cal_Front_In());
     SmartDashboard::PutData("Set Front Out", new Cal_Front_Out());
