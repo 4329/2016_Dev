@@ -14,7 +14,8 @@
 #include "Commands/Subsystem.h"
 #include "WPILib.h"
 #include "../Configurable.h"
-#include "DresselSensor.h"
+#include "IR_Sensor.h"
+#include "../IMU.h"
 
 
 class Sensors: public Subsystem, public Configurable {
@@ -22,10 +23,13 @@ private:
 	// It's desirable that everything possible under private except
 	// for methods that implement subsystem capabilities
 
-	std::shared_ptr<DresselSensor> IR_Sensors;
+	std::shared_ptr<IR_Sensor> IR_Front;
+	std::shared_ptr<IR_Sensor> IR_Shooter;
 	std::shared_ptr<PowerDistributionPanel> _pDp;
 	std::shared_ptr<AnalogInput> pressure;
 	std::shared_ptr<Encoder>  pivotEnc;
+	std::shared_ptr<IMU> imu;
+
 
 	int    Pivot_Enc_ChannelA;
 	int    Pivot_Enc_ChannelB;
@@ -48,12 +52,19 @@ public:
 
     bool RobotHasBall();
     bool IsBallAtShooter();
+    void SetFrontIn();
+    void SetFrontOut();
+    void SetShooterIn();
+    void SetShooterOut();
+    void StoreCalibration();
 
     float GetAirPressure();
 
     bool IsPivotAtHome();
     bool IsPivotAtIntake();
     bool IsPivotAtLow();
+
+    std::shared_ptr<IMU> Get_IMU();
 };
 
 #endif

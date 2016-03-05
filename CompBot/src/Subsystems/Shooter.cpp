@@ -202,39 +202,39 @@ void Shooter::SaveConfig()
 
 void Shooter::CreateConfig()
 {
-    Preferences::GetInstance()->PutFloat("Shooter::Speed1",-4100.0);
-	Preferences::GetInstance()->PutFloat("Shooter::Speed2",0.75);
+    Preferences::GetInstance()->GetFloat("Shooter::Speed1",-4100.0);
+	Preferences::GetInstance()->GetFloat("Shooter::Speed2",0.75);
 
-	Preferences::GetInstance()->PutBoolean("Shooter::TopTalon::Enabled",true);
-	Preferences::GetInstance()->PutInt("Shooter::TopTalon::CANID",8);
-	Preferences::GetInstance()->PutBoolean("Shooter::TopTalon::Reversed",false);
-	Preferences::GetInstance()->PutBoolean("Shooter::TopTalon::HasSensor",false);
-	Preferences::GetInstance()->PutBoolean("Shooter::TopTalon::SensorReversed",false);
-	Preferences::GetInstance()->PutBoolean("Shooter::TopTalon::EnablePID",false);
-	Preferences::GetInstance()->PutBoolean("Shooter::TopTalon::EnableVoltRampRate",true);
-	Preferences::GetInstance()->PutDouble("Shooter::TopTalon::VoltRampRate",4.0);
-	Preferences::GetInstance()->PutInt("Shooter::TopTalon::PID::CL::PM::Error",10);
-    Preferences::GetInstance()->PutBoolean("Shooter::TopTalon::Slaved",true);
-    Preferences::GetInstance()->PutInt("Shooter::TopTalon::MasterCANID",9);
+	Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::Enabled",true);
+	Preferences::GetInstance()->GetInt("Shooter::TopTalon::CANID",8);
+	Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::Reversed",false);
+	Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::HasSensor",false);
+	Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::SensorReversed",false);
+	Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::EnablePID",false);
+	Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::EnableVoltRampRate",true);
+	Preferences::GetInstance()->GetDouble("Shooter::TopTalon::VoltRampRate",4.0);
+	Preferences::GetInstance()->GetInt("Shooter::TopTalon::PID::CL::PM::Error",10);
+    Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::Slaved",true);
+    Preferences::GetInstance()->GetInt("Shooter::TopTalon::MasterCANID",9);
 
-	Preferences::GetInstance()->PutBoolean("Shooter::BottomTalon::Enabled",true);
-	Preferences::GetInstance()->PutInt("Shooter::BottomTalon::CANID",9);
-	Preferences::GetInstance()->PutBoolean("Shooter::BottomTalon::Reversed",false);
-	Preferences::GetInstance()->PutBoolean("Shooter::BottomTalon::HasSensor",true);
-	Preferences::GetInstance()->PutBoolean("Shooter::BottomTalon::SensorReversed",false);
-	Preferences::GetInstance()->PutBoolean("Shooter::BottomTalon::EnablePID",true);
-	Preferences::GetInstance()->PutDouble("Shooter::BottomTalon::Profile::0::PID::P",1.0);
-	Preferences::GetInstance()->PutDouble("Shooter::BottomTalon::Profile::0::PID::I",0.01);
-	Preferences::GetInstance()->PutDouble("Shooter::BottomTalon::Profile::0::PID::D",0.0);
-	Preferences::GetInstance()->PutDouble("Shooter::BottomTalon::Profile::0::PID::F",0.01);
-	Preferences::GetInstance()->PutInt("Shooter::BottomTalon::Profile::0::IZone",256);
-	Preferences::GetInstance()->PutBoolean("Shooter::BottomTalon::Profile::0::EnableCLRampRate",false);
-	Preferences::GetInstance()->PutDouble("Shooter::BottomTalon::Profile::0::CLRampRate",2500);
-	Preferences::GetInstance()->PutBoolean("Shooter::BottomTalon::EnableVoltRampRate",true);
-	Preferences::GetInstance()->PutDouble("Shooter::BottomTalon::VoltRampRate",4.0);
-	Preferences::GetInstance()->PutInt("Shooter::BottomTalon::PID::CL::PM::Error",10);
-    Preferences::GetInstance()->PutBoolean("Shooter::BottomTalon::Slaved",false);
-    Preferences::GetInstance()->PutInt("Shooter::BottomTalon::MasterCANID",0);
+	Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::Enabled",true);
+	Preferences::GetInstance()->GetInt("Shooter::BottomTalon::CANID",9);
+	Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::Reversed",false);
+	Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::HasSensor",true);
+	Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::SensorReversed",false);
+	Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::EnablePID",true);
+	Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::PID::P",1.0);
+	Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::PID::I",0.01);
+	Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::PID::D",0.0);
+	Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::PID::F",0.01);
+	Preferences::GetInstance()->GetInt("Shooter::BottomTalon::Profile::0::IZone",256);
+	Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::Profile::0::EnableCLRampRate",false);
+	Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::CLRampRate",2500);
+	Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::EnableVoltRampRate",true);
+	Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::VoltRampRate",4.0);
+	Preferences::GetInstance()->GetInt("Shooter::BottomTalon::PID::CL::PM::Error",10);
+    Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::Slaved",false);
+    Preferences::GetInstance()->GetInt("Shooter::BottomTalon::MasterCANID",0);
 }
 
 void Shooter::Fire(float value)

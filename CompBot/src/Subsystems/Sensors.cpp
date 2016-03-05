@@ -19,9 +19,11 @@
 Sensors::Sensors() : Subsystem("Sensors"), Configurable("Sensors") {
 
     pivotEnc = RobotMap::pivotEncoder;
-    IR_Sensors.reset( new DresselSensor());
+    IR_Front.reset( new IR_Sensor(RobotMap::sensorIRdSensorFront, "Front"));
+    IR_Shooter.reset( new IR_Sensor(RobotMap::sensorIRdSensor, "Shooter"));
     pressure = RobotMap::pressureSensor;
     _pDp = RobotMap::pDPPowerDistributionPanel;
+    imu.reset(new IMU());
 
 	if (!ConfigExists()) CreateConfig();
 
@@ -36,7 +38,9 @@ Sensors::~Sensors()
 
 void Sensors::RetrieveConfig()
 {
-	IR_Sensors->RetrieveConfig();
+	IR_Front->RetrieveConfig();
+	IR_Shooter->RetrieveConfig();
+	imu->RetrieveConfig();
 	Pivot_Enc_ChannelA = Preferences::GetInstance()->GetInt("Pivot::Enc::ChannelA",8);
 	Pivot_Enc_ChannelB = Preferences::GetInstance()->GetInt("Pivot::Enc::ChannelB",9);
 	Pivot_Enc_Reversed = Preferences::GetInstance()->GetBoolean("Pivot::Enc::Reversed",true);
@@ -47,7 +51,9 @@ void Sensors::RetrieveConfig()
 
 void Sensors::SaveConfig()
 {
-	IR_Sensors->SaveConfig();
+	IR_Front->SaveConfig();
+	IR_Shooter->SaveConfig();
+	imu->SaveConfig();
 	Preferences::GetInstance()->PutInt("Pivot::Enc::ChannelA",Pivot_Enc_ChannelA);
 	Preferences::GetInstance()->PutInt("Pivot::Enc::ChannelB",Pivot_Enc_ChannelB);
 	Preferences::GetInstance()->PutBoolean("Pivot::Enc::Reversed",Pivot_Enc_Reversed);
@@ -59,11 +65,16 @@ void Sensors::SaveConfig()
 
 void Sensors::Configure()
 {
-	// Do Nothing.
+	IR_Front->Configure();
+	IR_Shooter->Configure();
+	imu->Configure();
 }
 
 void Sensors::CreateConfig()
 {
+	IR_Front->CreateConfig();
+	IR_Shooter->CreateConfig();
+	imu->CreateConfig();
 	Preferences::GetInstance()->GetInt("Pivot::Enc::ChannelA",8);
 	Preferences::GetInstance()->GetInt("Pivot::Enc::ChannelB",9);
 	Preferences::GetInstance()->GetBoolean("Pivot::Enc::Reversed",true);
@@ -81,7 +92,7 @@ void Sensors::InitDefaultCommand() {
 
 bool Sensors::RobotHasBall()
 {
-	if (IR_Sensors->IsInRangeFront())
+	if (IR_Front->IsInRange())
 	{
 		return true;
 	}
@@ -90,7 +101,7 @@ bool Sensors::RobotHasBall()
 
 bool Sensors::IsBallAtShooter()
 {
-	if (IR_Sensors->IsInRangeShooter())
+	if (IR_Shooter->IsInRange())
 	{
 		return true;
 	}
@@ -100,7 +111,6 @@ bool Sensors::IsBallAtShooter()
 float Sensors::GetAirPressure()
 {
 	float vout = pressure->GetVoltage();
-	//SmartDashboard::PutNumber("AirPressure", (250.0 *(vout/5.0) - 25.0));
 	return (250.0 *(vout/5.0) - 25.0);
 }
 
@@ -117,4 +127,35 @@ bool Sensors::IsPivotAtIntake()
 bool Sensors::IsPivotAtLow()
 {
 	return false;
+}
+
+void Sensors::SetFrontIn()
+{
+	IR_Front->SetIn();
+}
+
+void Sensors::SetFrontOut()
+{
+	IR_Front->SetOut();
+}
+
+void Sensors::SetShooterIn()
+{
+	IR_Shooter->SetIn();
+}
+
+void Sensors::SetShooterOut()
+{
+	IR_Shooter->SetOut();
+}
+
+void Sensors::StoreCalibration()
+{
+	IR_Front->StoreCalibration();
+	IR_Shooter->StoreCalibration();
+}
+
+std::shared_ptr<IMU> Sensors::Get_IMU()
+{
+	return imu;
 }

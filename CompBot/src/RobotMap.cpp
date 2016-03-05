@@ -36,6 +36,8 @@ std::shared_ptr<Encoder> RobotMap::pivotEncoder;
 std::shared_ptr<AnalogInput> RobotMap::sensorIRdSensor;
 std::shared_ptr<AnalogInput> RobotMap::sensorIRdSensorFront;
 std::shared_ptr<AnalogInput> RobotMap::pressureSensor;
+std::shared_ptr<AHRS> RobotMap::imu;
+
 
 void RobotMap::init() {
     LiveWindow *lw = LiveWindow::GetInstance();
@@ -119,4 +121,7 @@ void RobotMap::init() {
     pDPPowerDistributionPanel.reset(new PowerDistributionPanel(Preferences::GetInstance()->GetInt("PDP::CANID",0)));
     lw->AddSensor("PDP", "PowerDistributionPanel", pDPPowerDistributionPanel);
     
+    imu.reset(new AHRS(SPI::Port::kMXP));
+    lw->AddSensor("Sensor","IMU",imu);
+
 }

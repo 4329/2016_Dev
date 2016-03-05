@@ -12,7 +12,7 @@
 #ifndef ROBOTMAP_H
 #define ROBOTMAP_H
 #include "WPILib.h"
-#include "Subsystems/DresselSensor.h"
+#include "AHRS.h"
 
 
 /**
@@ -47,6 +47,8 @@ public:
 	static std::shared_ptr<AnalogInput> sensorIRdSensor;
 	static std::shared_ptr<AnalogInput> sensorIRdSensorFront;
 	static std::shared_ptr<AnalogInput> pressureSensor;
+
+	static std::shared_ptr<AHRS> imu;
 
 	static void init();
 };
