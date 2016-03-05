@@ -13,18 +13,12 @@
 
 #include "Intake.h"
 #include "../RobotMap.h"
+#include "../Robot.h"
 
-
-#include "Commands/Pivot_Stick.h"
 
 Intake::Intake() : Subsystem("Intake") , Configurable("Intake") {
 
     intakeTalon = RobotMap::intakeTalon;
-    pivotStage1 = RobotMap::pivotStage1Solenoid;
-    pivotStage2 = RobotMap::pivotStage2Solenoid;
-    pivotEnc    = RobotMap::pivotEncoder;
-
-    sensors.reset( new DresselSensor());
 
     if (!ConfigExists()) CreateConfig();
 
@@ -36,8 +30,7 @@ Intake::Intake() : Subsystem("Intake") , Configurable("Intake") {
 void Intake::InitDefaultCommand() {
     // Set the default command for a subsystem here.
     // SetDefaultCommand(new MySpecialCommand());
-	SetDefaultCommand(new Pivot_Stick());
-
+	//SetDefaultCommand(new Pivot_Stick());
 }
 
 
@@ -51,7 +44,6 @@ Intake::~Intake()
 
 void Intake::RetrieveConfig()
 {
-	sensors->RetrieveConfig();
 	Intake_InSpeed                  = Preferences::GetInstance()->GetFloat("Intake::InSpeed",-1.0);
 	Intake_OutSpeed                 = Preferences::GetInstance()->GetFloat("Intake::OutSpeed",1.0);
 
@@ -60,27 +52,12 @@ void Intake::RetrieveConfig()
 	Intake_Talon_Reversed           = Preferences::GetInstance()->GetBoolean("Intake::Talon::Reversed",false);
 	Intake_Talon_EnableVoltRampRate = Preferences::GetInstance()->GetBoolean("Intake::Talon::EnableVoltRampRate",false);
 	Intake_Talon_VoltRampRate       = Preferences::GetInstance()->GetDouble("Intake::Talon::VoltRampRate",5.0);
-
-    Pivot_IntakeOffset              = Preferences::GetInstance()->GetFloat("Pivot::IntakeOffset",282);
-    Pivot_LowOffset                 = Preferences::GetInstance()->GetFloat("Pivot::IntakeAngleFromHome",351);
-	Pivot_PosIsUp                   = Preferences::GetInstance()->GetBoolean("Pivot::PosIsUp",false);
-	Pivot_Lead_Margin               = Preferences::GetInstance()->GetFloat("Pivot::Lead_Margin",10);
-	Pivot_PCMID                     = Preferences::GetInstance()->GetInt("Pivot::PCMID",0);
-	Pivot_Stage1_Channel            = Preferences::GetInstance()->GetInt("Pivot::Stage1::Channel",5);
-	Pivot_Stage1_ActiveIsExtended   = Preferences::GetInstance()->GetBoolean("Pivot::Stage1::ActiveIsExtended",false);
-	Pivot_Stage2_Channel            = Preferences::GetInstance()->GetInt("Pivot::Stage2::Channel",6);
-	Pivot_Stage2_ActiveIsExtended   = Preferences::GetInstance()->GetBoolean("Pivot::Stage2::ActiveIsExtended",false);
-
-	Pivot_Enc_ChannelA              = Preferences::GetInstance()->GetInt("Pivot::Enc::ChannelA",0);
-	Pivot_Enc_ChannelB              = Preferences::GetInstance()->GetInt("Pivot::Enc::ChannelB",1);
-	Pivot_Enc_Reversed              = Preferences::GetInstance()->GetBoolean("Pivot::Enc::Reversed",false);
 }
 
 void Intake::Configure()
 {
 	if (Intake_Talon_Enabled)
 	{
-		printf("I:Configure IT1 enabled\n");
 		if(Intake_Talon_EnableVoltRampRate)
 		{
 			intakeTalon->SetVoltageRampRate(Intake_Talon_VoltRampRate);
@@ -90,7 +67,6 @@ void Intake::Configure()
 
 void Intake::SaveConfig()
 {
-	sensors->SaveConfig();
 	Preferences::GetInstance()->PutFloat("Intake::InSpeed",Intake_InSpeed);
 	Preferences::GetInstance()->PutFloat("Intake::OutSpeed",Intake_OutSpeed);
 
@@ -99,20 +75,6 @@ void Intake::SaveConfig()
 	Preferences::GetInstance()->PutBoolean("Intake::Talon::Reversed",Intake_Talon_Reversed);
 	Preferences::GetInstance()->PutBoolean("Intake::Talon::EnableVoltRampRate",Intake_Talon_EnableVoltRampRate);
 	Preferences::GetInstance()->PutDouble("Intake::Talon::VoltRampRate",Intake_Talon_VoltRampRate);
-
-    Preferences::GetInstance()->PutFloat("Pivot::IntakeOffset",Pivot_IntakeOffset);
-    Preferences::GetInstance()->PutFloat("Pivot::IntakeAngleFromHome",Pivot_LowOffset);
-	Preferences::GetInstance()->PutBoolean("Pivot::PosIsUp",Pivot_PosIsUp);
-	Preferences::GetInstance()->PutFloat("Pivot::Lead_Margin",Pivot_Lead_Margin);
-	Preferences::GetInstance()->PutInt("Pivot::PCMID",Pivot_PCMID);
-	Preferences::GetInstance()->PutInt("Pivot::Stage1::Channel",Pivot_Stage1_Channel);
-	Preferences::GetInstance()->PutBoolean("Pivot::Stage1::ActiveIsExtended",Pivot_Stage1_ActiveIsExtended);
-	Preferences::GetInstance()->PutInt("Pivot::Stage2::Channel",Pivot_Stage2_Channel);
-	Preferences::GetInstance()->PutBoolean("Pivot::Stage2::ActiveIsExtended",Pivot_Stage2_ActiveIsExtended);
-
-	Preferences::GetInstance()->PutInt("Pivot::Enc::ChannelA",Pivot_Enc_ChannelA);
-	Preferences::GetInstance()->PutInt("Pivot::Enc::ChannelB",Pivot_Enc_ChannelB);
-	Preferences::GetInstance()->PutBoolean("Pivot::Enc::Reversed",Pivot_Enc_Reversed);
 }
 
 void Intake::CreateConfig()
@@ -125,21 +87,6 @@ void Intake::CreateConfig()
 	Preferences::GetInstance()->GetBoolean("Intake::Talon::Reversed",false);
 	Preferences::GetInstance()->GetBoolean("Intake::Talon::EnableVoltRampRate",false);
 	Preferences::GetInstance()->GetDouble("Intake::Talon::VoltRampRate",5.0);
-
-    Preferences::GetInstance()->GetFloat("Pivot::IntakeOffset",282);
-    Preferences::GetInstance()->GetFloat("Pivot::IntakeAngleFromHome",351);
-	Preferences::GetInstance()->GetBoolean("Pivot::PosIsUp",false);
-	Preferences::GetInstance()->GetFloat("Pivot::Lead_Margin",10);
-	Preferences::GetInstance()->GetInt("Pivot::PCMID",0);
-	Preferences::GetInstance()->GetInt("Pivot::Stage1::Channel",5);
-	Preferences::GetInstance()->GetBoolean("Pivot::Stage1::ActiveIsExtended",false);
-	Preferences::GetInstance()->GetInt("Pivot::Stage2::Channel",6);
-	Preferences::GetInstance()->GetBoolean("Pivot::Stage2::ActiveIsExtended",false);
-
-	Preferences::GetInstance()->GetInt("Pivot::Enc::ChannelA",0);
-	Preferences::GetInstance()->GetInt("Pivot::Enc::ChannelB",1);
-	Preferences::GetInstance()->GetBoolean("Pivot::Enc::Reversed",false);
-
 }
 
 void Intake::SetIntake(bool in, float percent_speed)
@@ -158,88 +105,6 @@ void Intake::StopIntake()
 	intakeTalon->Set(0);
 }
 
-void Intake::SetPivotHome()
-{
-	pivotEnc->Reset();
-    printf("Setting Pivot Home to %d\n",pivotEnc->Get());
-}
-
-void Intake::SetPivotToHome()
-{
-	Robot::brake->Release();
-	printf("Moving Pivot to Home Position\n");
-	pivotStage1->Set(!Pivot_Stage1_ActiveIsExtended);
-    pivotStage2->Set(!Pivot_Stage2_ActiveIsExtended);
-}
-
-bool Intake::IsPivotAtHome()
-{
-	if (!(Pivot_Stage1_ActiveIsExtended == pivotStage1->Get()) && !(Pivot_Stage2_ActiveIsExtended && pivotStage2->Get()) )
-	{
-	    return true;
-	}
-	return false;
-}
-
-void Intake::SetPivotIntake()
-{
-	Robot::brake->Release();
-	printf("Setting Pivot to intake\n");
-	pivotStage1->Set(Pivot_Stage1_ActiveIsExtended);
-}
-
-bool Intake::IsPivotAtIntake()
-{
-	if ( (Pivot_Stage1_ActiveIsExtended == pivotStage1->Get()) && !(Pivot_Stage2_ActiveIsExtended && pivotStage2->Get()) )
-	{
-	    return true;
-	}
-	return false;
-}
-
-
-void Intake::SetPivotLow()
-{
-	Robot::brake->Release();
-	printf("Setting Pivot to Low\n");
-	pivotStage1->Set(Pivot_Stage1_ActiveIsExtended);
-	pivotStage2->Set(Pivot_Stage2_ActiveIsExtended);
-}
-
-bool Intake::IsPivotAtLow()
-{
-	if ( (Pivot_Stage1_ActiveIsExtended == pivotStage1->Get()) && (Pivot_Stage2_ActiveIsExtended && pivotStage2->Get()) )
-	{
-	    return true;
-	}
-	return false;
-}
-
-void Intake::UpPivot()
-{
-	if (IsPivotAtLow())
-	{
-		SetPivotIntake();
-	} else
-	{
-		SetPivotToHome();
-	}
-}
-void Intake::DownPivot()
-{
-	if (IsPivotAtHome())
-	{
-		SetPivotIntake();
-	} else
-	{
-		SetPivotLow();
-	}
-}
-
-void Intake::SetPivot(float value)
-{
-  // Do nothing right now.
-}
 
 float Intake::Limit(float num)
 {
@@ -256,7 +121,7 @@ float Intake::Limit(float num)
 
 bool Intake::RobotHasBall()
 {
-	if (sensors->IsInRangeFront())
+	if (Robot::sensorPkg->RobotHasBall())
 	{
 		return true;
 	}
@@ -265,51 +130,10 @@ bool Intake::RobotHasBall()
 
 bool Intake::IsBallAtShooter()
 {
-	if (sensors->IsInRangeShooter())
+	if (Robot::sensorPkg->IsBallAtShooter())
 	{
 		return true;
 	}
 	return false;
 }
 
-void Intake::ExtendPivotStage1()
-{
-	pivotStage1->Set(Pivot_Stage1_ActiveIsExtended);
-}
-
-void Intake::ExtendPivotStage2()
-{
-	pivotStage2->Set(Pivot_Stage2_ActiveIsExtended);
-}
-
-void Intake::RetractPivotStage1()
-{
-	pivotStage1->Set(!Pivot_Stage1_ActiveIsExtended);
-}
-
-void Intake::RetractPivotStage2()
-{
-	pivotStage2->Set(!Pivot_Stage2_ActiveIsExtended);
-}
-
-bool Intake::IsPivotStage1Extended()
-{
-	bool retval = pivotStage1->Get();
-
-	if ((Pivot_Stage1_ActiveIsExtended && retval) || (!Pivot_Stage1_ActiveIsExtended && !retval))
-	{
-		return true;
-	}
-	return false;
-}
-
-bool Intake::IsPivotStage2Extended()
-{
-	bool retval = pivotStage2->Get();
-
-	if ((Pivot_Stage2_ActiveIsExtended && retval) || (!Pivot_Stage2_ActiveIsExtended && !retval))
-	{
-		return true;
-	}
-	return false;
-}

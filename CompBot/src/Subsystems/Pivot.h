@@ -9,36 +9,35 @@
 // it from being updated in the future.
 
 
-#ifndef INTAKE_H
-#define INTAKE_H
+#ifndef PIVOT_H
+#define PIVOT_H
 #include "Commands/Subsystem.h"
 #include "WPILib.h"
 #include "../Configurable.h"
-#include "DresselSensor.h"
 
 /**
  *
  *
  * @author ExampleAuthor
  */
-class Intake: public Subsystem , public Configurable {
+class Pivot: public Subsystem , public Configurable {
 private:
 	// It's desirable that everything possible is private except
 	// for methods that implement subsystem capabilities
 
-	std::shared_ptr<CANTalon> intakeTalon;
+	std::shared_ptr<Solenoid> pivotStage1;
+	std::shared_ptr<Solenoid> pivotStage2;
 
-	float  Intake_InSpeed;
-	float  Intake_OutSpeed;
-	bool   Intake_Talon_Enabled;
-	int    Intake_Talon_CANID;
-	bool   Intake_Talon_Reversed;
-	bool   Intake_Talon_EnableVoltRampRate;
-	double Intake_Talon_VoltRampRate;
+	int    Pivot_PCMID;
+	int    Pivot_Stage1_Channel;
+	bool   Pivot_Stage1_ActiveIsExtended;
+	int    Pivot_Stage2_Channel;
+	bool   Pivot_Stage2_ActiveIsExtended;
+
 
 public:
-	Intake();
-	virtual ~Intake();
+	Pivot();
+	virtual ~Pivot();
 	void InitDefaultCommand();
 
 	virtual void RetrieveConfig();
@@ -46,12 +45,24 @@ public:
 	virtual void SaveConfig();
 	virtual void CreateConfig();
 
-	void SetIntake(bool in, float percent_speed = 1.0);
-	void StopIntake();
+	void SetPivotHome();
+	void SetPivotToHome();
+	bool IsPivotAtHome();
+	void SetPivotIntake();
+	bool IsPivotAtIntake();
+	void SetPivotLow();
+	bool IsPivotAtLow();
 
-	bool RobotHasBall();
-	bool IsBallAtShooter();
-    float Limit(float num);
+	void UpPivot();
+	void DownPivot();
+
+    void ExtendPivotStage1();
+    void ExtendPivotStage2();
+    void RetractPivotStage1();
+    void RetractPivotStage2();
+
+    bool IsPivotStage1Extended();
+    bool IsPivotStage2Extended();
 
 };
 

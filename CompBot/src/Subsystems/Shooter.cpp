@@ -295,7 +295,7 @@ bool Shooter::IsShooting()
 void Shooter::Stop()
 {
 	BottomTalon->Set(0);
-	//BottomTalon->Disable();
+	BottomTalon->Disable();
 	tgtRPM = 0;
 	isShooting = false;
 }

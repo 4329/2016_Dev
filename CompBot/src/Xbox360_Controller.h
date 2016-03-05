@@ -79,8 +79,7 @@ typedef struct XBOX_AxisState
 	float Raw_RY;
 	float LTrigger;
 	float RTrigger;
-	int   DPAD_X;
-	int   DPAD_Y;
+	int   DPAD;
 	float RelativeHeading;
 	float Magnitude;
 	int   AxisDelay;
@@ -111,7 +110,7 @@ public:
 	virtual void SaveConfig();
 	virtual void CreateConfig();
 
-	void Set_DeadZones(float lxmin, float lymin, float rxmin, float rymin, float ltriggermin, float rtriggermin, float dpadx = 0.05, float dpady = 0.05);
+	void Set_DeadZones(float lxmin, float lymin, float rxmin, float rymin, float ltriggermin, float rtriggermin);
 
 	void Rumble_Left(float intensity);
 	void Rumble_Right(float intensity);
@@ -138,8 +137,12 @@ private:
 	JoystickButton* m_X;
 	JoystickButton* m_B;
 	JoystickButton* m_Y;
-	float			LSxDZ, LSyDZ, RSxDZ, RSyDZ, LtrigDZ, RtrigDZ, DpadxDZ, DpadyDZ;
+	float			LSxDZ, LSyDZ, RSxDZ, RSyDZ, LtrigDZ, RtrigDZ;
 	int 			axisDelay;
+	bool			flipRSx;
+	bool 			flipRSy;
+    bool            flipLSx;
+	bool 			flipLSy;
 
     std::map<int,JoystickButton*> buttonMap;
 };

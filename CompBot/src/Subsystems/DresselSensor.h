@@ -32,6 +32,7 @@ private:
 	float frontIn;
 	float frontOut;
 
+	float cnt;
 public:
 	DresselSensor();
 	virtual ~DresselSensor();
@@ -52,6 +53,7 @@ public:
 	void  SetShooterIn();
 	void  SetShooterOut();
     void  StoreCalibration();
+    void  Signature();
 };
 
 #endif

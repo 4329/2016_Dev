@@ -47,6 +47,11 @@ XBOX360_Controller::XBOX360_Controller(std::string name, uint32_t port) :
 	Assign_Move_FrontToBack(XBOX360_LEFT_Y);
 	Assign_Yaw(XBOX360_RIGHT_X);
 
+	flipRSy = false;
+	flipLSy = false;
+	flipRSx = false;
+	flipLSx = false;
+
 	if (!ConfigExists()) CreateConfig();
 
 	RetrieveConfig();
@@ -77,9 +82,11 @@ void XBOX360_Controller::RetrieveConfig()
 	RSyDZ = Preferences::GetInstance()->GetFloat(_prefix + prefSep + std::string("XBox::DeadZone::RightStick::Y"),0.05);
 	LtrigDZ = Preferences::GetInstance()->GetFloat(_prefix + prefSep + std::string("XBox::DeadZone::LeftTrigger"),0.05);
 	RtrigDZ = Preferences::GetInstance()->GetFloat(_prefix + prefSep + std::string("XBox::DeadZone::RightTrigger"),0.05);
-	DpadxDZ = Preferences::GetInstance()->GetFloat(_prefix + prefSep + std::string("XBox::DeadZone::DPAD::X"),0.05);
-	DpadyDZ = Preferences::GetInstance()->GetFloat(_prefix + prefSep + std::string("XBox::DeadZone::DPAD::Y"),0.05);
 	axisDelay = Preferences::GetInstance()->GetInt(_prefix + prefSep + std::string("XBox::AxisDelay"),5);
+	flipRSy = Preferences::GetInstance()->GetBoolean(_prefix + prefSep + std::string("XBox::RightStick::YInverted"),false);
+	flipLSy = Preferences::GetInstance()->GetBoolean(_prefix + prefSep + std::string("XBox::LeftStick::YInverted"),false);
+	flipRSx = Preferences::GetInstance()->GetBoolean(_prefix + prefSep + std::string("XBox::RightStick::XInverted"),false);
+	flipLSx = Preferences::GetInstance()->GetBoolean(_prefix + prefSep + std::string("XBox::LeftStick::XInverted"),false);
 }
 
 void XBOX360_Controller::SaveConfig()
@@ -90,22 +97,26 @@ void XBOX360_Controller::SaveConfig()
 	Preferences::GetInstance()->PutFloat(_prefix + prefSep + std::string("XBox::DeadZone::RightStick::Y"),RSyDZ);
 	Preferences::GetInstance()->PutFloat(_prefix + prefSep + std::string("XBox::DeadZone::LeftTrigger"),LtrigDZ);
 	Preferences::GetInstance()->PutFloat(_prefix + prefSep + std::string("XBox::DeadZone::RightTrigger"),RtrigDZ);
-	Preferences::GetInstance()->PutFloat(_prefix + prefSep + std::string("XBox::DeadZone::DPAD::X"),DpadxDZ);
-	Preferences::GetInstance()->PutFloat(_prefix + prefSep + std::string("XBox::DeadZone::DPAD::Y"),DpadyDZ);
 	Preferences::GetInstance()->PutInt(_prefix + prefSep + std::string("XBox::AxisDelay"),axisDelay);
+	Preferences::GetInstance()->PutBoolean(_prefix + prefSep + std::string("XBox::RightStick::YInverted"),flipRSy);
+	Preferences::GetInstance()->PutBoolean(_prefix + prefSep + std::string("XBox::LeftStick::YInverted"),flipLSy);
+	Preferences::GetInstance()->PutBoolean(_prefix + prefSep + std::string("XBox::RightStick::XInverted"),flipRSx);
+	Preferences::GetInstance()->PutBoolean(_prefix + prefSep + std::string("XBox::LeftStick::XInverted"),flipLSx);
 }
 
 void XBOX360_Controller::CreateConfig()
 {
-	Preferences::GetInstance()->PutFloat(_prefix + prefSep + std::string("XBox::DeadZone::LeftStick::X"),0.05);
-	Preferences::GetInstance()->PutFloat(_prefix + prefSep + std::string("XBox::DeadZone::LeftStick::Y"),0.05);
-	Preferences::GetInstance()->PutFloat(_prefix + prefSep + std::string("XBox::DeadZone::RightStick::X"),0.05);
-	Preferences::GetInstance()->PutFloat(_prefix + prefSep + std::string("XBox::DeadZone::RightStick::Y"),0.05);
-	Preferences::GetInstance()->PutFloat(_prefix + prefSep + std::string("XBox::DeadZone::LeftTrigger"),0.05);
-	Preferences::GetInstance()->PutFloat(_prefix + prefSep + std::string("XBox::DeadZone::RightTrigger"),0.05);
-	Preferences::GetInstance()->PutFloat(_prefix + prefSep + std::string("XBox::DeadZone::DPAD::X"),0.05);
-	Preferences::GetInstance()->PutFloat(_prefix + prefSep + std::string("XBox::DeadZone::DPAD::Y"),0.05);
-	Preferences::GetInstance()->PutInt(_prefix + prefSep + std::string("XBox::AxisDelay"),5);
+	Preferences::GetInstance()->GetFloat(_prefix + prefSep + std::string("XBox::DeadZone::LeftStick::X"),0.05);
+	Preferences::GetInstance()->GetFloat(_prefix + prefSep + std::string("XBox::DeadZone::LeftStick::Y"),0.05);
+	Preferences::GetInstance()->GetFloat(_prefix + prefSep + std::string("XBox::DeadZone::RightStick::X"),0.05);
+	Preferences::GetInstance()->GetFloat(_prefix + prefSep + std::string("XBox::DeadZone::RightStick::Y"),0.05);
+	Preferences::GetInstance()->GetFloat(_prefix + prefSep + std::string("XBox::DeadZone::LeftTrigger"),0.05);
+	Preferences::GetInstance()->GetFloat(_prefix + prefSep + std::string("XBox::DeadZone::RightTrigger"),0.05);
+	Preferences::GetInstance()->GetInt(_prefix + prefSep + std::string("XBox::AxisDelay"),10);
+	Preferences::GetInstance()->GetBoolean(_prefix + prefSep + std::string("XBox::RightStick::YInverted"),false);
+	Preferences::GetInstance()->GetBoolean(_prefix + prefSep + std::string("XBox::LeftStick::YInverted"),false);
+	Preferences::GetInstance()->GetBoolean(_prefix + prefSep + std::string("XBox::RightStick::XInverted"),false);
+	Preferences::GetInstance()->GetBoolean(_prefix + prefSep + std::string("XBox::LeftStick::XInverted"),false);
 }
 
 void XBOX360_Controller::Configure()
@@ -113,7 +124,7 @@ void XBOX360_Controller::Configure()
 	// Do Nothing.
 }
 
-void XBOX360_Controller::Set_DeadZones(float lxmin, float lymin, float rxmin, float rymin, float ltriggermin, float rtriggermin, float dpadx, float dpady)
+void XBOX360_Controller::Set_DeadZones(float lxmin, float lymin, float rxmin, float rymin, float ltriggermin, float rtriggermin)
 {
 	LSxDZ = lxmin;
 	LSyDZ = lymin;
@@ -121,8 +132,6 @@ void XBOX360_Controller::Set_DeadZones(float lxmin, float lymin, float rxmin, fl
 	RSyDZ = rymin;
 	LtrigDZ = ltriggermin;
 	RtrigDZ = rtriggermin;
-	DpadxDZ = dpadx;
-	DpadyDZ = dpady;
 }
 
 void XBOX360_Controller::Rumble_Left(float intensity)
@@ -172,14 +181,43 @@ void XBOX360_Controller::Assign_ButtonCommand(XBOX360_BUTTON button, Command *co
 XBOX_AxisState XBOX360_Controller::Get_AxisState()
 {
 	XBOX_AxisState retval;
-	retval.Raw_LX = ((GetRawAxis(XBOX360_LEFT_X)*GetRawAxis(XBOX360_LEFT_X)) > LSxDZ ) ? GetRawAxis(XBOX360_LEFT_X) : 0.0;
-	retval.Raw_LY = 0 - ((GetRawAxis(XBOX360_LEFT_Y)*GetRawAxis(XBOX360_LEFT_Y)) > LSyDZ ) ? GetRawAxis(XBOX360_LEFT_Y) : 0.0;
-	retval.Raw_RX = ((GetRawAxis(XBOX360_RIGHT_X)*GetRawAxis(XBOX360_RIGHT_X))> RSxDZ) ? GetRawAxis(XBOX360_RIGHT_X) : 0.0;
-	retval.Raw_RY = ((GetRawAxis(XBOX360_RIGHT_Y)*GetRawAxis(XBOX360_RIGHT_Y))> RSyDZ) ? GetRawAxis(XBOX360_RIGHT_Y) : 0.0;
+
+	if (flipRSx)
+	{
+		retval.Raw_RX = 0 - (((GetRawAxis(XBOX360_RIGHT_X)*GetRawAxis(XBOX360_RIGHT_X)) > RSxDZ ) ? GetRawAxis(XBOX360_RIGHT_X) : 0.0);
+	} else
+	{
+		retval.Raw_RX = ((GetRawAxis(XBOX360_RIGHT_X)*GetRawAxis(XBOX360_RIGHT_X)) > RSxDZ ) ? GetRawAxis(XBOX360_RIGHT_X) : 0.0;
+	}
+
+
+	if (flipRSy)
+	{
+		retval.Raw_RY = 0 - (((GetRawAxis(XBOX360_RIGHT_Y)*GetRawAxis(XBOX360_RIGHT_Y))> RSyDZ) ? GetRawAxis(XBOX360_RIGHT_Y) : 0.0);
+	} else
+	{
+		retval.Raw_RY = ((GetRawAxis(XBOX360_RIGHT_Y)*GetRawAxis(XBOX360_RIGHT_Y))> RSyDZ) ? GetRawAxis(XBOX360_RIGHT_Y) : 0.0;
+	}
+
+	if (flipLSx)
+	{
+		retval.Raw_LX = 0 - (((GetRawAxis(XBOX360_LEFT_X)*GetRawAxis(XBOX360_LEFT_X)) > LSxDZ ) ? GetRawAxis(XBOX360_LEFT_X) : 0.0);
+	} else
+	{
+		retval.Raw_LX = ((GetRawAxis(XBOX360_LEFT_X)*GetRawAxis(XBOX360_LEFT_X)) > LSxDZ ) ? GetRawAxis(XBOX360_LEFT_X) : 0.0;
+	}
+
+	if (flipLSy)
+	{
+		retval.Raw_LY = 0 - (((GetRawAxis(XBOX360_LEFT_Y)*GetRawAxis(XBOX360_LEFT_Y)) > LSyDZ ) ? GetRawAxis(XBOX360_LEFT_Y) : 0.0);
+	} else
+	{
+		retval.Raw_LY = ((GetRawAxis(XBOX360_LEFT_Y)*GetRawAxis(XBOX360_LEFT_Y)) > LSyDZ ) ? GetRawAxis(XBOX360_LEFT_Y) : 0.0;
+	}
+
 	retval.RTrigger = (GetRawAxis(XBOX360_RTRIGGER) > RtrigDZ) ? GetRawAxis(XBOX360_RTRIGGER) : 0.0;
 	retval.LTrigger = (GetRawAxis(XBOX360_LTRIGGER) > LtrigDZ) ? GetRawAxis(XBOX360_LTRIGGER) : 0.0;
-	retval.DPAD_X = ((GetRawAxis(XBOX360_DPAD_X) * GetRawAxis(XBOX360_DPAD_X)) > DpadxDZ) ? GetRawAxis(XBOX360_DPAD_X) : 0.0;
-	retval.DPAD_Y = ((GetRawAxis(XBOX360_DPAD_Y) * GetRawAxis(XBOX360_DPAD_Y)) > DpadyDZ) ? GetRawAxis(XBOX360_DPAD_Y) : 0.0;
+	retval.DPAD = GetPOV();
 	retval.Magnitude = GetMagnitude();
 	retval.RelativeHeading = GetDirectionDegrees();
 	retval.AxisDelay = axisDelay;

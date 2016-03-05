@@ -41,6 +41,7 @@ DriveTrain::DriveTrain() : Subsystem("DriveTrain"), Configurable("DriveTrain") {
 	lLastPosDelta = 0.0;
 	rLastPosDelta = 0.0;
 	hasMoved = false;
+	myType = DriveType_Split;
 
 	if (!ConfigExists()) CreateConfig();
 
@@ -183,7 +184,7 @@ void DriveTrain::RetrieveConfig()
 	myConfig->DriveTrain_LeftTalon2_QuadEncoder_PulsesPerInch = Preferences::GetInstance()->GetFloat("DriveTrain::LeftTalon2::QuadEncoder::PulsesPerInch",200.584198);
     myConfig->DriveTrain_LeftTalon2_Slaved = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon2::Slaved",true);
     myConfig->DriveTrain_LeftTalon2_MasterCANID = Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon2::MasterCANID",3);
-
+    myType = (DriveType) Preferences::GetInstance()->GetInt("DriveTrain::DriveType",(int)DriveType_Split);
 }
 
 void DriveTrain::SaveConfig()
@@ -430,7 +431,6 @@ void DriveTrain::Configure()
 
 	if (myConfig->DriveTrain_LeftTalon1_Enabled)
 	{
-		printf("DT:Configure LT1 enabled\n");
         if (myConfig->DriveTrain_LeftTalon1_HasSensor)
         {
         	leftTalon1->SetFeedbackDevice(CANTalon::QuadEncoder);
@@ -444,7 +444,6 @@ void DriveTrain::Configure()
         }
         if (myConfig->DriveTrain_LeftTalon1_EnablePID)
         {
-        	printf("DT:Configure LT1 PID enabled\n");
         	leftTalon1->SelectProfileSlot(0);
         	leftTalon1->SetP(myConfig->DriveTrain_LeftTalon1_Profile_0_PID_P);
         	leftTalon1->SetI(myConfig->DriveTrain_LeftTalon1_Profile_0_PID_I);
@@ -485,7 +484,6 @@ void DriveTrain::Configure()
 
 	if (myConfig->DriveTrain_LeftTalon2_Enabled)
 	{
-		printf("DT:Configure LT2 enabled\n");
         if (myConfig->DriveTrain_LeftTalon2_HasSensor)
         {
         	leftTalon2->SetFeedbackDevice(CANTalon::QuadEncoder);
@@ -499,7 +497,6 @@ void DriveTrain::Configure()
         }
         if (myConfig->DriveTrain_LeftTalon2_EnablePID)
         {
-        	printf("DT:Configure LT2 PID enabled\n");
         	leftTalon2->SelectProfileSlot(0);
         	leftTalon2->SetP(myConfig->DriveTrain_LeftTalon2_Profile_0_PID_P);
         	leftTalon2->SetI(myConfig->DriveTrain_LeftTalon2_Profile_0_PID_I);
@@ -542,7 +539,6 @@ void DriveTrain::Configure()
 
 	if (myConfig->DriveTrain_RightTalon1_Enabled)
 	{
-		printf("DT:Configure RT1 enabled\n");
         if (myConfig->DriveTrain_RightTalon1_HasSensor)
         {
         	rightTalon1->SetFeedbackDevice(CANTalon::QuadEncoder);
@@ -556,7 +552,6 @@ void DriveTrain::Configure()
         }
         if (myConfig->DriveTrain_RightTalon1_EnablePID)
         {
-        	printf("DT:Configure RT1 PID enabled\n");
         	rightTalon1->SelectProfileSlot(0);
         	rightTalon1->SetP(myConfig->DriveTrain_RightTalon1_Profile_0_PID_P);
         	rightTalon1->SetI(myConfig->DriveTrain_RightTalon1_Profile_0_PID_I);
@@ -596,7 +591,6 @@ void DriveTrain::Configure()
 
 	if (myConfig->DriveTrain_RightTalon2_Enabled)
 	{
-		printf("DT:Configure RT2 enabled\n");
         if (myConfig->DriveTrain_RightTalon2_HasSensor)
         {
         	rightTalon2->SetFeedbackDevice(CANTalon::QuadEncoder);
@@ -610,7 +604,6 @@ void DriveTrain::Configure()
         }
         if (myConfig->DriveTrain_RightTalon2_EnablePID)
         {
-        	printf("DT:Configure RT2 PID enabled\n");
         	rightTalon2->SelectProfileSlot(0);
         	rightTalon2->SetP(myConfig->DriveTrain_RightTalon2_Profile_0_PID_P);
         	rightTalon2->SetI(myConfig->DriveTrain_RightTalon2_Profile_0_PID_I);
@@ -648,77 +641,10 @@ void DriveTrain::Configure()
 	}
 }
 
-void DriveTrain::SetDrive_Arcade(float x, float y, bool highRate)
-{
-	float tx, ty;
-
-	tx = Limit(x);
-	ty = Limit(y);
-
-    //printf("DT X %f   Y %f\n",tx,ty);
-
-
-	if (rightTalon1->GetControlMode() != CANSpeedController::kPercentVbus)
-	{
-		positioning = false;
-		Set_VoltageMode();
-	}
-
-	if (ty > 0.0)
-	{
-
-		if (tx > 0.0)
-		{
-			leftMotorOutput = ty - tx;
-			rightMotorOutput = std::max(ty, tx);
-		}
-		else if (tx < 0.0)
-		{
-			leftMotorOutput = std::max(ty, -tx);
-			rightMotorOutput = ty + tx;
-		} else
-		{
-			leftMotorOutput = ty;
-			rightMotorOutput = ty;
-		}
-	}
-	else
-	{
-		if (tx > 0.0)
-		{
-			leftMotorOutput = - std::max(-ty, tx);
-			rightMotorOutput = ty + tx;
-		}
-		else if (tx < 0.0)
-		{
-			leftMotorOutput = ty - tx;
-			rightMotorOutput = - std::max(-ty, -tx);
-		} else
-		{
-			leftMotorOutput = ty;
-			rightMotorOutput = ty;
-		}
-	}
-
-	if (highRate)
-	{
-		leftTalon1->Set(leftMotorOutput*myConfig->DriveTrain_HighSpeed);
-		//leftTalon2->Set(leftMotorOutput*myConfig->DriveTrain_HighSpeed);
-		rightTalon1->Set(rightMotorOutput*myConfig->DriveTrain_HighSpeed);
-		//rightTalon2->Set(rightMotorOutput*myConfig->DriveTrain_HighSpeed);
-	} else
-	{
-		leftTalon1->Set(leftMotorOutput*myConfig->DriveTrain_LowSpeed);
-		//leftTalon2->Set(leftMotorOutput*myConfig->DriveTrain_LowSpeed);
-		rightTalon1->Set(rightMotorOutput*myConfig->DriveTrain_LowSpeed);
-		//rightTalon2->Set(rightMotorOutput*myConfig->DriveTrain_LowSpeed);
-	}
-}
 
 
 void DriveTrain::Stop()
 {
-	printf("FD-STOP\n");
 	leftTalon1->Disable();
 	leftTalon2->Disable();
 	rightTalon1->Disable();
@@ -845,12 +771,232 @@ void DriveTrain::Enable_Auto_Mode()
 	autoEnabled = true;
 }
 
-void DriveTrain::SetDrive_Auto(float move, float rotate)
+void DriveTrain::AutoDrive_SetHeading(float heading)
 {
 
 }
 
+void DriveTrain::AutoDrive_Rotate(float rotate, float speed)
+{
+
+}
+
+void DriveTrain::AutoDrive_SetDistance(float feet)
+{
+
+}
+
+void DriveTrain::AutoDrive_Move(float throttle)
+{
+
+}
+
+
 void DriveTrain::Disable_Auto_Mode()
 {
 	autoEnabled = false;
+}
+
+void DriveTrain::SetDriveType(DriveType type)
+{
+	myType = type;
+	switch (myType)
+	{
+		case DriveType_Arcade:
+			SmartDashboard::PutString("DriveType","Arcade");
+			Preferences::GetInstance()->PutInt("DriveTrain::DriveType",(int) myType);
+			break;
+		case DriveType_Tank:
+			SmartDashboard::PutString("DriveType","Tank");
+			Preferences::GetInstance()->PutInt("DriveTrain::DriveType",(int) myType);
+			break;
+
+		case DriveType_Split:
+			SmartDashboard::PutString("DriveType","Split");
+			Preferences::GetInstance()->PutInt("DriveTrain::DriveType",(int) myType);
+			break;
+		default:
+			SmartDashboard::PutString("DriveType","Invalid");
+			break;
+	}
+}
+
+void DriveTrain::SetDrive(XBOX_AxisState axisState)
+{
+	bool highspeed = false;
+	if (axisState.RTrigger > 0.0)
+	{
+		highspeed = true;
+	} else
+	{
+		highspeed = false;
+	}
+
+	switch (myType)
+	{
+	case DriveType_Arcade:
+			Robot::driveTrain->SetDrive_Arcade(axisState.Raw_LX, axisState.Raw_LY, highspeed);
+		break;
+
+	case DriveType_Tank:
+			Robot::driveTrain->SetDrive_Tank(axisState.Raw_LY, axisState.Raw_RY, highspeed);
+		break;
+
+	case DriveType_Split:
+			Robot::driveTrain->SetDrive_Split(axisState.Raw_LX, axisState.Raw_RY, highspeed);
+		break;
+
+	default:
+
+		break;
+	}
+}
+
+
+void DriveTrain::SetDrive_Arcade(float x, float y, bool highRate)
+{
+	float tx, ty;
+
+	tx = Limit(x);
+	ty = Limit(y);
+
+    printf("Arcade Drive: X %f  Y %f\n",tx,ty);
+
+
+	if (rightTalon1->GetControlMode() != CANSpeedController::kPercentVbus)
+	{
+		positioning = false;
+		Set_VoltageMode();
+	}
+
+	if (ty > 0.0)
+	{
+		if (tx > 0.0)
+		{
+			leftMotorOutput = ty - tx;
+			rightMotorOutput = std::max(ty, tx);
+		}
+		else if (tx < 0.0)
+		{
+			leftMotorOutput = std::max(ty, -tx);
+			rightMotorOutput = ty + tx;
+		} else
+		{
+			leftMotorOutput = ty;
+			rightMotorOutput = ty;
+		}
+	}
+	else
+	{
+		if (tx > 0.0)
+		{
+			leftMotorOutput = - std::max(-ty, tx);
+			rightMotorOutput = ty + tx;
+		}
+		else if (tx < 0.0)
+		{
+			leftMotorOutput = ty - tx;
+			rightMotorOutput = - std::max(-ty, -tx);
+		} else
+		{
+			leftMotorOutput = ty;
+			rightMotorOutput = ty;
+		}
+	}
+
+	if (highRate)
+	{
+		leftTalon1->Set(leftMotorOutput*myConfig->DriveTrain_HighSpeed);
+		rightTalon1->Set(rightMotorOutput*myConfig->DriveTrain_HighSpeed);
+	} else
+	{
+		leftTalon1->Set(leftMotorOutput*myConfig->DriveTrain_LowSpeed);
+		rightTalon1->Set(rightMotorOutput*myConfig->DriveTrain_LowSpeed);
+	}
+}
+
+
+void DriveTrain::SetDrive_Tank(float left, float right, bool highRate)
+{
+	float tx, ty;
+
+	tx = Limit(left);
+	ty = Limit(right);
+
+    printf("Tank Drive: Left %f  Right %f\n",tx,ty);
+
+	leftMotorOutput = tx;
+	rightMotorOutput = ty;
+
+	if (highRate)
+	{
+		leftTalon1->Set(leftMotorOutput*myConfig->DriveTrain_HighSpeed);
+		rightTalon1->Set(rightMotorOutput*myConfig->DriveTrain_HighSpeed);
+	} else
+	{
+		leftTalon1->Set(leftMotorOutput*myConfig->DriveTrain_LowSpeed);
+		rightTalon1->Set(rightMotorOutput*myConfig->DriveTrain_LowSpeed);
+	}
+}
+
+void DriveTrain::SetDrive_Split(float turn, float throttle, bool highRate)
+{
+	float tx, ty;
+
+	tx = Limit(turn);
+	ty = Limit(throttle);
+
+    printf("Split Drive: Turn %f  Throttle %f\n",tx,ty);
+
+
+	if (rightTalon1->GetControlMode() != CANSpeedController::kPercentVbus)
+	{
+		positioning = false;
+		Set_VoltageMode();
+	}
+
+	if (ty > 0.0)
+	{
+		if (tx > 0.0)
+		{
+			leftMotorOutput = ty - tx;
+			rightMotorOutput = std::max(ty, tx);
+		}
+		else if (tx < 0.0)
+		{
+			leftMotorOutput = std::max(ty, -tx);
+			rightMotorOutput = ty + tx;
+		} else
+		{
+			leftMotorOutput = ty;
+			rightMotorOutput = ty;
+		}
+	}
+	else
+	{
+		if (tx > 0.0)
+		{
+			leftMotorOutput = - std::max(-ty, tx);
+			rightMotorOutput = ty + tx;
+		}
+		else if (tx < 0.0)
+		{
+			leftMotorOutput = ty - tx;
+			rightMotorOutput = - std::max(-ty, -tx);
+		} else
+		{
+			leftMotorOutput = ty;
+			rightMotorOutput = ty;
+		}
+	}
+
+	if (highRate)
+	{
+		leftTalon1->Set(leftMotorOutput*myConfig->DriveTrain_HighSpeed);
+		rightTalon1->Set(rightMotorOutput*myConfig->DriveTrain_HighSpeed);
+	} else
+	{
+		leftTalon1->Set(leftMotorOutput*myConfig->DriveTrain_LowSpeed);
+		rightTalon1->Set(rightMotorOutput*myConfig->DriveTrain_LowSpeed);
+	}
 }

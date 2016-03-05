@@ -22,7 +22,7 @@ void Teleop_Drive::Initialize() {
 // Called repeatedly when this Command is scheduled to run
 void Teleop_Drive::Execute() {
 	axisState = Robot::oi->getDriverInterface()->Get_AxisState();
-	if (axisState.RTrigger > 0.0)
+/*	if (axisState.RTrigger > 0.0)
 	{
 		Robot::driveTrain->SetDrive_Arcade(axisState.Raw_LX,
 				axisState.Raw_RY, true);
@@ -31,7 +31,8 @@ void Teleop_Drive::Execute() {
 		Robot::driveTrain->SetDrive_Arcade(axisState.Raw_LX,
 				axisState.Raw_RY, false);
 	}
-
+*/
+	Robot::driveTrain->SetDrive(axisState);
 
 }
 

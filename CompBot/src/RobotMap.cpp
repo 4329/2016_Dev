@@ -35,7 +35,7 @@ std::shared_ptr<PowerDistributionPanel> RobotMap::pDPPowerDistributionPanel;
 std::shared_ptr<Encoder> RobotMap::pivotEncoder;
 std::shared_ptr<AnalogInput> RobotMap::sensorIRdSensor;
 std::shared_ptr<AnalogInput> RobotMap::sensorIRdSensorFront;
-
+std::shared_ptr<AnalogInput> RobotMap::pressureSensor;
 
 void RobotMap::init() {
     LiveWindow *lw = LiveWindow::GetInstance();
@@ -99,15 +99,21 @@ void RobotMap::init() {
     		Preferences::GetInstance()->GetInt("Scaler::Stage2::ForwardChannel",6)));
     lw->AddActuator("Scaler2", "scalerStage2", scalerStage2Solenoid);
 
-    pivotEncoder.reset(new Encoder(Preferences::GetInstance()->GetInt("Pivot::Enc::ChannelA",0),
-    		Preferences::GetInstance()->GetInt("Pivot::Enc::ChannelB",1),
-			Preferences::GetInstance()->GetBoolean("Pivot::Enc::IsReversed",false),Encoder::EncodingType::k4X));
+    pivotEncoder.reset(new Encoder(Preferences::GetInstance()->GetInt("Pivot::Enc::ChannelA",8),
+    		Preferences::GetInstance()->GetInt("Pivot::Enc::ChannelB",9),
+			Preferences::GetInstance()->GetBoolean("Pivot::Enc::IsReversed",true),Encoder::EncodingType::k4X));
+    lw->AddSensor("Intake", "PivotSensor", pivotEncoder);
 
-    sensorIRdSensorFront.reset(new AnalogInput(0));
+
+    sensorIRdSensorFront.reset(new AnalogInput(2));
     lw->AddSensor("IR", "SensorFront", sensorIRdSensorFront);
 
     sensorIRdSensor.reset(new AnalogInput(3));
     lw->AddSensor("IR", "Sensor", sensorIRdSensor);
+
+    pressureSensor.reset(new AnalogInput(0));
+    lw->AddSensor("Air","Pressure", pressureSensor);
+
 
 
     pDPPowerDistributionPanel.reset(new PowerDistributionPanel(Preferences::GetInstance()->GetInt("PDP::CANID",0)));
