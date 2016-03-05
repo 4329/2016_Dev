@@ -46,6 +46,7 @@ public:
 	static std::shared_ptr<Encoder> pivotEncoder;
 	static std::shared_ptr<AnalogInput> sensorIRdSensor;
 	static std::shared_ptr<AnalogInput> sensorIRdSensorFront;
+	static std::shared_ptr<AnalogInput> sensorIRdSensorTower;
 	static std::shared_ptr<AnalogInput> pressureSensor;
 
 	static std::shared_ptr<AHRS> imu;

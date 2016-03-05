@@ -25,6 +25,7 @@ private:
 
 	std::shared_ptr<IR_Sensor> IR_Front;
 	std::shared_ptr<IR_Sensor> IR_Shooter;
+	std::shared_ptr<IR_Sensor> IR_Tower;
 	std::shared_ptr<PowerDistributionPanel> _pDp;
 	std::shared_ptr<AnalogInput> pressure;
 	std::shared_ptr<Encoder>  pivotEnc;
@@ -57,6 +58,8 @@ public:
     void SetShooterIn();
     void SetShooterOut();
     void StoreCalibration();
+
+    bool TowerInRange();
 
     float GetAirPressure();
 

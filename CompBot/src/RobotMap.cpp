@@ -35,6 +35,7 @@ std::shared_ptr<PowerDistributionPanel> RobotMap::pDPPowerDistributionPanel;
 std::shared_ptr<Encoder> RobotMap::pivotEncoder;
 std::shared_ptr<AnalogInput> RobotMap::sensorIRdSensor;
 std::shared_ptr<AnalogInput> RobotMap::sensorIRdSensorFront;
+std::shared_ptr<AnalogInput> RobotMap::sensorIRdSensorTower;
 std::shared_ptr<AnalogInput> RobotMap::pressureSensor;
 std::shared_ptr<AHRS> RobotMap::imu;
 
@@ -106,6 +107,9 @@ void RobotMap::init() {
 			Preferences::GetInstance()->GetBoolean("Pivot::Enc::IsReversed",true),Encoder::EncodingType::k4X));
     lw->AddSensor("Intake", "PivotSensor", pivotEncoder);
 
+
+    sensorIRdSensorTower.reset(new AnalogInput(1));
+    lw->AddSensor("IR", "Tower", sensorIRdSensorTower);
 
     sensorIRdSensorFront.reset(new AnalogInput(2));
     lw->AddSensor("IR", "SensorFront", sensorIRdSensorFront);

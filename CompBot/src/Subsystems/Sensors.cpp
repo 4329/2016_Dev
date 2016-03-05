@@ -21,6 +21,8 @@ Sensors::Sensors() : Subsystem("Sensors"), Configurable("Sensors") {
     pivotEnc = RobotMap::pivotEncoder;
     IR_Front.reset( new IR_Sensor(RobotMap::sensorIRdSensorFront, "Front"));
     IR_Shooter.reset( new IR_Sensor(RobotMap::sensorIRdSensor, "Shooter"));
+    IR_Tower.reset(new IR_Sensor(RobotMap::sensorIRdSensorTower, "Tower"));
+
     pressure = RobotMap::pressureSensor;
     _pDp = RobotMap::pDPPowerDistributionPanel;
     imu.reset(new IMU());
@@ -40,6 +42,7 @@ void Sensors::RetrieveConfig()
 {
 	IR_Front->RetrieveConfig();
 	IR_Shooter->RetrieveConfig();
+	IR_Tower->RetrieveConfig();
 	imu->RetrieveConfig();
 	Pivot_Enc_ChannelA = Preferences::GetInstance()->GetInt("Pivot::Enc::ChannelA",8);
 	Pivot_Enc_ChannelB = Preferences::GetInstance()->GetInt("Pivot::Enc::ChannelB",9);
@@ -53,6 +56,7 @@ void Sensors::SaveConfig()
 {
 	IR_Front->SaveConfig();
 	IR_Shooter->SaveConfig();
+	IR_Tower->SaveConfig();
 	imu->SaveConfig();
 	Preferences::GetInstance()->PutInt("Pivot::Enc::ChannelA",Pivot_Enc_ChannelA);
 	Preferences::GetInstance()->PutInt("Pivot::Enc::ChannelB",Pivot_Enc_ChannelB);
@@ -67,6 +71,7 @@ void Sensors::Configure()
 {
 	IR_Front->Configure();
 	IR_Shooter->Configure();
+	IR_Tower->Configure();
 	imu->Configure();
 }
 
@@ -74,6 +79,7 @@ void Sensors::CreateConfig()
 {
 	IR_Front->CreateConfig();
 	IR_Shooter->CreateConfig();
+	IR_Tower->CreateConfig();
 	imu->CreateConfig();
 	Preferences::GetInstance()->GetInt("Pivot::Enc::ChannelA",8);
 	Preferences::GetInstance()->GetInt("Pivot::Enc::ChannelB",9);
@@ -102,6 +108,15 @@ bool Sensors::RobotHasBall()
 bool Sensors::IsBallAtShooter()
 {
 	if (IR_Shooter->IsInRange())
+	{
+		return true;
+	}
+	return false;
+}
+
+bool Sensors::TowerInRange()
+{
+	if (IR_Tower->IsInRange())
 	{
 		return true;
 	}

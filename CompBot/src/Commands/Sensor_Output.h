@@ -25,6 +25,7 @@ private:
 	int count;
 	bool hasBall;
 	bool IsBallAtShooter;
+	bool IsTowerInRange;
 	float airp;
 	bool isHome;
 	bool isIntake;
