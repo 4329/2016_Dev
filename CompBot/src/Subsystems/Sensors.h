@@ -29,7 +29,7 @@ private:
 	std::shared_ptr<PowerDistributionPanel> _pDp;
 	std::shared_ptr<AnalogInput> pressure;
 	std::shared_ptr<Encoder>  pivotEnc;
-	std::shared_ptr<IMU> imu;
+
 
 
 	int    Pivot_Enc_ChannelA;
@@ -38,6 +38,7 @@ private:
 	float  Pivot_PivotOffset;
 	float  Pivot_LowOffset;
 	bool   Pivot_PosIsUp;
+	float  TowerInRangeRumble;
 
 
 public:
@@ -47,7 +48,7 @@ public:
 	virtual void RetrieveConfig();
 	virtual void Configure();
 	virtual void SaveConfig();
-	virtual void CreateConfig();
+	virtual void LiveConfigure();
 
     void InitDefaultCommand();
 
@@ -60,6 +61,7 @@ public:
     void StoreCalibration();
 
     bool TowerInRange();
+    float GetTowerInRangeRumble();
 
     float GetAirPressure();
 
@@ -67,7 +69,7 @@ public:
     bool IsPivotAtIntake();
     bool IsPivotAtLow();
 
-    std::shared_ptr<IMU> Get_IMU();
+	std::shared_ptr<IMU> imu;
 };
 
 #endif

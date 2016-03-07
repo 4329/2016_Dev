@@ -24,9 +24,7 @@ Brake::Brake() : Subsystem("Brake"), Configurable("Brake") {
 	brakeSolenoid = RobotMap::brakeSolenoid;
 	ActiveIsEngaged = true;
 
-	if (!ConfigExists()) CreateConfig();
-
-    RetrieveConfig();
+	CheckConfig("PCMID");
 	Configure();
 }
     
@@ -54,11 +52,10 @@ void Brake::Configure()
 	// Do Nothing.
 }
 
-void Brake::CreateConfig()
+void Brake::LiveConfigure()
 {
-	Preferences::GetInstance()->PutInt("Brake::PCMID",0);
-	Preferences::GetInstance()->PutInt("Brake::Channel",4);
-	Preferences::GetInstance()->PutBoolean("Brake::ActiveIsEngaged",false);
+	RetrieveConfig();
+	Configure();
 }
 
 

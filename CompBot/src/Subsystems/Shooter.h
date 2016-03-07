@@ -40,7 +40,7 @@ public:
 	virtual void RetrieveConfig();
 	virtual void Configure();
 	virtual void SaveConfig();
-	virtual void CreateConfig();
+	virtual void LiveConfigure();
 
 	void Fire(float value);
 	int  Fire1();

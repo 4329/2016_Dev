@@ -26,10 +26,9 @@ PID_Controlled_Variable::PID_Controlled_Variable(string name, std::shared_ptr<PI
 	_source = source;
 	myConfig = new PID_C_V_Config();
 
-    if (!ConfigExists()) CreateConfig();
+    CheckConfig("p");
 
     _controller.reset(new PIDController(1.0,0.01,0,0.01,source.get(),this));
-    RetrieveConfig();
     Configure();
 }
 
@@ -80,22 +79,10 @@ void PID_Controlled_Variable::SaveConfig()
 	Preferences::GetInstance()->PutFloat(_prefix + prefSep + string("percentTolerance"),myConfig->percentTolerance);
 }
 
-void PID_Controlled_Variable::CreateConfig()
+void PID_Controlled_Variable::LiveConfigure()
 {
-	Preferences::GetInstance()->PutFloat(_prefix + prefSep + string("p"),1.0);
-	Preferences::GetInstance()->PutFloat(_prefix + prefSep + string("i"),0.01);
-	Preferences::GetInstance()->PutFloat(_prefix + prefSep + string("d"),0.0);
-	Preferences::GetInstance()->PutFloat(_prefix + prefSep + string("f"),0.01);
-
-	Preferences::GetInstance()->PutFloat(_prefix + prefSep + string("minInput"),1);
-	Preferences::GetInstance()->PutFloat(_prefix + prefSep + string("maxInput"),1000);
-	Preferences::GetInstance()->PutFloat(_prefix + prefSep + string("minOutput"),1);
-	Preferences::GetInstance()->PutFloat(_prefix + prefSep + string("maxOutput"),1000);
-
-	Preferences::GetInstance()->PutFloat(_prefix + prefSep + string("tolerance"),0.1);
-	Preferences::GetInstance()->PutFloat(_prefix + prefSep + string("absTolerance"),0.1);
-	Preferences::GetInstance()->PutFloat(_prefix + prefSep + string("percentTolerance"),0.01);
-	SaveConfig();
+	RetrieveConfig();
+	Configure();
 }
 
 

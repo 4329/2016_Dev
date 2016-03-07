@@ -68,6 +68,7 @@ void RobotMap::init() {
     intakeTalon.reset(new CANTalon(Preferences::GetInstance()->GetInt("Intake::Talon::CANID",5)));
     lw->AddActuator("Intake", "IntakeTalon", intakeTalon);
     
+    // Top and bottom in the shooter code are swapped.  Will address later when time permits.
     shooterTopTalon.reset(new CANTalon(Preferences::GetInstance()->GetInt("Shooter::TopTalon::CANID",8))); // Top Shooter
     lw->AddActuator("Shooter", "ShooterTop", shooterTopTalon);
 
@@ -77,13 +78,13 @@ void RobotMap::init() {
 
     theCompressor.reset(new Compressor(Preferences::GetInstance()->GetInt("Compressor::PCMID",0)));
 
-    pivotStage1Solenoid.reset(new Solenoid(Preferences::GetInstance()->GetInt("Pivot::PCMID",0),
-    		Preferences::GetInstance()->GetInt("Pivot::Stage1::Channel",0)));
-    lw->AddActuator("Pivot1", "PivotStage1", pivotStage1Solenoid);
+    scalerStage1Solenoid.reset(new Solenoid(Preferences::GetInstance()->GetInt("Scaler::PCMID",0),
+    		Preferences::GetInstance()->GetInt("Scaler::Stage1::Channel",0)));
+    lw->AddActuator("Scaler1", "scalerStage1", scalerStage1Solenoid);
 
-    pivotStage2Solenoid.reset(new Solenoid(Preferences::GetInstance()->GetInt("Pivot::PCMID",0),
-			Preferences::GetInstance()->GetInt("Pivot::Stage2::Channel",1)));
-    lw->AddActuator("Pivot2", "PivotStage2", pivotStage2Solenoid);
+    scalerStage2Solenoid.reset(new Solenoid(Preferences::GetInstance()->GetInt("Scaler::PCMID",0),
+    		Preferences::GetInstance()->GetInt("Scaler::Stage2::ForwardChannel",1)));
+    lw->AddActuator("Scaler2", "scalerStage2", scalerStage2Solenoid);
 
     stabilizerSolenoid.reset(new DoubleSolenoid(Preferences::GetInstance()->GetInt("Stabilizer::PCMID",0),
     		Preferences::GetInstance()->GetInt("Stabilizer::ForwardChannel",2),
@@ -94,19 +95,20 @@ void RobotMap::init() {
     		Preferences::GetInstance()->GetInt("Brake::Channel",4)));
     lw->AddActuator("Brake", "Brake", brakeSolenoid);
 
-    scalerStage1Solenoid.reset(new Solenoid(Preferences::GetInstance()->GetInt("Scaler::PCMID",0),
-    		Preferences::GetInstance()->GetInt("Scaler::Stage1::Channel",5)));
-    lw->AddActuator("Scaler1", "scalerStage1", scalerStage1Solenoid);
+    pivotStage1Solenoid.reset(new Solenoid(Preferences::GetInstance()->GetInt("Pivot::PCMID",0),
+    		Preferences::GetInstance()->GetInt("Pivot::Stage1::Channel",5)));
+    lw->AddActuator("Pivot1", "PivotStage1", pivotStage1Solenoid);
 
-    scalerStage2Solenoid.reset(new Solenoid(Preferences::GetInstance()->GetInt("Scaler::PCMID",0),
-    		Preferences::GetInstance()->GetInt("Scaler::Stage2::ForwardChannel",6)));
-    lw->AddActuator("Scaler2", "scalerStage2", scalerStage2Solenoid);
+    pivotStage2Solenoid.reset(new Solenoid(Preferences::GetInstance()->GetInt("Pivot::PCMID",0),
+			Preferences::GetInstance()->GetInt("Pivot::Stage2::Channel",6)));
+    lw->AddActuator("Pivot2", "PivotStage2", pivotStage2Solenoid);
+
+    printf("RobotMap Pivot Complete\n");
 
     pivotEncoder.reset(new Encoder(Preferences::GetInstance()->GetInt("Pivot::Enc::ChannelA",8),
     		Preferences::GetInstance()->GetInt("Pivot::Enc::ChannelB",9),
 			Preferences::GetInstance()->GetBoolean("Pivot::Enc::IsReversed",true),Encoder::EncodingType::k4X));
     lw->AddSensor("Intake", "PivotSensor", pivotEncoder);
-
 
     sensorIRdSensorTower.reset(new AnalogInput(1));
     lw->AddSensor("IR", "Tower", sensorIRdSensorTower);
@@ -120,12 +122,9 @@ void RobotMap::init() {
     pressureSensor.reset(new AnalogInput(0));
     lw->AddSensor("Air","Pressure", pressureSensor);
 
-
-
     pDPPowerDistributionPanel.reset(new PowerDistributionPanel(Preferences::GetInstance()->GetInt("PDP::CANID",0)));
     lw->AddSensor("PDP", "PowerDistributionPanel", pDPPowerDistributionPanel);
     
     imu.reset(new AHRS(SPI::Port::kMXP));
     lw->AddSensor("Sensor","IMU",imu);
-
 }

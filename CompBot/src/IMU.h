@@ -23,7 +23,7 @@ public:
 	virtual void RetrieveConfig();
 	virtual void Configure();
 	virtual void SaveConfig();
-	virtual void CreateConfig();
+	virtual void LiveConfigure();
 
     bool   GetRPY(float &roll, float &pitch, float &yaw);
     float  GetCompassHeading();

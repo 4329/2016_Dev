@@ -43,7 +43,7 @@ public:
 	virtual void RetrieveConfig();
 	virtual void Configure();
 	virtual void SaveConfig();
-	virtual void CreateConfig();
+	virtual void LiveConfigure();
 
 	void SetIntake(bool in, float percent_speed = 1.0);
 	void StopIntake();

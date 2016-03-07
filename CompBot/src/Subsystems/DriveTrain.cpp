@@ -43,9 +43,7 @@ DriveTrain::DriveTrain() : Subsystem("DriveTrain"), Configurable("DriveTrain") {
 	hasMoved = false;
 	myType = DriveType_Split;
 
-	if (!ConfigExists()) CreateConfig();
-
-    RetrieveConfig();
+	CheckConfig("HighSpeed");
 	Configure();
 }
 
@@ -192,6 +190,7 @@ void DriveTrain::SaveConfig()
 	Preferences::GetInstance()->PutFloat("DriveTrain::HighSpeed",myConfig->DriveTrain_HighSpeed);
 	Preferences::GetInstance()->PutFloat("DriveTrain::LowSpeed",myConfig->DriveTrain_LowSpeed);
 	Preferences::GetInstance()->PutFloat("DriveTrain::QuadEncoder::PulsesPerDegree",myConfig->DriveTrain_QuadEncoder_PulsesPerDegree);
+	Preferences::GetInstance()->PutInt("DriveTrain::DriveType",(int) myType);
 
 	Preferences::GetInstance()->PutBoolean("DriveTrain::RightTalon1::Enabled",myConfig->DriveTrain_RightTalon1_Enabled);
 	Preferences::GetInstance()->PutInt("DriveTrain::RightTalon1::CANID",myConfig->DriveTrain_RightTalon1_CANID);
@@ -303,9 +302,10 @@ void DriveTrain::SaveConfig()
 
 }
 
-
+/*
 void DriveTrain::CreateConfig()
 {
+	printf("Creating DriveTrain Config\n");
     Preferences::GetInstance()->GetFloat("DriveTrain::HighSpeed",1.0);
 	Preferences::GetInstance()->GetFloat("DriveTrain::LowSpeed",0.75);
 	Preferences::GetInstance()->GetFloat("DriveTrain::QuadEncoder::PulsesPerDegree");
@@ -422,7 +422,7 @@ void DriveTrain::CreateConfig()
     Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon2::MasterCANID",3);
 
 }
-
+*/
 
 
 void DriveTrain::Configure()
@@ -641,7 +641,11 @@ void DriveTrain::Configure()
 	}
 }
 
-
+void DriveTrain::LiveConfigure()
+{
+	RetrieveConfig();
+	Configure();
+}
 
 void DriveTrain::Stop()
 {

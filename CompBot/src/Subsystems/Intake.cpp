@@ -20,9 +20,7 @@ Intake::Intake() : Subsystem("Intake") , Configurable("Intake") {
 
     intakeTalon = RobotMap::intakeTalon;
 
-    if (!ConfigExists()) CreateConfig();
-
-    RetrieveConfig();
+    CheckConfig("InSpeed");
 	Configure();
 
 }
@@ -65,6 +63,13 @@ void Intake::Configure()
 	}
 }
 
+void Intake::LiveConfigure()
+{
+	RetrieveConfig();
+	Configure();
+}
+
+
 void Intake::SaveConfig()
 {
 	Preferences::GetInstance()->PutFloat("Intake::InSpeed",Intake_InSpeed);
@@ -77,17 +82,20 @@ void Intake::SaveConfig()
 	Preferences::GetInstance()->PutDouble("Intake::Talon::VoltRampRate",Intake_Talon_VoltRampRate);
 }
 
+/*
 void Intake::CreateConfig()
 {
-	Preferences::GetInstance()->GetFloat("Intake::InSpeed",-1.0);
-	Preferences::GetInstance()->GetFloat("Intake::OutSpeed",1.0);
+	Preferences::GetInstance()->PutFloat("Intake::InSpeed",-1.0);
+	Preferences::GetInstance()->PutFloat("Intake::OutSpeed",1.0);
 
-	Preferences::GetInstance()->GetBoolean("Intake::Talon::Enabled",true);
-	Preferences::GetInstance()->GetInt("Intake::Talon::CANID",5);
-	Preferences::GetInstance()->GetBoolean("Intake::Talon::Reversed",false);
-	Preferences::GetInstance()->GetBoolean("Intake::Talon::EnableVoltRampRate",false);
-	Preferences::GetInstance()->GetDouble("Intake::Talon::VoltRampRate",5.0);
+	Preferences::GetInstance()->PutBoolean("Intake::Talon::Enabled",true);
+	Preferences::GetInstance()->PutInt("Intake::Talon::CANID",5);
+	Preferences::GetInstance()->PutBoolean("Intake::Talon::Reversed",false);
+	Preferences::GetInstance()->PutBoolean("Intake::Talon::EnableVoltRampRate",false);
+	Preferences::GetInstance()->PutDouble("Intake::Talon::VoltRampRate",5.0);
 }
+
+*/
 
 void Intake::SetIntake(bool in, float percent_speed)
 {

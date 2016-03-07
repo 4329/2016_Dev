@@ -17,9 +17,13 @@ Configurable::~Configurable()
 	// Do nothing
 }
 
-bool Configurable::ConfigExists()
+bool Configurable::ConfigExists(std::string theKey)
 {
-	return Preferences::GetInstance()->ContainsKey(_prefix);
+	return Preferences::GetInstance()->ContainsKey(_prefix + prefSep + theKey);
 }
 
-
+void Configurable::CheckConfig(std::string theKey)
+{
+	this->RetrieveConfig();
+	if (!ConfigExists(theKey)) this->SaveConfig();
+}

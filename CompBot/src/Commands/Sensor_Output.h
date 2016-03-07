@@ -30,6 +30,7 @@ private:
 	bool isHome;
 	bool isIntake;
 	bool isLow;
+	float TowerInRangeRumble;
 
 };
 

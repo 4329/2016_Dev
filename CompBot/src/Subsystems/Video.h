@@ -34,13 +34,16 @@ private:
 	std::string FrontName;
 	std::string RearName;
 
+	std::shared_ptr<USBCamera> front;
+	std::shared_ptr<USBCamera> rear;
+
 public:
 	Video();
 	virtual ~Video();
 	virtual void RetrieveConfig();
 	virtual void Configure();
 	virtual void SaveConfig();
-	virtual void CreateConfig();
+	virtual void LiveConfigure();
 
     void InitDefaultCommand();
 
@@ -49,8 +52,6 @@ public:
     bool IsFrontSelected();
     void SelectRear();
     bool IsRearSelected();
-
-
 };
 
 #endif

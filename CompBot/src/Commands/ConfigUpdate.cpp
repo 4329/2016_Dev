@@ -36,6 +36,7 @@ ConfigUpdate::ConfigUpdate(): Command() {
 	Requires(Robot::pivot.get());
 	Requires(Robot::shooter.get());
 	Requires(Robot::brake.get());
+	Requires(Robot::scaler.get());
 	Requires(Robot::stabilizer.get());
 	Requires(Robot::sensorPkg.get());
 	Requires(Robot::video.get());
@@ -48,45 +49,16 @@ void ConfigUpdate::Initialize() {
 
 // Called repeatedly when this Command is scheduled to run
 void ConfigUpdate::Execute() {
-	Robot::driveTrain->RetrieveConfig();
-	Robot::driveTrain->SaveConfig();
-	Robot::driveTrain->Configure();
-
-	Robot::intake->RetrieveConfig();
-	Robot::intake->SaveConfig();
-	Robot::intake->Configure();
-
-	Robot::pivot->RetrieveConfig();
-	Robot::pivot->SaveConfig();
-	Robot::pivot->Configure();
-
-	Robot::shooter->RetrieveConfig();
-	Robot::shooter->SaveConfig();
-	Robot::shooter->Configure();
-
-	Robot::brake->RetrieveConfig();
-	Robot::brake->SaveConfig();
-	Robot::brake->Configure();
-
-	Robot::stabilizer->RetrieveConfig();
-	Robot::stabilizer->SaveConfig();
-	Robot::stabilizer->Configure();
-
-	Robot::sensorPkg->RetrieveConfig();
-	Robot::sensorPkg->SaveConfig();
-	Robot::sensorPkg->Configure();
-
-	Robot::video->RetrieveConfig();
-	Robot::video->SaveConfig();
-	Robot::video->Configure();
-
-	Robot::oi->getDriverInterface()->RetrieveConfig();
-	Robot::oi->getDriverInterface()->SaveConfig();
-	Robot::oi->getDriverInterface()->Configure();
-
-	Robot::oi->getOperatorInterface()->RetrieveConfig();
-	Robot::oi->getOperatorInterface()->SaveConfig();
-	Robot::oi->getOperatorInterface()->Configure();
+	Robot::driveTrain->LiveConfigure();
+	Robot::intake->LiveConfigure();
+	Robot::pivot->LiveConfigure();
+	Robot::shooter->LiveConfigure();
+	Robot::brake->LiveConfigure();
+	Robot::scaler->LiveConfigure();
+	Robot::stabilizer->LiveConfigure();
+	Robot::sensorPkg->LiveConfigure();
+	Robot::video->LiveConfigure();
+	Robot::oi->LiveConfigure();
 }
 
 // Make this return true when this Command no longer needs to run execute()

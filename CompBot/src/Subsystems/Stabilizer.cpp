@@ -18,9 +18,7 @@ Stabilizer::Stabilizer() : Subsystem("Stabilizer"), Configurable("Stabilizer") {
 	StabilizerSolenoid = RobotMap::stabilizerSolenoid;
 	ForwardIsDeployed = true;
 
-	if (!ConfigExists()) CreateConfig();
-
-    RetrieveConfig();
+	CheckConfig("PCMID");
 	Configure();
 }
     
@@ -50,12 +48,10 @@ void Stabilizer::Configure()
 	// Do Nothing.
 }
 
-void Stabilizer::CreateConfig()
+void Stabilizer::LiveConfigure()
 {
-	Preferences::GetInstance()->PutInt("Stabilizer::PCMID",0);
-	Preferences::GetInstance()->PutInt("Stabilizer::ForwardChannel",2);
-	Preferences::GetInstance()->PutInt("Stabilizer::ReverseChannel",3);
-	Preferences::GetInstance()->PutBoolean("Stabilizer::ForwardIsDeployed",false);
+	RetrieveConfig();
+	Configure();
 }
 
 

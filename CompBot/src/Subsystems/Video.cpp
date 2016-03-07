@@ -33,10 +33,7 @@ Video::Video() : Subsystem("Video"), Configurable("Video") {
 	FrontSize = 1;  // 0 = 640x480  1 = 320x240  2 = 160x120
 	RearSize  = 1;
 
-
-	if (!ConfigExists()) CreateConfig();
-
-    RetrieveConfig();
+	CheckConfig("Front::Quality");
 	Configure();
 }
     
@@ -53,8 +50,8 @@ void Video::RetrieveConfig()
 	FrontSize = Preferences::GetInstance()->GetInt(_prefix + prefSep + "Front::Size",1);
 	RearSize = Preferences::GetInstance()->GetInt(_prefix + prefSep + "Rear::Size",1);
 
-	FrontEnable = Preferences::GetInstance()->GetBoolean(_prefix + prefSep + "Front::Enable",true);
-	RearEnable = Preferences::GetInstance()->GetBoolean(_prefix + prefSep + "Rear::Enable",true);
+	FrontEnable = Preferences::GetInstance()->GetBoolean(_prefix + prefSep + "Front::Enable",false);
+	RearEnable = Preferences::GetInstance()->GetBoolean(_prefix + prefSep + "Rear::Enable",false);
 
 	FrontName = Preferences::GetInstance()->GetString(_prefix + prefSep + "Front::Name","cam0");
 	RearName = Preferences::GetInstance()->GetString(_prefix + prefSep + "Rear::Name","cam1");
@@ -80,6 +77,16 @@ void Video::Configure()
 {
 	if (FrontEnable)
 	{
+		front.reset(new USBCamera(FrontName,false));
+	}
+
+	if (RearEnable)
+	{
+		rear.reset(new USBCamera(RearName,false));
+	}
+
+	if (FrontEnable)
+	{
 		SelectFront();
 	} else if (RearEnable)
 	{
@@ -87,19 +94,16 @@ void Video::Configure()
 	}
 }
 
-void Video::CreateConfig()
+void Video::LiveConfigure()
 {
-	Preferences::GetInstance()->GetFloat(_prefix + prefSep + "Front::Quality",50);
-	Preferences::GetInstance()->GetFloat(_prefix + prefSep + "Rear::Quality",50);
-
-	Preferences::GetInstance()->GetInt(_prefix + prefSep + "Front::Size",1);
-	Preferences::GetInstance()->GetInt(_prefix + prefSep + "Rear::Size",1);
-
-	Preferences::GetInstance()->GetBoolean(_prefix + prefSep + "Front::Enable",true);
-	Preferences::GetInstance()->GetBoolean(_prefix + prefSep + "Rear::Enable",true);
-
-	Preferences::GetInstance()->GetString(_prefix + prefSep + "Front::Name","cam0");
-	Preferences::GetInstance()->GetString(_prefix + prefSep + "Rear::Name","cam1");
+	RetrieveConfig();
+	if (FrontEnable)
+	{
+		SelectFront();
+	} else if (RearEnable)
+	{
+		SelectRear();
+	}
 }
 
 
@@ -125,7 +129,7 @@ void Video::SelectFront()
 	{
 		CameraServer::GetInstance()->SetQuality(FrontQuality);
 		CameraServer::GetInstance()->SetQuality(FrontSize);
-		CameraServer::GetInstance()->StartAutomaticCapture(FrontName.c_str());
+		CameraServer::GetInstance()->StartAutomaticCapture(front);
 		FrontActive = true;
 	}
 }
@@ -141,7 +145,7 @@ void Video::SelectRear()
 	{
 		CameraServer::GetInstance()->SetQuality(RearQuality);
 		CameraServer::GetInstance()->SetQuality(RearSize);
-		CameraServer::GetInstance()->StartAutomaticCapture(RearName.c_str());
+		CameraServer::GetInstance()->StartAutomaticCapture(rear);
 		FrontActive = false;
 	}
 }

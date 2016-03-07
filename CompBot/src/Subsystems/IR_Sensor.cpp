@@ -4,16 +4,13 @@
 #include "../RobotMap.h"
 #include "math.h"
 
-IR_Sensor::IR_Sensor(std::shared_ptr<AnalogInput> sensor, std::string name) : Configurable("IR_Sensor" + prefSep + name)  {
+IR_Sensor::IR_Sensor(std::shared_ptr<AnalogInput> sensor, std::string name) : Configurable(name)  {
 	theSensor = sensor;
 	myName = name;
 
-    if (!ConfigExists()) CreateConfig();
-
-    RetrieveConfig();
+    CheckConfig("DistThreshold");
 	Configure();
 }
-
 
 IR_Sensor::~IR_Sensor()
 {
@@ -44,7 +41,7 @@ bool IR_Sensor::IsInRange() {
 
 void IR_Sensor::RetrieveConfig()
 {
-	distThreshold = Preferences::GetInstance()->GetFloat("IR_Sensor" + prefSep + myName + prefSep + "DistThreshold",1.5);
+	distThreshold = Preferences::GetInstance()->GetFloat(myName + prefSep + "DistThreshold",1.5);
 }
 
 void IR_Sensor::Configure()
@@ -52,33 +49,35 @@ void IR_Sensor::Configure()
 
 }
 
-void IR_Sensor::SaveConfig()
+void IR_Sensor::LiveConfigure()
 {
-	Preferences::GetInstance()->PutFloat("IR_Sensor" + prefSep + myName + prefSep + "DistThreshold",distThreshold);
+	RetrieveConfig();
+	Configure();
 }
 
-void IR_Sensor::CreateConfig()
+void IR_Sensor::SaveConfig()
 {
-	Preferences::GetInstance()->GetFloat("IR_Sensor" + prefSep + myName + prefSep + "DistThreshold",1.5);
+	Preferences::GetInstance()->PutFloat(myName + prefSep + "DistThreshold",distThreshold);
 }
+
 
 void  IR_Sensor::SetIn()
 {
 	In = theSensor->GetVoltage();
-	SmartDashboard::PutNumber("IR_Sensor" + prefSep + myName + " In Voltage",In);
+	SmartDashboard::PutNumber(myName + " In Voltage",In);
 }
 
 void  IR_Sensor::SetOut()
 {
 	Out = theSensor->GetVoltage();
-	SmartDashboard::PutNumber("IR_Sensor" + prefSep + myName + " Out Voltage",Out);
+	SmartDashboard::PutNumber(myName + " Out Voltage",Out);
 }
 
 void  IR_Sensor::StoreCalibration()
 {
 	float temp = (In - Out)/2;
 	distThreshold = In - temp;
-	Preferences::GetInstance()->PutFloat("IR_Sensor" + prefSep + myName + prefSep + "DistThreshold",distThreshold);
+	Preferences::GetInstance()->PutFloat(myName + prefSep + "DistThreshold",distThreshold);
 }
 
 void  IR_Sensor::Signature()

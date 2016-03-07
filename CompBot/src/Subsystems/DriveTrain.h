@@ -66,8 +66,8 @@ public:
 	virtual ~DriveTrain();
 	virtual void RetrieveConfig();
 	virtual void Configure();
+	virtual void LiveConfigure();
 	virtual void SaveConfig();
-	virtual void CreateConfig();
 
 	void InitDefaultCommand();
 

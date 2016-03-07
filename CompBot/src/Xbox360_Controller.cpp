@@ -52,10 +52,8 @@ XBOX360_Controller::XBOX360_Controller(std::string name, uint32_t port) :
 	flipRSx = false;
 	flipLSx = false;
 
-	if (!ConfigExists()) CreateConfig();
-
-	RetrieveConfig();
-
+	CheckConfig("DeadZone::LeftStick::X");
+	Configure();
 }
 
 
@@ -82,9 +80,9 @@ void XBOX360_Controller::RetrieveConfig()
 	RSyDZ = Preferences::GetInstance()->GetFloat(_prefix + prefSep + std::string("XBox::DeadZone::RightStick::Y"),0.05);
 	LtrigDZ = Preferences::GetInstance()->GetFloat(_prefix + prefSep + std::string("XBox::DeadZone::LeftTrigger"),0.05);
 	RtrigDZ = Preferences::GetInstance()->GetFloat(_prefix + prefSep + std::string("XBox::DeadZone::RightTrigger"),0.05);
-	axisDelay = Preferences::GetInstance()->GetInt(_prefix + prefSep + std::string("XBox::AxisDelay"),5);
-	flipRSy = Preferences::GetInstance()->GetBoolean(_prefix + prefSep + std::string("XBox::RightStick::YInverted"),false);
-	flipLSy = Preferences::GetInstance()->GetBoolean(_prefix + prefSep + std::string("XBox::LeftStick::YInverted"),false);
+	axisDelay = Preferences::GetInstance()->GetInt(_prefix + prefSep + std::string("XBox::AxisDelay"),10);
+	flipRSy = Preferences::GetInstance()->GetBoolean(_prefix + prefSep + std::string("XBox::RightStick::YInverted"),true);
+	flipLSy = Preferences::GetInstance()->GetBoolean(_prefix + prefSep + std::string("XBox::LeftStick::YInverted"),true);
 	flipRSx = Preferences::GetInstance()->GetBoolean(_prefix + prefSep + std::string("XBox::RightStick::XInverted"),false);
 	flipLSx = Preferences::GetInstance()->GetBoolean(_prefix + prefSep + std::string("XBox::LeftStick::XInverted"),false);
 }
@@ -104,19 +102,10 @@ void XBOX360_Controller::SaveConfig()
 	Preferences::GetInstance()->PutBoolean(_prefix + prefSep + std::string("XBox::LeftStick::XInverted"),flipLSx);
 }
 
-void XBOX360_Controller::CreateConfig()
+void XBOX360_Controller::LiveConfigure()
 {
-	Preferences::GetInstance()->GetFloat(_prefix + prefSep + std::string("XBox::DeadZone::LeftStick::X"),0.05);
-	Preferences::GetInstance()->GetFloat(_prefix + prefSep + std::string("XBox::DeadZone::LeftStick::Y"),0.05);
-	Preferences::GetInstance()->GetFloat(_prefix + prefSep + std::string("XBox::DeadZone::RightStick::X"),0.05);
-	Preferences::GetInstance()->GetFloat(_prefix + prefSep + std::string("XBox::DeadZone::RightStick::Y"),0.05);
-	Preferences::GetInstance()->GetFloat(_prefix + prefSep + std::string("XBox::DeadZone::LeftTrigger"),0.05);
-	Preferences::GetInstance()->GetFloat(_prefix + prefSep + std::string("XBox::DeadZone::RightTrigger"),0.05);
-	Preferences::GetInstance()->GetInt(_prefix + prefSep + std::string("XBox::AxisDelay"),10);
-	Preferences::GetInstance()->GetBoolean(_prefix + prefSep + std::string("XBox::RightStick::YInverted"),false);
-	Preferences::GetInstance()->GetBoolean(_prefix + prefSep + std::string("XBox::LeftStick::YInverted"),false);
-	Preferences::GetInstance()->GetBoolean(_prefix + prefSep + std::string("XBox::RightStick::XInverted"),false);
-	Preferences::GetInstance()->GetBoolean(_prefix + prefSep + std::string("XBox::LeftStick::XInverted"),false);
+	RetrieveConfig();
+	Configure();
 }
 
 void XBOX360_Controller::Configure()

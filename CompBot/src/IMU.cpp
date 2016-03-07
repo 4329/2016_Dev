@@ -1,17 +1,13 @@
 #include "IMU.h"
 #include "RobotMap.h"
 
-
-
 IMU::IMU() : Configurable("IMU") {
 	_myIMU = RobotMap::imu;
     last_world_linear_accel_x = 0.0f;
     last_world_linear_accel_y = 0.0f;
     last_world_linear_accel_z = 0.0f;
 
-	if (!ConfigExists()) CreateConfig();
-
-    RetrieveConfig();
+	CheckConfig("COLLISION_THRESHOLD_DELTA_G");
 	Configure();
 }
 
@@ -39,17 +35,13 @@ void IMU::SaveConfig()
     Preferences::GetInstance()->PutFloat("IMU::ROT_THRESHOLD_DELTA",ROT_THRESHOLD_DELTA);
 }
 
-void IMU::CreateConfig()
+void IMU::LiveConfigure()
 {
-	Preferences::GetInstance()->GetFloat("IMU::COLLISION_THRESHOLD_DELTA_G",0.5);
-	Preferences::GetInstance()->GetFloat("IMU::MOVE_THRESHOLD_DELTA_MAG",0.25);
-	Preferences::GetInstance()->GetFloat("IMU::ROT_THRESHOLD_DELTA",1.5);
+	RetrieveConfig();
+	Configure();
 }
 
-
-
-
-bool   IMU::GetRPY(float &roll, float &pitch, float &yaw)
+bool IMU::GetRPY(float &roll, float &pitch, float &yaw)
 {
 		if (_myIMU->IsConnected())
 		{

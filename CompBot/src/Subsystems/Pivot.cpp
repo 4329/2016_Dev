@@ -21,11 +21,8 @@ Pivot::Pivot() : Subsystem("Pivot") , Configurable("Pivot") {
     pivotStage1 = RobotMap::pivotStage1Solenoid;
     pivotStage2 = RobotMap::pivotStage2Solenoid;
 
-    if (!ConfigExists()) CreateConfig();
-
-    RetrieveConfig();
+    CheckConfig("PCMID");
 	Configure();
-
 }
 
 void Pivot::InitDefaultCommand() {
@@ -67,13 +64,10 @@ void Pivot::SaveConfig()
 	Preferences::GetInstance()->PutBoolean("Pivot::Stage2::ActiveIsExtended",Pivot_Stage2_ActiveIsExtended);
 }
 
-void Pivot::CreateConfig()
+void Pivot::LiveConfigure()
 {
-	Preferences::GetInstance()->GetInt("Pivot::PCMID",0);
-	Preferences::GetInstance()->GetInt("Pivot::Stage1::Channel",5);
-	Preferences::GetInstance()->GetBoolean("Pivot::Stage1::ActiveIsExtended",false);
-	Preferences::GetInstance()->GetInt("Pivot::Stage2::Channel",6);
-	Preferences::GetInstance()->GetBoolean("Pivot::Stage2::ActiveIsExtended",false);
+	RetrieveConfig();
+	Configure();
 }
 
 
@@ -86,8 +80,6 @@ void Pivot::SetPivotHome()
 void Pivot::SetPivotToHome()
 {
 	printf("Moving Pivot to Home Position\n");
-	//pivotStage1->Set(!Pivot_Stage1_ActiveIsExtended);
-    //pivotStage2->Set(!Pivot_Stage2_ActiveIsExtended);
     RetractPivotStage2();
     RetractPivotStage1();
 }
@@ -104,7 +96,6 @@ bool Pivot::IsPivotAtHome()
 void Pivot::SetPivotIntake()
 {
 	printf("Setting Pivot to Pivot\n");
-	//pivotStage1->Set(Pivot_Stage1_ActiveIsExtended);
 	ExtendPivotStage1();
 	RetractPivotStage2();
 }
@@ -122,9 +113,6 @@ bool Pivot::IsPivotAtIntake()
 void Pivot::SetPivotLow()
 {
 	printf("Setting Pivot to Low\n");
-	//pivotStage1->Set(Pivot_Stage1_ActiveIsExtended);
-	//pivotStage2->Set(Pivot_Stage2_ActiveIsExtended);
-
 	ExtendPivotStage1();
 	ExtendPivotStage2();
 }
@@ -144,12 +132,10 @@ void Pivot::UpPivot()
 	{
 		printf("Setting Pivot Up to Intake\n");
 		RetractPivotStage2();
-		//pivotStage2->Set(!Pivot_Stage2_ActiveIsExtended);
 	} else
 	{
 		printf("Setting Pivot Up to Home\n");
 		RetractPivotStage1();
-		//pivotStage1->Set(!Pivot_Stage1_ActiveIsExtended);
 		RobotMap::pivotEncoder->Reset();
 	}
 }
@@ -159,12 +145,10 @@ void Pivot::DownPivot()
 	{
 		printf("Setting Pivot Down to Intake\n");
 		ExtendPivotStage1();
-		//pivotStage1->Set(Pivot_Stage1_ActiveIsExtended);
 	} else
 	{
 		printf("Setting Pivot Down to Low\n");
 		ExtendPivotStage2();
-		//pivotStage2->Set(Pivot_Stage2_ActiveIsExtended);
 	}
 }
 

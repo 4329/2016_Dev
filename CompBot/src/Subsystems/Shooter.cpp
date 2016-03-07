@@ -22,9 +22,7 @@ Shooter::Shooter() : Subsystem("Shooter") , Configurable("Shooter") {
 
     myConfig = new Shooter_Config;
 
-	if (!ConfigExists()) CreateConfig();
-
-    RetrieveConfig();
+	CheckConfig("Speed1");
 	Configure();
     isShooting = false;
 }
@@ -45,18 +43,18 @@ Shooter::~Shooter()
 
 void Shooter::RetrieveConfig()
 {
-	myConfig->Shooter_Speed1 = Preferences::GetInstance()->GetFloat("Shooter::Speed1",-5000);
+	myConfig->Shooter_Speed1 = Preferences::GetInstance()->GetFloat("Shooter::Speed1",-4100);
 	myConfig->Shooter_Speed2 = Preferences::GetInstance()->GetFloat("Shooter::Speed2",0.75);
 
 	myConfig->Shooter_TopTalon_Enabled = Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::Enabled",true);
 	myConfig->Shooter_TopTalon_CANID = Preferences::GetInstance()->GetInt("Shooter::TopTalon::CANID",8);
 	myConfig->Shooter_TopTalon_Reversed = Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::Reversed",false);
-	myConfig->Shooter_TopTalon_HasSensor = Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::HasSensor",false);
-	myConfig->Shooter_TopTalon_SensorReversed = Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::SensorReversed",false);
+	myConfig->Shooter_TopTalon_HasSensor = false; //Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::HasSensor",false);
+	myConfig->Shooter_TopTalon_SensorReversed = false; //Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::SensorReversed",false);
 	myConfig->Shooter_TopTalon_EnablePID = Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::EnablePID",false);
 	myConfig->Shooter_TopTalon_EnableVoltRampRate = Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::EnableVoltRampRate",true);
 	myConfig->Shooter_TopTalon_VoltRampRate = Preferences::GetInstance()->GetDouble("Shooter::TopTalon::VoltRampRate",4.0);
-	myConfig->Shooter_TopTalon_PID_CL_PM_Error = Preferences::GetInstance()->GetInt("Shooter::TopTalon::PID::CL::PM::Error",10);
+	myConfig->Shooter_TopTalon_PID_CL_PM_Error = 10; // Preferences::GetInstance()->GetInt("Shooter::TopTalon::PID::CL::PM::Error",10);
     myConfig->Shooter_TopTalon_Slaved = Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::Slaved",true);
     myConfig->Shooter_TopTalon_MasterCANID = Preferences::GetInstance()->GetInt("Shooter::TopTalon::MasterCANID",9);
 
@@ -65,7 +63,7 @@ void Shooter::RetrieveConfig()
 	myConfig->Shooter_BottomTalon_Reversed = Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::Reversed",false);
 	myConfig->Shooter_BottomTalon_HasSensor = Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::HasSensor",true);
 	myConfig->Shooter_BottomTalon_SensorReversed = Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::SensorReversed",false);
-	myConfig->Shooter_BottomTalon_EnablePID = Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::EnablePID",true);
+	myConfig->Shooter_BottomTalon_EnablePID = Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::EnablePID",false);
 	myConfig->Shooter_BottomTalon_Profile_0_PID_P = Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::PID::P",1.0);
 	myConfig->Shooter_BottomTalon_Profile_0_PID_I = Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::PID::I",0.01);
 	myConfig->Shooter_BottomTalon_Profile_0_PID_D = Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::PID::D",0.0);
@@ -200,41 +198,10 @@ void Shooter::SaveConfig()
 
 }
 
-void Shooter::CreateConfig()
+void Shooter::LiveConfigure()
 {
-    Preferences::GetInstance()->GetFloat("Shooter::Speed1",-4100.0);
-	Preferences::GetInstance()->GetFloat("Shooter::Speed2",0.75);
-
-	Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::Enabled",true);
-	Preferences::GetInstance()->GetInt("Shooter::TopTalon::CANID",8);
-	Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::Reversed",false);
-	Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::HasSensor",false);
-	Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::SensorReversed",false);
-	Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::EnablePID",false);
-	Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::EnableVoltRampRate",true);
-	Preferences::GetInstance()->GetDouble("Shooter::TopTalon::VoltRampRate",4.0);
-	Preferences::GetInstance()->GetInt("Shooter::TopTalon::PID::CL::PM::Error",10);
-    Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::Slaved",true);
-    Preferences::GetInstance()->GetInt("Shooter::TopTalon::MasterCANID",9);
-
-	Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::Enabled",true);
-	Preferences::GetInstance()->GetInt("Shooter::BottomTalon::CANID",9);
-	Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::Reversed",false);
-	Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::HasSensor",true);
-	Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::SensorReversed",false);
-	Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::EnablePID",true);
-	Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::PID::P",1.0);
-	Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::PID::I",0.01);
-	Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::PID::D",0.0);
-	Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::PID::F",0.01);
-	Preferences::GetInstance()->GetInt("Shooter::BottomTalon::Profile::0::IZone",256);
-	Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::Profile::0::EnableCLRampRate",false);
-	Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::CLRampRate",2500);
-	Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::EnableVoltRampRate",true);
-	Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::VoltRampRate",4.0);
-	Preferences::GetInstance()->GetInt("Shooter::BottomTalon::PID::CL::PM::Error",10);
-    Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::Slaved",false);
-    Preferences::GetInstance()->GetInt("Shooter::BottomTalon::MasterCANID",0);
+	RetrieveConfig();
+	Configure();
 }
 
 void Shooter::Fire(float value)

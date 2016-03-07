@@ -9,7 +9,7 @@
 
 class IR_Sensor: public Configurable {
 private:
-	std::shared_ptr<AnalogInput> theSensor;
+    std::shared_ptr<AnalogInput> theSensor;
 	std::string myName;
 	float distThreshold;
 	float err;
@@ -25,7 +25,7 @@ public:
 	virtual void RetrieveConfig();
 	virtual void Configure();
 	virtual void SaveConfig();
-	virtual void CreateConfig();
+	virtual void LiveConfigure();
 
 	float VoltageOutput();
 	float DistanceCalc();
