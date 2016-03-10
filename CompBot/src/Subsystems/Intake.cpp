@@ -44,6 +44,7 @@ void Intake::RetrieveConfig()
 {
 	Intake_InSpeed                  = Preferences::GetInstance()->GetFloat("Intake::InSpeed",-1.0);
 	Intake_OutSpeed                 = Preferences::GetInstance()->GetFloat("Intake::OutSpeed",1.0);
+	Intake_PreFireOut               = Preferences::GetInstance()->GetFloat("Intake::PreFireOut",0.5);
 
 	Intake_Talon_Enabled            = Preferences::GetInstance()->GetBoolean("Intake::Talon::Enabled",true);
 	Intake_Talon_CANID              = Preferences::GetInstance()->GetInt("Intake::Talon::CANID",5);
@@ -74,6 +75,7 @@ void Intake::SaveConfig()
 {
 	Preferences::GetInstance()->PutFloat("Intake::InSpeed",Intake_InSpeed);
 	Preferences::GetInstance()->PutFloat("Intake::OutSpeed",Intake_OutSpeed);
+	Preferences::GetInstance()->PutFloat("Intake::PreFireOut",Intake_PreFireOut);
 
 	Preferences::GetInstance()->PutBoolean("Intake::Talon::Enabled",Intake_Talon_Enabled);
 	Preferences::GetInstance()->PutInt("Intake::Talon::CANID",Intake_Talon_CANID);
@@ -82,20 +84,6 @@ void Intake::SaveConfig()
 	Preferences::GetInstance()->PutDouble("Intake::Talon::VoltRampRate",Intake_Talon_VoltRampRate);
 }
 
-/*
-void Intake::CreateConfig()
-{
-	Preferences::GetInstance()->PutFloat("Intake::InSpeed",-1.0);
-	Preferences::GetInstance()->PutFloat("Intake::OutSpeed",1.0);
-
-	Preferences::GetInstance()->PutBoolean("Intake::Talon::Enabled",true);
-	Preferences::GetInstance()->PutInt("Intake::Talon::CANID",5);
-	Preferences::GetInstance()->PutBoolean("Intake::Talon::Reversed",false);
-	Preferences::GetInstance()->PutBoolean("Intake::Talon::EnableVoltRampRate",false);
-	Preferences::GetInstance()->PutDouble("Intake::Talon::VoltRampRate",5.0);
-}
-
-*/
 
 void Intake::SetIntake(bool in, float percent_speed)
 {
@@ -145,3 +133,6 @@ bool Intake::IsBallAtShooter()
 	return false;
 }
 
+float Intake::Get_PreFireOut(){
+	return Intake_PreFireOut;
+}

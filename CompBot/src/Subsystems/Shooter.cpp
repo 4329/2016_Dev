@@ -83,14 +83,14 @@ void Shooter::Configure()
 {
 	if (myConfig->Shooter_TopTalon_Enabled)
 	{
-		printf("S:Configure ST1 enabled\n");
+		//printf("S:Configure ST1 enabled\n");
         if (myConfig->Shooter_TopTalon_HasSensor)
         {
-    		printf("S:Configure ST1 Has Sensor\n");
+    		//printf("S:Configure ST1 Has Sensor\n");
         	TopTalon->SetFeedbackDevice(CANTalon::QuadEncoder);
 			if (myConfig->Shooter_TopTalon_SensorReversed)
 			{
-				printf("S:Configure ST1 Sensor Reversed\n");
+				//printf("S:Configure ST1 Sensor Reversed\n");
 				TopTalon->SetSensorDirection(true);
 			} else
 			{
@@ -99,18 +99,18 @@ void Shooter::Configure()
         }
         if (myConfig->Shooter_TopTalon_EnablePID)
         {
-        	printf("S:Configure ST1 PID enabled\n");
+        	//printf("S:Configure ST1 PID enabled\n");
         }
 
 		if(myConfig->Shooter_TopTalon_EnableVoltRampRate)
 		{
-			printf("S:Configure ST1 enable volt ramp rate %f\n",myConfig->Shooter_TopTalon_VoltRampRate);
+			//printf("S:Configure ST1 enable volt ramp rate %f\n",myConfig->Shooter_TopTalon_VoltRampRate);
 			TopTalon->SetVoltageRampRate(myConfig->Shooter_TopTalon_VoltRampRate);
 		}
 
 		if(myConfig->Shooter_TopTalon_Slaved)
 		{
-			printf("S:Configure ST1 enable slave %d\n",myConfig->Shooter_TopTalon_MasterCANID);
+			//printf("S:Configure ST1 enable slave %d\n",myConfig->Shooter_TopTalon_MasterCANID);
 			TopTalon->SetControlMode(CANSpeedController::kFollower);
 			TopTalon->Set(myConfig->Shooter_TopTalon_MasterCANID);
 		}
@@ -118,7 +118,7 @@ void Shooter::Configure()
 
 	if (myConfig->Shooter_BottomTalon_Enabled)
 	{
-		printf("S:Configure ST2 enabled\n");
+		//printf("S:Configure ST2 enabled\n");
         if (myConfig->Shooter_BottomTalon_HasSensor)
         {
         	BottomTalon->SetFeedbackDevice(CANTalon::CtreMagEncoder_Relative);
@@ -132,7 +132,7 @@ void Shooter::Configure()
         }
         if (myConfig->Shooter_BottomTalon_EnablePID)
         {
-        	printf("S:Configure ST2 PID enabled\n");
+        	//printf("S:Configure ST2 PID enabled\n");
         	BottomTalon->SelectProfileSlot(0);
         	BottomTalon->SetP(myConfig->Shooter_BottomTalon_Profile_0_PID_P);
         	BottomTalon->SetI(myConfig->Shooter_BottomTalon_Profile_0_PID_I);
@@ -148,7 +148,7 @@ void Shooter::Configure()
 
 		if(myConfig->Shooter_BottomTalon_EnableVoltRampRate)
 		{
-			printf("S:Configure ST2 enable volt ramp rate %f\n",myConfig->Shooter_BottomTalon_VoltRampRate);
+			//printf("S:Configure ST2 enable volt ramp rate %f\n",myConfig->Shooter_BottomTalon_VoltRampRate);
 			BottomTalon->SetVoltageRampRate(myConfig->Shooter_BottomTalon_VoltRampRate);
 		}
 		if(myConfig->Shooter_BottomTalon_Slaved)

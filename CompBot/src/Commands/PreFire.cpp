@@ -26,11 +26,13 @@ PreFire::PreFire(): Command() {
 // Called just before this Command runs the first time
 void PreFire::Initialize() {
 	SmartDashboard::PutBoolean("Shooting",true);
+	outtake = Robot::intake->Get_PreFireOut();
 }
 
 // Called repeatedly when this Command is scheduled to run
 void PreFire::Execute() {
-	Robot::intake->SetIntake(false);
+
+	Robot::intake->SetIntake(false,outtake);
 }
 
 // Make this return true when this Command no longer needs to run execute()

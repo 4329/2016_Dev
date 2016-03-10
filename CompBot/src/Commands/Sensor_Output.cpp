@@ -54,6 +54,7 @@ void Sensor_Output::Execute() {
 		SmartDashboard::PutNumber("Heading",Robot::sensorPkg->imu->GetFusedHeading());
 		SmartDashboard::PutNumber("Speed",Robot::sensorPkg->imu->GetVelocMag());
 		SmartDashboard::PutNumber("Accel",Robot::sensorPkg->imu->GetAccelMag());
+		SmartDashboard::PutNumber("Yaw",Robot::sensorPkg->imu->GetYaw());
 		SmartDashboard::PutBoolean("IsMoving",Robot::sensorPkg->imu->IsMoving());
 		SmartDashboard::PutBoolean("IsRotating",Robot::sensorPkg->imu->IsRotating());
 		SmartDashboard::PutBoolean("IsColiding",Robot::sensorPkg->imu->IsColliding());
@@ -93,6 +94,7 @@ void Sensor_Output::Execute() {
 		SmartDashboard::PutNumber("Heading",Robot::sensorPkg->imu->GetFusedHeading());
 		SmartDashboard::PutNumber("Speed",Robot::sensorPkg->imu->GetVelocMag());
 		SmartDashboard::PutNumber("Accel",Robot::sensorPkg->imu->GetAccelMag());
+		SmartDashboard::PutNumber("Yaw",Robot::sensorPkg->imu->GetYaw());
 		SmartDashboard::PutBoolean("IsMoving",Robot::sensorPkg->imu->IsMoving());
 		SmartDashboard::PutBoolean("IsRotating",Robot::sensorPkg->imu->IsRotating());
 		SmartDashboard::PutBoolean("IsColiding",Robot::sensorPkg->imu->IsColliding());
@@ -139,6 +141,7 @@ void Sensor_Output::Execute() {
 		SmartDashboard::PutNumber("Heading",Robot::sensorPkg->imu->GetFusedHeading());
 		SmartDashboard::PutNumber("Speed",Robot::sensorPkg->imu->GetVelocMag());
 		SmartDashboard::PutNumber("Accel",Robot::sensorPkg->imu->GetAccelMag());
+		SmartDashboard::PutNumber("Yaw",Robot::sensorPkg->imu->GetYaw());
 		SmartDashboard::PutBoolean("IsMoving",Robot::sensorPkg->imu->IsMoving());
 		SmartDashboard::PutBoolean("IsRotating",Robot::sensorPkg->imu->IsRotating());
 		SmartDashboard::PutBoolean("IsColiding",Robot::sensorPkg->imu->IsColliding());

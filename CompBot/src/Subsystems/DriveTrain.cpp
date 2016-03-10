@@ -750,10 +750,10 @@ void DriveTrain::AutoDrive_SetDistance(float inches)
 		{
 			Zero_DriveEncoders();
 			ldistance = (inches / myConfig->DriveTrain_InchesPerRotation) * myConfig->DriveTrain_QuadEncoder_CodesPerRev;
-			if (myConfig->DriveTrain_Left_SensorReversed) ldistance = 0 - ldistance;
+			if (myConfig->DriveTrain_Left_SensorReversed || myConfig->DriveTrain_Left_Reversed) ldistance = 0 - ldistance;
 
 			rdistance = (inches / myConfig->DriveTrain_InchesPerRotation) * myConfig->DriveTrain_QuadEncoder_CodesPerRev;
-			if (myConfig->DriveTrain_Right_SensorReversed) rdistance = 0 - rdistance;
+			if (myConfig->DriveTrain_Right_SensorReversed || myConfig->DriveTrain_Right_Reversed) rdistance = 0 - rdistance;
 
 			//if (leftMaster->GetPosition())
 
@@ -775,6 +775,7 @@ void DriveTrain::AutoDrive_SetDistance(float inches)
 			printf("yawlock linear: set %f  \n",rdistance);
 			linearController->SetSetpoint(rdistance);
 			linearController->Enable();
+			posPID.Enable();
 			leftMaster->EnableControl();
 			rightMaster->EnableControl();
 			positioning = true;
@@ -885,7 +886,7 @@ void DriveTrain::SetDrive_Arcade(float x, float y, bool highRate)
 	tx = Limit(x);
 	ty = Limit(y);
 
-    printf("Arcade Drive: X %f  Y %f\n",tx,ty);
+    //printf("Arcade Drive: X %f  Y %f\n",tx,ty);
 
 
 	if (rightTalon1->GetControlMode() != CANSpeedController::kPercentVbus)
@@ -948,7 +949,7 @@ void DriveTrain::SetDrive_Tank(float left, float right, bool highRate)
 	tx = Limit(left);
 	ty = Limit(right);
 
-    printf("Tank Drive: Left %f  Right %f\n",ty,tx);
+    //printf("Tank Drive: Left %f  Right %f\n",ty,tx);
 
 	leftMotorOutput = tx;
 	rightMotorOutput = ty;
@@ -971,7 +972,7 @@ void DriveTrain::SetDrive_Split(float turn, float throttle, bool highRate)
 	tx = Limit(turn);
 	ty = Limit(throttle);
 
-    printf("Split Drive: Turn %f  Throttle %f\n",tx,ty);
+    //printf("Split Drive: Turn %f  Throttle %f\n",tx,ty);
 
 
 	if (rightTalon1->GetControlMode() != CANSpeedController::kPercentVbus)
@@ -1034,7 +1035,7 @@ void DriveTrain::SetDrive_Auto(float turn, float throttle)
 	tx = Limit(turn);
 	ty = Limit(throttle);
 
-    printf("Auto Drive: Turn %f  Throttle %f\n",tx,ty);
+    //printf("Auto Drive: Turn %f  Throttle %f\n",tx,ty);
 
 
 	if (rightTalon1->GetControlMode() != CANSpeedController::kPercentVbus)

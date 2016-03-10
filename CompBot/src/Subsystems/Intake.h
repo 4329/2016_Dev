@@ -29,6 +29,7 @@ private:
 
 	float  Intake_InSpeed;
 	float  Intake_OutSpeed;
+	float  Intake_PreFireOut;
 	bool   Intake_Talon_Enabled;
 	int    Intake_Talon_CANID;
 	bool   Intake_Talon_Reversed;
@@ -47,6 +48,8 @@ public:
 
 	void SetIntake(bool in, float percent_speed = 1.0);
 	void StopIntake();
+
+	float Get_PreFireOut();
 
 	bool RobotHasBall();
 	bool IsBallAtShooter();
