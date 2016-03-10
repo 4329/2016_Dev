@@ -16,7 +16,7 @@
 
 Sensor_Output::Sensor_Output(): Command() {
         // Use requires() here to declare subsystem dependencies
-	Requires(Robot::sensorPkg.get());
+	//Requires(Robot::sensorPkg.get());
 	count = 0;
 	hasBall = false;
 	IsBallAtShooter = false;
@@ -51,6 +51,12 @@ void Sensor_Output::Execute() {
 			Robot::oi->getOperatorInterface()->Rumble_Right(0);
 			Robot::oi->getOperatorInterface()->Rumble_Left(0);
 		}
+		SmartDashboard::PutNumber("Heading",Robot::sensorPkg->imu->GetFusedHeading());
+		SmartDashboard::PutNumber("Speed",Robot::sensorPkg->imu->GetVelocMag());
+		SmartDashboard::PutNumber("Accel",Robot::sensorPkg->imu->GetAccelMag());
+		SmartDashboard::PutBoolean("IsMoving",Robot::sensorPkg->imu->IsMoving());
+		SmartDashboard::PutBoolean("IsRotating",Robot::sensorPkg->imu->IsRotating());
+		SmartDashboard::PutBoolean("IsColiding",Robot::sensorPkg->imu->IsColliding());
 
 	} else if (count == 3)
 	{
@@ -84,6 +90,12 @@ void Sensor_Output::Execute() {
 			Robot::oi->getOperatorInterface()->Rumble_Right(0);
 			Robot::oi->getOperatorInterface()->Rumble_Left(0);
 		}
+		SmartDashboard::PutNumber("Heading",Robot::sensorPkg->imu->GetFusedHeading());
+		SmartDashboard::PutNumber("Speed",Robot::sensorPkg->imu->GetVelocMag());
+		SmartDashboard::PutNumber("Accel",Robot::sensorPkg->imu->GetAccelMag());
+		SmartDashboard::PutBoolean("IsMoving",Robot::sensorPkg->imu->IsMoving());
+		SmartDashboard::PutBoolean("IsRotating",Robot::sensorPkg->imu->IsRotating());
+		SmartDashboard::PutBoolean("IsColiding",Robot::sensorPkg->imu->IsColliding());
 	} else if (count == 7)
 	{
 		isHome = Robot::sensorPkg->IsPivotAtHome();
@@ -124,6 +136,12 @@ void Sensor_Output::Execute() {
 			Robot::oi->getOperatorInterface()->Rumble_Right(0);
 			Robot::oi->getOperatorInterface()->Rumble_Left(0);
 		}
+		SmartDashboard::PutNumber("Heading",Robot::sensorPkg->imu->GetFusedHeading());
+		SmartDashboard::PutNumber("Speed",Robot::sensorPkg->imu->GetVelocMag());
+		SmartDashboard::PutNumber("Accel",Robot::sensorPkg->imu->GetAccelMag());
+		SmartDashboard::PutBoolean("IsMoving",Robot::sensorPkg->imu->IsMoving());
+		SmartDashboard::PutBoolean("IsRotating",Robot::sensorPkg->imu->IsRotating());
+		SmartDashboard::PutBoolean("IsColiding",Robot::sensorPkg->imu->IsColliding());
 		count = 0;
 	}
 	count++;

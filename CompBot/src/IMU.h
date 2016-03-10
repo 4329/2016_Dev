@@ -7,17 +7,18 @@
 
 class IMU: public Configurable {
 private:
-
-	std::shared_ptr<AHRS> _myIMU;
     double last_world_linear_accel_x;
     double last_world_linear_accel_y;
     double last_world_linear_accel_z;
+    bool   flipYaw;
 
     float COLLISION_THRESHOLD_DELTA_G;
     float MOVE_THRESHOLD_DELTA_MAG;
     float ROT_THRESHOLD_DELTA;
 
 public:
+    std::shared_ptr<AHRS> _myIMU;
+
 	IMU();
 	virtual ~IMU();
 	virtual void RetrieveConfig();
@@ -28,9 +29,13 @@ public:
     bool   GetRPY(float &roll, float &pitch, float &yaw);
     float  GetCompassHeading();
     void   ZeroYaw();
+    float  GetYaw();
     bool   IsCalibrating();
+    bool   IsYawFlipped();
 
     bool   GetAccels(float &x, float &y, float &z);
+    float  GetAccelMag();
+    float  GetVelocMag();
     bool   IsMoving();
     bool   IsRotating();
     bool   GetAltitude(float &alt);

@@ -21,6 +21,7 @@ void IMU::RetrieveConfig()
 	COLLISION_THRESHOLD_DELTA_G = Preferences::GetInstance()->GetFloat("IMU::COLLISION_THRESHOLD_DELTA_G",0.5);
 	MOVE_THRESHOLD_DELTA_MAG    = Preferences::GetInstance()->GetFloat("IMU::MOVE_THRESHOLD_DELTA_MAG",0.25);
 	ROT_THRESHOLD_DELTA         = Preferences::GetInstance()->GetFloat("IMU::ROT_THRESHOLD_DELTA",1.5);
+	flipYaw                     = Preferences::GetInstance()->GetBoolean("IMU::YawFlipped",false);
 }
 
 void IMU::Configure()
@@ -33,6 +34,7 @@ void IMU::SaveConfig()
     Preferences::GetInstance()->PutFloat("IMU::COLLISION_THRESHOLD_DELTA_G",COLLISION_THRESHOLD_DELTA_G);
     Preferences::GetInstance()->PutFloat("IMU::MOVE_THRESHOLD_DELTA_MAG",MOVE_THRESHOLD_DELTA_MAG);
     Preferences::GetInstance()->PutFloat("IMU::ROT_THRESHOLD_DELTA",ROT_THRESHOLD_DELTA);
+    Preferences::GetInstance()->PutBoolean("IMU::YawFlipped",flipYaw);
 }
 
 void IMU::LiveConfigure()
@@ -58,6 +60,11 @@ float  IMU::GetCompassHeading()
 	return _myIMU->GetCompassHeading();
 }
 
+float  IMU::GetYaw()
+{
+	return _myIMU->GetYaw();
+}
+
 void   IMU::ZeroYaw()
 {
 	_myIMU->ZeroYaw();
@@ -66,6 +73,11 @@ void   IMU::ZeroYaw()
 bool   IMU::IsCalibrating()
 {
 	return _myIMU->IsCalibrating();
+}
+
+bool   IMU::IsYawFlipped()
+{
+	return flipYaw;
 }
 
 bool   IMU::GetAccels(float &x, float &y, float &z)
@@ -200,4 +212,30 @@ bool   IMU::IsColliding()
     return false;
 }
 
+float  IMU::GetAccelMag()
+{
+	float x,y,z,retval;
+	retval = 0;
+	if (_myIMU->IsConnected())
+	{
+		x = _myIMU->GetWorldLinearAccelX();
+		y = _myIMU->GetWorldLinearAccelY();
+		z = _myIMU->GetWorldLinearAccelZ();
+		retval = sqrt((x*x) + (y*y) + (z*z));
+	}
+	return retval;
+}
 
+float  IMU::GetVelocMag()
+{
+	float x,y,z,retval;
+	retval = 0;
+	if (_myIMU->IsConnected())
+	{
+		x = _myIMU->GetVelocityX();
+		y = _myIMU->GetVelocityY();
+		z = _myIMU->GetVelocityZ();
+		retval = sqrt((x*x) + (y*y) + (z*z));
+	}
+	return retval;
+}

@@ -127,4 +127,5 @@ void RobotMap::init() {
     
     imu.reset(new AHRS(SPI::Port::kMXP));
     lw->AddSensor("Sensor","IMU",imu);
+    printf("RobotMap init Complete\n");
 }

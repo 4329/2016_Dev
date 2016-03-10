@@ -42,9 +42,20 @@ DriveTrain::DriveTrain() : Subsystem("DriveTrain"), Configurable("DriveTrain") {
 	rLastPosDelta = 0.0;
 	hasMoved = false;
 	myType = DriveType_Split;
-
+	lastturn = 0;
 	CheckConfig("HighSpeed");
 	Configure();
+
+	turnController.reset(new PID_Control(std::string("DT_Turn"), (PIDSource *) Robot::sensorPkg->imu->_myIMU.get(), this));
+	if (myConfig->DriveTrain_RightTalon1_HasSensor)
+	{
+		linearController.reset(new PID_Control(std::string("DT_Linear"),rightTalon1.get(),&posPID));
+		if (myConfig->DriveTrain_Right_SensorReversed) posPID.SetReversed(true);
+	} else //if (myConfig->DriveTrain_RightTalon2_HasSensor)
+	{
+		linearController.reset(new PID_Control(std::string("DT_Linear"),rightTalon2.get(),&posPID));
+		if (myConfig->DriveTrain_Right_SensorReversed) posPID.SetReversed(true);
+	}
 }
 
 
@@ -70,116 +81,74 @@ void DriveTrain::RetrieveConfig()
 {
 	myConfig->DriveTrain_HighSpeed = Preferences::GetInstance()->GetFloat("DriveTrain::HighSpeed",1.0);
 	myConfig->DriveTrain_LowSpeed = Preferences::GetInstance()->GetFloat("DriveTrain::LowSpeed",0.75);
-	myConfig->DriveTrain_QuadEncoder_PulsesPerDegree = Preferences::GetInstance()->GetFloat("DriveTrain::QuadEncoder::PulsesPerDegree");
+	myConfig->DriveTrain_QuadEncoder_CodesPerRev = Preferences::GetInstance()->GetInt("DriveTrain::QuadEncoder::CodesPerRev",1024);
+	myConfig->DriveTrain_InchesPerRotation = Preferences::GetInstance()->GetFloat("DriveTrain::QuadEncoder::InchesPerRotation",24);
+
+	myConfig->DriveTrain_EnableVoltRampRate = Preferences::GetInstance()->GetBoolean("DriveTrain::EnableVoltRampRate",false);
+	myConfig->DriveTrain_VoltRampRate = Preferences::GetInstance()->GetDouble("DriveTrain::VoltRampRate",5.0);
+	myConfig->DriveTrain_PID_CL_Allowable_Error = Preferences::GetInstance()->GetInt("DriveTrain::PID::CL::Allowable::Error",50);
+
+	myConfig->DriveTrain_Right_Reversed = Preferences::GetInstance()->GetBoolean("DriveTrain::Right::Reversed",false);
+	myConfig->DriveTrain_Right_SensorReversed = Preferences::GetInstance()->GetBoolean("DriveTrain::Right::SensorReversed",false);
+	myConfig->DriveTrain_Right_Profile_0_PID_P = Preferences::GetInstance()->GetDouble("DriveTrain::Right::Profile::0::PID::P",1.0);
+	myConfig->DriveTrain_Right_Profile_0_PID_I = Preferences::GetInstance()->GetDouble("DriveTrain::Right::Profile::0::PID::I",0.01);
+	myConfig->DriveTrain_Right_Profile_0_PID_D = Preferences::GetInstance()->GetDouble("DriveTrain::Right::Profile::0::PID::D",0.0);
+	myConfig->DriveTrain_Right_Profile_0_PID_F = Preferences::GetInstance()->GetDouble("DriveTrain::Right::Profile::0::PID::F",0.01);
+	myConfig->DriveTrain_Right_Profile_0_IZone = Preferences::GetInstance()->GetInt("DriveTrain::Right::Profile::0::IZone",256);
+	myConfig->DriveTrain_Right_Profile_0_EnableCLRampRate = Preferences::GetInstance()->GetBoolean("DriveTrain::Right::Profile::0::EnableCLRampRate",false);
+	myConfig->DriveTrain_Right_Profile_0_CLRampRate = Preferences::GetInstance()->GetDouble("DriveTrain::Right::Profile::0::CLRampRate",2500);
+	myConfig->DriveTrain_Right_Profile_1_PID_P = Preferences::GetInstance()->GetDouble("DriveTrain::Right::Profile::1::PID::P",1.0);
+	myConfig->DriveTrain_Right_Profile_1_PID_I = Preferences::GetInstance()->GetDouble("DriveTrain::Right::Profile::1::PID::I",0.01);
+	myConfig->DriveTrain_Right_Profile_1_PID_D = Preferences::GetInstance()->GetDouble("DriveTrain::Right::Profile::1::PID::D",0);
+	myConfig->DriveTrain_Right_Profile_1_PID_F = Preferences::GetInstance()->GetDouble("DriveTrain::Right::Profile::1::PID::F",0.01);
+	myConfig->DriveTrain_Right_Profile_1_IZone = Preferences::GetInstance()->GetInt("DriveTrain::Right::Profile::1::IZone",256);
+	myConfig->DriveTrain_Right_Profile_1_EnableCLRampRate = Preferences::GetInstance()->GetBoolean("DriveTrain::Right::Profile::1::EnableCLRampRate",false);
+	myConfig->DriveTrain_Right_Profile_1_CLRampRate = Preferences::GetInstance()->GetDouble("DriveTrain::Right::Profile::1::CLRampRate",2500);
+
 
 	myConfig->DriveTrain_RightTalon1_Enabled = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon1::Enabled",true);
 	myConfig->DriveTrain_RightTalon1_CANID = Preferences::GetInstance()->GetInt("DriveTrain::RightTalon1::CANID",1);
-	myConfig->DriveTrain_RightTalon1_Reversed = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon1::Reversed",false);
 	myConfig->DriveTrain_RightTalon1_HasSensor = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon1::HasSensor",true);
-	myConfig->DriveTrain_RightTalon1_SensorReversed = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon1::SensorReversed",false);
 	myConfig->DriveTrain_RightTalon1_EnablePID = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon1::EnablePID",true);
-	myConfig->DriveTrain_RightTalon1_Profile_0_PID_P = Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon1::Profile::0::PID::P",1.0);
-	myConfig->DriveTrain_RightTalon1_Profile_0_PID_I = Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon1::Profile::0::PID::I",0.01);
-	myConfig->DriveTrain_RightTalon1_Profile_0_PID_D = Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon1::Profile::0::PID::D",0.0);
-	myConfig->DriveTrain_RightTalon1_Profile_0_PID_F = Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon1::Profile::0::PID::F",0.01);
-	myConfig->DriveTrain_RightTalon1_Profile_0_IZone = Preferences::GetInstance()->GetInt("DriveTrain::RightTalon1::Profile::0::IZone",256);
-	myConfig->DriveTrain_RightTalon1_Profile_0_EnableCLRampRate = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon1::Profile::0::EnableCLRampRate",false);
-	myConfig->DriveTrain_RightTalon1_Profile_0_CLRampRate = Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon1::Profile::0::CLRampRate",2500);
-	myConfig->DriveTrain_RightTalon1_Profile_1_PID_P = Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon1::Profile::1::PID::P",1.0);
-	myConfig->DriveTrain_RightTalon1_Profile_1_PID_I = Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon1::Profile::1::PID::I",0.01);
-	myConfig->DriveTrain_RightTalon1_Profile_1_PID_D = Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon1::Profile::1::PID::D",0);
-	myConfig->DriveTrain_RightTalon1_Profile_1_PID_F = Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon1::Profile::1::PID::F",0.01);
-	myConfig->DriveTrain_RightTalon1_Profile_1_IZone = Preferences::GetInstance()->GetInt("DriveTrain::RightTalon1::Profile::1::IZone",256);
-	myConfig->DriveTrain_RightTalon1_Profile_1_EnableCLRampRate = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon1::Profile::1::EnableCLRampRate",false);
-	myConfig->DriveTrain_RightTalon1_Profile_1_CLRampRate = Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon1::Profile::1::CLRampRate",2500);
-	myConfig->DriveTrain_RightTalon1_EnableVoltRampRate = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon1::EnableVoltRampRate",false);
-	myConfig->DriveTrain_RightTalon1_VoltRampRate = Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon1::VoltRampRate",5.0);
-	myConfig->DriveTrain_RightTalon1_PID_CL_PM_Error = Preferences::GetInstance()->GetInt("DriveTrain::RightTalon1::PID::CL::PM::Error",10);
-	myConfig->DriveTrain_RightTalon1_QuadEncoder_PulsesPerInch = Preferences::GetInstance()->GetFloat("DriveTrain::RightTalon1::QuadEncoder::PulsesPerInch",200.584198);
     myConfig->DriveTrain_RightTalon1_Slaved = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon1::Slaved",false);
     myConfig->DriveTrain_RightTalon1_MasterCANID = Preferences::GetInstance()->GetInt("DriveTrain::RightTalon1::MasterCANID",0);
 
-
 	myConfig->DriveTrain_RightTalon2_Enabled = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon2::Enabled",true);
 	myConfig->DriveTrain_RightTalon2_CANID = Preferences::GetInstance()->GetInt("DriveTrain::RightTalon2::CANID",2);
-	myConfig->DriveTrain_RightTalon2_Reversed = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon2::Reversed",false);
 	myConfig->DriveTrain_RightTalon2_HasSensor = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon2::HasSensor",false);
-	myConfig->DriveTrain_RightTalon2_SensorReversed = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon2::SensorReversed",false);
 	myConfig->DriveTrain_RightTalon2_EnablePID = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon2::EnablePID",false);
-	myConfig->DriveTrain_RightTalon2_Profile_0_PID_P = Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon2::Profile::0::PID::P",1.0);
-	myConfig->DriveTrain_RightTalon2_Profile_0_PID_I = Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon2::Profile::0::PID::I",0.01);
-	myConfig->DriveTrain_RightTalon2_Profile_0_PID_D = Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon2::Profile::0::PID::D",0.0);
-	myConfig->DriveTrain_RightTalon2_Profile_0_PID_F = Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon2::Profile::0::PID::F",0.01);
-	myConfig->DriveTrain_RightTalon2_Profile_0_IZone = Preferences::GetInstance()->GetInt("DriveTrain::RightTalon2::Profile::0::IZone",256);
-	myConfig->DriveTrain_RightTalon2_Profile_0_EnableCLRampRate = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon2::Profile::0::EnableCLRampRate",false);
-	myConfig->DriveTrain_RightTalon2_Profile_0_CLRampRate = Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon2::Profile::0::CLRampRate",2500);
-	myConfig->DriveTrain_RightTalon2_Profile_1_PID_P = Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon2::Profile::1::PID::P",1.0);
-	myConfig->DriveTrain_RightTalon2_Profile_1_PID_I = Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon2::Profile::1::PID::I",0.01);
-	myConfig->DriveTrain_RightTalon2_Profile_1_PID_D = Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon2::Profile::1::PID::D",0);
-	myConfig->DriveTrain_RightTalon2_Profile_1_PID_F = Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon2::Profile::1::PID::F",0.01);
-	myConfig->DriveTrain_RightTalon2_Profile_1_IZone = Preferences::GetInstance()->GetInt("DriveTrain::RightTalon2::Profile::1::IZone",256);
-	myConfig->DriveTrain_RightTalon2_Profile_1_EnableCLRampRate = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon2::Profile::1::EnableCLRampRate",false);
-	myConfig->DriveTrain_RightTalon2_Profile_1_CLRampRate = Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon2::Profile::1::CLRampRate",2500);
-	myConfig->DriveTrain_RightTalon2_EnableVoltRampRate = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon2::EnableVoltRampRate",false);
-	myConfig->DriveTrain_RightTalon2_VoltRampRate = Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon2::VoltRampRate",5.0);
-	myConfig->DriveTrain_RightTalon2_PID_CL_PM_Error = Preferences::GetInstance()->GetInt("DriveTrain::RightTalon2::PID::CL::PM::Error",10);
-	myConfig->DriveTrain_RightTalon2_QuadEncoder_PulsesPerInch = Preferences::GetInstance()->GetFloat("DriveTrain::RightTalon2::QuadEncoder::PulsesPerInch",200.584198);
     myConfig->DriveTrain_RightTalon2_Slaved = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon2::Slaved",true);
     myConfig->DriveTrain_RightTalon2_MasterCANID = Preferences::GetInstance()->GetInt("DriveTrain::RightTalon2::MasterCANID",1);
+
+	myConfig->DriveTrain_Left_Reversed = Preferences::GetInstance()->GetBoolean("DriveTrain::Left::Reversed",true);
+	myConfig->DriveTrain_Left_SensorReversed = Preferences::GetInstance()->GetBoolean("DriveTrain::Left::SensorReversed",true);
+	myConfig->DriveTrain_Left_Profile_0_PID_P = Preferences::GetInstance()->GetDouble("DriveTrain::Left::Profile::0::PID::P",1.0);
+	myConfig->DriveTrain_Left_Profile_0_PID_I = Preferences::GetInstance()->GetDouble("DriveTrain::Left::Profile::0::PID::I",0.01);
+	myConfig->DriveTrain_Left_Profile_0_PID_D = Preferences::GetInstance()->GetDouble("DriveTrain::Left::Profile::0::PID::D",0);
+	myConfig->DriveTrain_Left_Profile_0_PID_F = Preferences::GetInstance()->GetDouble("DriveTrain::Left::Profile::0::PID::F",0.01);
+	myConfig->DriveTrain_Left_Profile_0_IZone = Preferences::GetInstance()->GetInt("DriveTrain::Left::Profile::0::IZone",256);
+	myConfig->DriveTrain_Left_Profile_0_EnableCLRampRate = Preferences::GetInstance()->GetBoolean("DriveTrain::Left::Profile::0::EnableCLRampRate",false);
+	myConfig->DriveTrain_Left_Profile_0_CLRampRate = Preferences::GetInstance()->GetDouble("DriveTrain::Left::Profile::0::CLRampRate",2500);
+	myConfig->DriveTrain_Left_Profile_1_PID_P = Preferences::GetInstance()->GetDouble("DriveTrain::Left::Profile::1::PID::P",1);
+	myConfig->DriveTrain_Left_Profile_1_PID_I = Preferences::GetInstance()->GetDouble("DriveTrain::Left::Profile::1::PID::I",0.01);
+	myConfig->DriveTrain_Left_Profile_1_PID_D = Preferences::GetInstance()->GetDouble("DriveTrain::Left::Profile::1::PID::D",0);
+	myConfig->DriveTrain_Left_Profile_1_PID_F = Preferences::GetInstance()->GetDouble("DriveTrain::Left::Profile::1::PID::F",0.01);
+	myConfig->DriveTrain_Left_Profile_1_IZone = Preferences::GetInstance()->GetInt("DriveTrain::Left::Profile::1::IZone",256);
+	myConfig->DriveTrain_Left_Profile_1_EnableCLRampRate = Preferences::GetInstance()->GetBoolean("DriveTrain::Left::Profile::1::EnableCLRampRate",false);
+	myConfig->DriveTrain_Left_Profile_1_CLRampRate = Preferences::GetInstance()->GetDouble("DriveTrain::Left::Profile::1::CLRampRate",2500);
 
 
 	myConfig->DriveTrain_LeftTalon1_Enabled = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon1::Enabled",true);
 	myConfig->DriveTrain_LeftTalon1_CANID = Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon1::CANID",3);
-	myConfig->DriveTrain_LeftTalon1_Reversed = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon1::Reversed",true);
 	myConfig->DriveTrain_LeftTalon1_HasSensor = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon1::HasSensor",true);
-	myConfig->DriveTrain_LeftTalon1_SensorReversed = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon1::SensorReversed",true);
 	myConfig->DriveTrain_LeftTalon1_EnablePID = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon1::EnablePID",true);
-	myConfig->DriveTrain_LeftTalon1_Profile_0_PID_P = Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon1::Profile::0::PID::P",1.0);
-	myConfig->DriveTrain_LeftTalon1_Profile_0_PID_I = Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon1::Profile::0::PID::I",0.01);
-	myConfig->DriveTrain_LeftTalon1_Profile_0_PID_D = Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon1::Profile::0::PID::D",0);
-	myConfig->DriveTrain_LeftTalon1_Profile_0_PID_F = Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon1::Profile::0::PID::F",0.01);
-	myConfig->DriveTrain_LeftTalon1_Profile_0_IZone = Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon1::Profile::0::IZone",256);
-	myConfig->DriveTrain_LeftTalon1_Profile_0_EnableCLRampRate = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon1::Profile::0::EnableCLRampRate",false);
-	myConfig->DriveTrain_LeftTalon1_Profile_0_CLRampRate = Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon1::Profile::0::CLRampRate",2500);
-	myConfig->DriveTrain_LeftTalon1_Profile_1_PID_P = Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon1::Profile::1::PID::P",1);
-	myConfig->DriveTrain_LeftTalon1_Profile_1_PID_I = Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon1::Profile::1::PID::I",0.01);
-	myConfig->DriveTrain_LeftTalon1_Profile_1_PID_D = Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon1::Profile::1::PID::D",0);
-	myConfig->DriveTrain_LeftTalon1_Profile_1_PID_F = Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon1::Profile::1::PID::F",0.01);
-	myConfig->DriveTrain_LeftTalon1_Profile_1_IZone = Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon1::Profile::1::IZone",256);
-	myConfig->DriveTrain_LeftTalon1_Profile_1_EnableCLRampRate = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon1::Profile::1::EnableCLRampRate",false);
-	myConfig->DriveTrain_LeftTalon1_Profile_1_CLRampRate = Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon1::Profile::1::CLRampRate",2500);
-	myConfig->DriveTrain_LeftTalon1_EnableVoltRampRate = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon1::EnableVoltRampRate",false);
-	myConfig->DriveTrain_LeftTalon1_VoltRampRate = Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon1::VoltRampRate",5.0);
-	myConfig->DriveTrain_LeftTalon1_PID_CL_PM_Error = Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon1::PID::CL::PM::Error",10);
-	myConfig->DriveTrain_LeftTalon1_QuadEncoder_PulsesPerInch = Preferences::GetInstance()->GetFloat("DriveTrain::LeftTalon1::QuadEncoder::PulsesPerInch",200.584198);
     myConfig->DriveTrain_LeftTalon1_Slaved = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon1::Slaved",false);
     myConfig->DriveTrain_LeftTalon1_MasterCANID = Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon1::MasterCANID",0);
 
-
 	myConfig->DriveTrain_LeftTalon2_Enabled = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon2::Enabled",true);
 	myConfig->DriveTrain_LeftTalon2_CANID = Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon2::CANID",4);
-	myConfig->DriveTrain_LeftTalon2_Reversed = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon2::Reversed",true);
 	myConfig->DriveTrain_LeftTalon2_HasSensor = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon2::HasSensor",false);
-	myConfig->DriveTrain_LeftTalon2_SensorReversed = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon2::SensorReversed",false);
 	myConfig->DriveTrain_LeftTalon2_EnablePID = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon2::EnablePID",false);
-	myConfig->DriveTrain_LeftTalon2_Profile_0_PID_P = Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon2::Profile::0::PID::P",1.0);
-	myConfig->DriveTrain_LeftTalon2_Profile_0_PID_I = Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon2::Profile::0::PID::I",0.01);
-	myConfig->DriveTrain_LeftTalon2_Profile_0_PID_D = Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon2::Profile::0::PID::D",0);
-	myConfig->DriveTrain_LeftTalon2_Profile_0_PID_F = Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon2::Profile::0::PID::F",0.01);
-	myConfig->DriveTrain_LeftTalon2_Profile_0_IZone = Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon2::Profile::0::IZone",256);
-	myConfig->DriveTrain_LeftTalon2_Profile_0_EnableCLRampRate = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon2::Profile::0::EnableCLRampRate",false);
-	myConfig->DriveTrain_LeftTalon2_Profile_0_CLRampRate = Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon2::Profile::0::CLRampRate",2500);
-	myConfig->DriveTrain_LeftTalon2_Profile_1_PID_P = Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon2::Profile::1::PID::P",1.0);
-	myConfig->DriveTrain_LeftTalon2_Profile_1_PID_I = Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon2::Profile::1::PID::I",0.01);
-	myConfig->DriveTrain_LeftTalon2_Profile_1_PID_D = Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon2::Profile::1::PID::D",0.0);
-	myConfig->DriveTrain_LeftTalon2_Profile_1_PID_F = Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon2::Profile::1::PID::F",0.01);
-	myConfig->DriveTrain_LeftTalon2_Profile_1_IZone = Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon2::Profile::1::IZone",256);
-	myConfig->DriveTrain_LeftTalon2_Profile_1_EnableCLRampRate = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon2::Profile::1::EnableCLRampRate",false);
-	myConfig->DriveTrain_LeftTalon2_Profile_1_CLRampRate = Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon2::Profile::1::CLRampRate",2500);
-	myConfig->DriveTrain_LeftTalon2_EnableVoltRampRate = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon2::EnableVoltRampRate",false);
-	myConfig->DriveTrain_LeftTalon2_VoltRampRate = Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon2::VoltRampRate",5.0);
-	myConfig->DriveTrain_LeftTalon2_PID_CL_PM_Error = Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon2::PID::CL::PM::Error",10);
-	myConfig->DriveTrain_LeftTalon2_QuadEncoder_PulsesPerInch = Preferences::GetInstance()->GetFloat("DriveTrain::LeftTalon2::QuadEncoder::PulsesPerInch",200.584198);
     myConfig->DriveTrain_LeftTalon2_Slaved = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon2::Slaved",true);
     myConfig->DriveTrain_LeftTalon2_MasterCANID = Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon2::MasterCANID",3);
     myType = (DriveType) Preferences::GetInstance()->GetInt("DriveTrain::DriveType",(int)DriveType_Split);
@@ -187,243 +156,78 @@ void DriveTrain::RetrieveConfig()
 
 void DriveTrain::SaveConfig()
 {
+	Preferences::GetInstance()->PutInt("DriveTrain::DriveType",(int) myType);
 	Preferences::GetInstance()->PutFloat("DriveTrain::HighSpeed",myConfig->DriveTrain_HighSpeed);
 	Preferences::GetInstance()->PutFloat("DriveTrain::LowSpeed",myConfig->DriveTrain_LowSpeed);
-	Preferences::GetInstance()->PutFloat("DriveTrain::QuadEncoder::PulsesPerDegree",myConfig->DriveTrain_QuadEncoder_PulsesPerDegree);
-	Preferences::GetInstance()->PutInt("DriveTrain::DriveType",(int) myType);
+	Preferences::GetInstance()->PutInt("DriveTrain::QuadEncoder::CodesPerRev",myConfig->DriveTrain_QuadEncoder_CodesPerRev);
+	Preferences::GetInstance()->PutFloat("DriveTrain::QuadEncoder::InchesPerRotation",myConfig->DriveTrain_InchesPerRotation);
+
+	Preferences::GetInstance()->PutBoolean("DriveTrain::EnableVoltRampRate",myConfig->DriveTrain_EnableVoltRampRate);
+	Preferences::GetInstance()->PutDouble("DriveTrain::VoltRampRate",myConfig->DriveTrain_VoltRampRate);
+	Preferences::GetInstance()->PutInt("DriveTrain::PID::CL::Allowable::Error",myConfig->DriveTrain_PID_CL_Allowable_Error);
+	Preferences::GetInstance()->PutBoolean("DriveTrain::Right::Reversed",myConfig->DriveTrain_Right_Reversed);
+	Preferences::GetInstance()->PutBoolean("DriveTrain::Right::SensorReversed",myConfig->DriveTrain_Right_SensorReversed);
+	Preferences::GetInstance()->PutDouble("DriveTrain::Right::Profile::0::PID::P",myConfig->DriveTrain_Right_Profile_0_PID_P);
+	Preferences::GetInstance()->PutDouble("DriveTrain::Right::Profile::0::PID::I",myConfig->DriveTrain_Right_Profile_0_PID_I);
+	Preferences::GetInstance()->PutDouble("DriveTrain::Right::Profile::0::PID::D",myConfig->DriveTrain_Right_Profile_0_PID_D);
+	Preferences::GetInstance()->PutDouble("DriveTrain::Right::Profile::0::PID::F",myConfig->DriveTrain_Right_Profile_0_PID_F);
+	Preferences::GetInstance()->PutInt("DriveTrain::Right::Profile::0::IZone",myConfig->DriveTrain_Right_Profile_0_IZone);
+	Preferences::GetInstance()->PutBoolean("DriveTrain::Right::Profile::0::EnableCLRampRate",myConfig->DriveTrain_Right_Profile_0_EnableCLRampRate);
+	Preferences::GetInstance()->PutDouble("DriveTrain::Right::Profile::0::CLRampRate",myConfig->DriveTrain_Right_Profile_0_CLRampRate);
+	Preferences::GetInstance()->PutDouble("DriveTrain::Right::Profile::1::PID::P",myConfig->DriveTrain_Right_Profile_1_PID_P);
+	Preferences::GetInstance()->PutDouble("DriveTrain::Right::Profile::1::PID::I",myConfig->DriveTrain_Right_Profile_1_PID_I);
+	Preferences::GetInstance()->PutDouble("DriveTrain::Right::Profile::1::PID::D",myConfig->DriveTrain_Right_Profile_1_PID_D);
+	Preferences::GetInstance()->PutDouble("DriveTrain::Right::Profile::1::PID::F",myConfig->DriveTrain_Right_Profile_1_PID_F);
+	Preferences::GetInstance()->PutInt("DriveTrain::Right::Profile::1::IZone",myConfig->DriveTrain_Right_Profile_1_IZone);
+	Preferences::GetInstance()->PutBoolean("DriveTrain::Right::Profile::1::EnableCLRampRate",myConfig->DriveTrain_Right_Profile_1_EnableCLRampRate);
+	Preferences::GetInstance()->PutDouble("DriveTrain::Right::Profile::1::CLRampRate",myConfig->DriveTrain_Right_Profile_1_CLRampRate);
 
 	Preferences::GetInstance()->PutBoolean("DriveTrain::RightTalon1::Enabled",myConfig->DriveTrain_RightTalon1_Enabled);
 	Preferences::GetInstance()->PutInt("DriveTrain::RightTalon1::CANID",myConfig->DriveTrain_RightTalon1_CANID);
-	Preferences::GetInstance()->PutBoolean("DriveTrain::RightTalon1::Reversed",myConfig->DriveTrain_RightTalon1_Reversed);
 	Preferences::GetInstance()->PutBoolean("DriveTrain::RightTalon1::HasSensor",myConfig->DriveTrain_RightTalon1_HasSensor);
-	Preferences::GetInstance()->PutBoolean("DriveTrain::RightTalon1::SensorReversed",myConfig->DriveTrain_RightTalon1_SensorReversed);
 	Preferences::GetInstance()->PutBoolean("DriveTrain::RightTalon1::EnablePID",myConfig->DriveTrain_RightTalon1_EnablePID);
-	Preferences::GetInstance()->PutDouble("DriveTrain::RightTalon1::Profile::0::PID::P",myConfig->DriveTrain_RightTalon1_Profile_0_PID_P);
-	Preferences::GetInstance()->PutDouble("DriveTrain::RightTalon1::Profile::0::PID::I",myConfig->DriveTrain_RightTalon1_Profile_0_PID_I);
-	Preferences::GetInstance()->PutDouble("DriveTrain::RightTalon1::Profile::0::PID::D",myConfig->DriveTrain_RightTalon1_Profile_0_PID_D);
-	Preferences::GetInstance()->PutDouble("DriveTrain::RightTalon1::Profile::0::PID::F",myConfig->DriveTrain_RightTalon1_Profile_0_PID_F);
-	Preferences::GetInstance()->PutInt("DriveTrain::RightTalon1::Profile::0::IZone",myConfig->DriveTrain_RightTalon1_Profile_0_IZone);
-	Preferences::GetInstance()->PutBoolean("DriveTrain::RightTalon1::Profile::0::EnableCLRampRate",myConfig->DriveTrain_RightTalon1_Profile_0_EnableCLRampRate);
-	Preferences::GetInstance()->PutDouble("DriveTrain::RightTalon1::Profile::0::CLRampRate",myConfig->DriveTrain_RightTalon1_Profile_0_CLRampRate);
-	Preferences::GetInstance()->PutDouble("DriveTrain::RightTalon1::Profile::1::PID::P",myConfig->DriveTrain_RightTalon1_Profile_1_PID_P);
-	Preferences::GetInstance()->PutDouble("DriveTrain::RightTalon1::Profile::1::PID::I",myConfig->DriveTrain_RightTalon1_Profile_1_PID_I);
-	Preferences::GetInstance()->PutDouble("DriveTrain::RightTalon1::Profile::1::PID::D",myConfig->DriveTrain_RightTalon1_Profile_1_PID_D);
-	Preferences::GetInstance()->PutDouble("DriveTrain::RightTalon1::Profile::1::PID::F",myConfig->DriveTrain_RightTalon1_Profile_1_PID_F);
-	Preferences::GetInstance()->PutInt("DriveTrain::RightTalon1::Profile::1::IZone",myConfig->DriveTrain_RightTalon1_Profile_1_IZone);
-	Preferences::GetInstance()->PutBoolean("DriveTrain::RightTalon1::Profile::1::EnableCLRampRate",myConfig->DriveTrain_RightTalon1_Profile_1_EnableCLRampRate);
-	Preferences::GetInstance()->PutDouble("DriveTrain::RightTalon1::Profile::1::CLRampRate",myConfig->DriveTrain_RightTalon1_Profile_1_CLRampRate);
-	Preferences::GetInstance()->PutBoolean("DriveTrain::RightTalon1::EnableVoltRampRate",myConfig->DriveTrain_RightTalon1_EnableVoltRampRate);
-	Preferences::GetInstance()->PutDouble("DriveTrain::RightTalon1::VoltRampRate",myConfig->DriveTrain_RightTalon1_VoltRampRate);
-	Preferences::GetInstance()->PutInt("DriveTrain::RightTalon1::PID::CL::PM::Error",myConfig->DriveTrain_RightTalon1_PID_CL_PM_Error);
-	Preferences::GetInstance()->PutFloat("DriveTrain::RightTalon1::QuadEncoder::PulsesPerInch",myConfig->DriveTrain_RightTalon1_QuadEncoder_PulsesPerInch);
     Preferences::GetInstance()->PutBoolean("DriveTrain::RightTalon1::Slaved",myConfig->DriveTrain_RightTalon1_Slaved);
     Preferences::GetInstance()->PutInt("DriveTrain::RightTalon1::MasterCANID",myConfig->DriveTrain_RightTalon1_MasterCANID);
 
 	Preferences::GetInstance()->PutBoolean("DriveTrain::RightTalon2::Enabled",myConfig->DriveTrain_RightTalon2_Enabled);
 	Preferences::GetInstance()->PutInt("DriveTrain::RightTalon2::CANID",myConfig->DriveTrain_RightTalon2_CANID);
-	Preferences::GetInstance()->PutBoolean("DriveTrain::RightTalon2::Reversed",myConfig->DriveTrain_RightTalon2_Reversed);
 	Preferences::GetInstance()->PutBoolean("DriveTrain::RightTalon2::HasSensor",myConfig->DriveTrain_RightTalon2_HasSensor);
-	Preferences::GetInstance()->PutBoolean("DriveTrain::RightTalon2::SensorReversed",myConfig->DriveTrain_RightTalon2_SensorReversed);
 	Preferences::GetInstance()->PutBoolean("DriveTrain::RightTalon2::EnablePID",myConfig->DriveTrain_RightTalon2_EnablePID);
-	Preferences::GetInstance()->PutDouble("DriveTrain::RightTalon2::Profile::0::PID::P",myConfig->DriveTrain_RightTalon2_Profile_0_PID_P);
-	Preferences::GetInstance()->PutDouble("DriveTrain::RightTalon2::Profile::0::PID::I",myConfig->DriveTrain_RightTalon2_Profile_0_PID_I);
-	Preferences::GetInstance()->PutDouble("DriveTrain::RightTalon2::Profile::0::PID::D",myConfig->DriveTrain_RightTalon2_Profile_0_PID_D);
-	Preferences::GetInstance()->PutDouble("DriveTrain::RightTalon2::Profile::0::PID::F",myConfig->DriveTrain_RightTalon2_Profile_0_PID_F);
-	Preferences::GetInstance()->PutInt("DriveTrain::RightTalon2::Profile::0::IZone",myConfig->DriveTrain_RightTalon2_Profile_0_IZone);
-	Preferences::GetInstance()->PutBoolean("DriveTrain::RightTalon2::Profile::0::EnableCLRampRate",myConfig->DriveTrain_RightTalon2_Profile_0_EnableCLRampRate);
-	Preferences::GetInstance()->PutDouble("DriveTrain::RightTalon2::Profile::0::CLRampRate",myConfig->DriveTrain_RightTalon2_Profile_0_CLRampRate);
-	Preferences::GetInstance()->PutDouble("DriveTrain::RightTalon2::Profile::1::PID::P",myConfig->DriveTrain_RightTalon2_Profile_1_PID_P);
-	Preferences::GetInstance()->PutDouble("DriveTrain::RightTalon2::Profile::1::PID::I",myConfig->DriveTrain_RightTalon2_Profile_1_PID_I);
-	Preferences::GetInstance()->PutDouble("DriveTrain::RightTalon2::Profile::1::PID::D",myConfig->DriveTrain_RightTalon2_Profile_1_PID_D);
-	Preferences::GetInstance()->PutDouble("DriveTrain::RightTalon2::Profile::1::PID::F",myConfig->DriveTrain_RightTalon2_Profile_1_PID_F);
-	Preferences::GetInstance()->PutInt("DriveTrain::RightTalon2::Profile::1::IZone",myConfig->DriveTrain_RightTalon2_Profile_1_IZone);
-	Preferences::GetInstance()->PutBoolean("DriveTrain::RightTalon2::Profile::1::EnableCLRampRate",myConfig->DriveTrain_RightTalon2_Profile_1_EnableCLRampRate);
-	Preferences::GetInstance()->PutDouble("DriveTrain::RightTalon2::Profile::1::CLRampRate",myConfig->DriveTrain_RightTalon2_Profile_1_CLRampRate);
-	Preferences::GetInstance()->PutBoolean("DriveTrain::RightTalon2::EnableVoltRampRate",myConfig->DriveTrain_RightTalon2_EnableVoltRampRate);
-	Preferences::GetInstance()->PutDouble("DriveTrain::RightTalon2::VoltRampRate",myConfig->DriveTrain_RightTalon2_VoltRampRate);
-	Preferences::GetInstance()->PutInt("DriveTrain::RightTalon2::PID::CL::PM::Error",myConfig->DriveTrain_RightTalon2_PID_CL_PM_Error);
-	Preferences::GetInstance()->PutFloat("DriveTrain::RightTalon2::QuadEncoder::PulsesPerInch",myConfig->DriveTrain_RightTalon2_QuadEncoder_PulsesPerInch);
     Preferences::GetInstance()->PutBoolean("DriveTrain::RightTalon2::Slaved",myConfig->DriveTrain_RightTalon2_Slaved);
     Preferences::GetInstance()->PutInt("DriveTrain::RightTalon2::MasterCANID",myConfig->DriveTrain_RightTalon2_MasterCANID);
 
+	Preferences::GetInstance()->PutBoolean("DriveTrain::Left::Reversed",myConfig->DriveTrain_Left_Reversed);
+	Preferences::GetInstance()->PutBoolean("DriveTrain::Left::SensorReversed",myConfig->DriveTrain_Left_SensorReversed);
+	Preferences::GetInstance()->PutDouble("DriveTrain::Left::Profile::0::PID::P",myConfig->DriveTrain_Left_Profile_0_PID_P);
+	Preferences::GetInstance()->PutDouble("DriveTrain::Left::Profile::0::PID::I",myConfig->DriveTrain_Left_Profile_0_PID_I);
+	Preferences::GetInstance()->PutDouble("DriveTrain::Left::Profile::0::PID::D",myConfig->DriveTrain_Left_Profile_0_PID_D);
+	Preferences::GetInstance()->PutDouble("DriveTrain::Left::Profile::0::PID::F",myConfig->DriveTrain_Left_Profile_0_PID_F);
+	Preferences::GetInstance()->PutInt("DriveTrain::Left::Profile::0::IZone",myConfig->DriveTrain_Left_Profile_0_IZone);
+	Preferences::GetInstance()->PutBoolean("DriveTrain::Left::Profile::0::EnableCLRampRate",myConfig->DriveTrain_Left_Profile_0_EnableCLRampRate);
+	Preferences::GetInstance()->PutDouble("DriveTrain::Left::Profile::0::CLRampRate",myConfig->DriveTrain_Left_Profile_0_CLRampRate);
+	Preferences::GetInstance()->PutDouble("DriveTrain::Left::Profile::1::PID::P",myConfig->DriveTrain_Left_Profile_1_PID_P);
+	Preferences::GetInstance()->PutDouble("DriveTrain::Left::Profile::1::PID::I",myConfig->DriveTrain_Left_Profile_1_PID_I);
+	Preferences::GetInstance()->PutDouble("DriveTrain::Left::Profile::1::PID::D",myConfig->DriveTrain_Left_Profile_1_PID_D);
+	Preferences::GetInstance()->PutDouble("DriveTrain::Left::Profile::1::PID::F",myConfig->DriveTrain_Left_Profile_1_PID_F);
+	Preferences::GetInstance()->PutInt("DriveTrain::Left::Profile::1::IZone",myConfig->DriveTrain_Left_Profile_1_IZone);
+	Preferences::GetInstance()->PutBoolean("DriveTrain::Left::Profile::1::EnableCLRampRate",myConfig->DriveTrain_Left_Profile_1_EnableCLRampRate);
+	Preferences::GetInstance()->PutDouble("DriveTrain::Left::Profile::1::CLRampRate",myConfig->DriveTrain_Left_Profile_1_CLRampRate);
+
 	Preferences::GetInstance()->PutBoolean("DriveTrain::LeftTalon1::Enabled",myConfig->DriveTrain_LeftTalon1_Enabled);
 	Preferences::GetInstance()->PutInt("DriveTrain::LeftTalon1::CANID",myConfig->DriveTrain_LeftTalon1_CANID);
-	Preferences::GetInstance()->PutBoolean("DriveTrain::LeftTalon1::Reversed",myConfig->DriveTrain_LeftTalon1_Reversed);
 	Preferences::GetInstance()->PutBoolean("DriveTrain::LeftTalon1::HasSensor",myConfig->DriveTrain_LeftTalon1_HasSensor);
-	Preferences::GetInstance()->PutBoolean("DriveTrain::LeftTalon1::SensorReversed",myConfig->DriveTrain_LeftTalon1_SensorReversed);
 	Preferences::GetInstance()->PutBoolean("DriveTrain::LeftTalon1::EnablePID",myConfig->DriveTrain_LeftTalon1_EnablePID);
-	Preferences::GetInstance()->PutDouble("DriveTrain::LeftTalon1::Profile::0::PID::P",myConfig->DriveTrain_LeftTalon1_Profile_0_PID_P);
-	Preferences::GetInstance()->PutDouble("DriveTrain::LeftTalon1::Profile::0::PID::I",myConfig->DriveTrain_LeftTalon1_Profile_0_PID_I);
-	Preferences::GetInstance()->PutDouble("DriveTrain::LeftTalon1::Profile::0::PID::D",myConfig->DriveTrain_LeftTalon1_Profile_0_PID_D);
-	Preferences::GetInstance()->PutDouble("DriveTrain::LeftTalon1::Profile::0::PID::F",myConfig->DriveTrain_LeftTalon1_Profile_0_PID_F);
-	Preferences::GetInstance()->PutInt("DriveTrain::LeftTalon1::Profile::0::IZone",myConfig->DriveTrain_LeftTalon1_Profile_0_IZone);
-	Preferences::GetInstance()->PutBoolean("DriveTrain::LeftTalon1::Profile::0::EnableCLRampRate",myConfig->DriveTrain_LeftTalon1_Profile_0_EnableCLRampRate);
-	Preferences::GetInstance()->PutDouble("DriveTrain::LeftTalon1::Profile::0::CLRampRate",myConfig->DriveTrain_LeftTalon1_Profile_0_CLRampRate);
-	Preferences::GetInstance()->PutDouble("DriveTrain::LeftTalon1::Profile::1::PID::P",myConfig->DriveTrain_LeftTalon1_Profile_1_PID_P);
-	Preferences::GetInstance()->PutDouble("DriveTrain::LeftTalon1::Profile::1::PID::I",myConfig->DriveTrain_LeftTalon1_Profile_1_PID_I);
-	Preferences::GetInstance()->PutDouble("DriveTrain::LeftTalon1::Profile::1::PID::D",myConfig->DriveTrain_LeftTalon1_Profile_1_PID_D);
-	Preferences::GetInstance()->PutDouble("DriveTrain::LeftTalon1::Profile::1::PID::F",myConfig->DriveTrain_LeftTalon1_Profile_1_PID_F);
-	Preferences::GetInstance()->PutInt("DriveTrain::LeftTalon1::Profile::1::IZone",myConfig->DriveTrain_LeftTalon1_Profile_1_IZone);
-	Preferences::GetInstance()->PutBoolean("DriveTrain::LeftTalon1::Profile::1::EnableCLRampRate",myConfig->DriveTrain_LeftTalon1_Profile_1_EnableCLRampRate);
-	Preferences::GetInstance()->PutDouble("DriveTrain::LeftTalon1::Profile::1::CLRampRate",myConfig->DriveTrain_LeftTalon1_Profile_1_CLRampRate);
-	Preferences::GetInstance()->PutBoolean("DriveTrain::LeftTalon1::EnableVoltRampRate",myConfig->DriveTrain_LeftTalon1_EnableVoltRampRate);
-	Preferences::GetInstance()->PutDouble("DriveTrain::LeftTalon1::VoltRampRate",myConfig->DriveTrain_LeftTalon1_VoltRampRate);
-	Preferences::GetInstance()->PutInt("DriveTrain::LeftTalon1::PID::CL::PM::Error",myConfig->DriveTrain_LeftTalon1_PID_CL_PM_Error);
-	Preferences::GetInstance()->PutFloat("DriveTrain::LeftTalon1::QuadEncoder::PulsesPerInch",myConfig->DriveTrain_LeftTalon1_QuadEncoder_PulsesPerInch);
     Preferences::GetInstance()->PutBoolean("DriveTrain::LeftTalon1::Slaved",myConfig->DriveTrain_LeftTalon1_Slaved);
     Preferences::GetInstance()->PutInt("DriveTrain::LeftTalon1::MasterCANID",myConfig->DriveTrain_LeftTalon1_MasterCANID);
 
 	Preferences::GetInstance()->PutBoolean("DriveTrain::LeftTalon2::Enabled",myConfig->DriveTrain_LeftTalon2_Enabled);
 	Preferences::GetInstance()->PutInt("DriveTrain::LeftTalon2::CANID",myConfig->DriveTrain_LeftTalon2_CANID);
-	Preferences::GetInstance()->PutBoolean("DriveTrain::LeftTalon2::Reversed",myConfig->DriveTrain_LeftTalon2_Reversed);
 	Preferences::GetInstance()->PutBoolean("DriveTrain::LeftTalon2::HasSensor",myConfig->DriveTrain_LeftTalon2_HasSensor);
-	Preferences::GetInstance()->PutBoolean("DriveTrain::LeftTalon2::SensorReversed",myConfig->DriveTrain_LeftTalon2_SensorReversed);
 	Preferences::GetInstance()->PutBoolean("DriveTrain::LeftTalon2::EnablePID",myConfig->DriveTrain_LeftTalon2_EnablePID);
-	Preferences::GetInstance()->PutDouble("DriveTrain::LeftTalon2::Profile::0::PID::P",myConfig->DriveTrain_LeftTalon2_Profile_0_PID_P);
-	Preferences::GetInstance()->PutDouble("DriveTrain::LeftTalon2::Profile::0::PID::I",myConfig->DriveTrain_LeftTalon2_Profile_0_PID_I);
-	Preferences::GetInstance()->PutDouble("DriveTrain::LeftTalon2::Profile::0::PID::D",myConfig->DriveTrain_LeftTalon2_Profile_0_PID_D);
-	Preferences::GetInstance()->PutDouble("DriveTrain::LeftTalon2::Profile::0::PID::F",myConfig->DriveTrain_LeftTalon2_Profile_0_PID_F);
-	Preferences::GetInstance()->PutInt("DriveTrain::LeftTalon2::Profile::0::IZone",myConfig->DriveTrain_LeftTalon2_Profile_0_IZone);
-	Preferences::GetInstance()->PutBoolean("DriveTrain::LeftTalon2::Profile::0::EnableCLRampRate",myConfig->DriveTrain_LeftTalon2_Profile_0_EnableCLRampRate);
-	Preferences::GetInstance()->PutDouble("DriveTrain::LeftTalon2::Profile::0::CLRampRate",myConfig->DriveTrain_LeftTalon2_Profile_0_CLRampRate);
-	Preferences::GetInstance()->PutDouble("DriveTrain::LeftTalon2::Profile::1::PID::P",myConfig->DriveTrain_LeftTalon2_Profile_1_PID_P);
-	Preferences::GetInstance()->PutDouble("DriveTrain::LeftTalon2::Profile::1::PID::I",myConfig->DriveTrain_LeftTalon2_Profile_1_PID_I);
-	Preferences::GetInstance()->PutDouble("DriveTrain::LeftTalon2::Profile::1::PID::D",myConfig->DriveTrain_LeftTalon2_Profile_1_PID_D);
-	Preferences::GetInstance()->PutDouble("DriveTrain::LeftTalon2::Profile::1::PID::F",myConfig->DriveTrain_LeftTalon2_Profile_1_PID_F);
-	Preferences::GetInstance()->PutInt("DriveTrain::LeftTalon2::Profile::1::IZone",myConfig->DriveTrain_LeftTalon2_Profile_1_IZone);
-	Preferences::GetInstance()->PutBoolean("DriveTrain::LeftTalon2::Profile::1::EnableCLRampRate",myConfig->DriveTrain_LeftTalon2_Profile_1_EnableCLRampRate);
-	Preferences::GetInstance()->PutDouble("DriveTrain::LeftTalon2::Profile::1::CLRampRate",myConfig->DriveTrain_LeftTalon2_Profile_1_CLRampRate);
-	Preferences::GetInstance()->PutBoolean("DriveTrain::LeftTalon2::EnableVoltRampRate",myConfig->DriveTrain_LeftTalon2_EnableVoltRampRate);
-	Preferences::GetInstance()->PutDouble("DriveTrain::LeftTalon2::VoltRampRate",myConfig->DriveTrain_LeftTalon2_VoltRampRate);
-	Preferences::GetInstance()->PutInt("DriveTrain::LeftTalon2::PID::CL::PM::Error",myConfig->DriveTrain_LeftTalon2_PID_CL_PM_Error);
-	Preferences::GetInstance()->PutFloat("DriveTrain::LeftTalon2::QuadEncoder::PulsesPerInch",myConfig->DriveTrain_LeftTalon2_QuadEncoder_PulsesPerInch);
     Preferences::GetInstance()->PutBoolean("DriveTrain::LeftTalon2::Slaved",myConfig->DriveTrain_LeftTalon2_Slaved);
     Preferences::GetInstance()->PutInt("DriveTrain::LeftTalon2::MasterCANID",myConfig->DriveTrain_LeftTalon2_MasterCANID);
 
 }
-
-/*
-void DriveTrain::CreateConfig()
-{
-	printf("Creating DriveTrain Config\n");
-    Preferences::GetInstance()->GetFloat("DriveTrain::HighSpeed",1.0);
-	Preferences::GetInstance()->GetFloat("DriveTrain::LowSpeed",0.75);
-	Preferences::GetInstance()->GetFloat("DriveTrain::QuadEncoder::PulsesPerDegree");
-
-	Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon1::Enabled",true);
-	Preferences::GetInstance()->GetInt("DriveTrain::RightTalon1::CANID",1);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon1::Reversed",false);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon1::HasSensor",true);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon1::SensorReversed",false);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon1::EnablePID",true);
-	Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon1::Profile::0::PID::P",1.0);
-	Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon1::Profile::0::PID::I",0.01);
-	Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon1::Profile::0::PID::D",0.0);
-	Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon1::Profile::0::PID::F",0.01);
-	Preferences::GetInstance()->GetInt("DriveTrain::RightTalon1::Profile::0::IZone",256);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon1::Profile::0::EnableCLRampRate",false);
-	Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon1::Profile::0::CLRampRate",2500);
-	Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon1::Profile::1::PID::P",1.0);
-	Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon1::Profile::1::PID::I",0.01);
-	Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon1::Profile::1::PID::D",0);
-	Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon1::Profile::1::PID::F",0.01);
-	Preferences::GetInstance()->GetInt("DriveTrain::RightTalon1::Profile::1::IZone",256);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon1::Profile::1::EnableCLRampRate",false);
-	Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon1::Profile::1::CLRampRate",2500);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon1::EnableVoltRampRate",false);
-	Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon1::VoltRampRate",5.0);
-	Preferences::GetInstance()->GetInt("DriveTrain::RightTalon1::PID::CL::PM::Error",10);
-	Preferences::GetInstance()->GetFloat("DriveTrain::RightTalon1::QuadEncoder::PulsesPerInch",200.584198);
-    Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon1::Slaved",false);
-    Preferences::GetInstance()->GetInt("DriveTrain::RightTalon1::MasterCANID",0);
-
-
-	Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon2::Enabled",true);
-	Preferences::GetInstance()->GetInt("DriveTrain::RightTalon2::CANID",2);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon2::Reversed",false);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon2::HasSensor",false);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon2::SensorReversed",false);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon2::EnablePID",false);
-	Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon2::Profile::0::PID::P",1.0);
-	Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon2::Profile::0::PID::I",0.01);
-	Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon2::Profile::0::PID::D",0.0);
-	Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon2::Profile::0::PID::F",0.01);
-	Preferences::GetInstance()->GetInt("DriveTrain::RightTalon2::Profile::0::IZone",256);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon2::Profile::0::EnableCLRampRate",false);
-	Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon2::Profile::0::CLRampRate",2500);
-	Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon2::Profile::1::PID::P",1.0);
-	Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon2::Profile::1::PID::I",0.01);
-	Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon2::Profile::1::PID::D",0);
-	Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon2::Profile::1::PID::F",0.01);
-	Preferences::GetInstance()->GetInt("DriveTrain::RightTalon2::Profile::1::IZone",256);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon2::Profile::1::EnableCLRampRate",false);
-	Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon2::Profile::1::CLRampRate",2500);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon2::EnableVoltRampRate",false);
-	Preferences::GetInstance()->GetDouble("DriveTrain::RightTalon2::VoltRampRate",5.0);
-	Preferences::GetInstance()->GetInt("DriveTrain::RightTalon2::PID::CL::PM::Error",10);
-	Preferences::GetInstance()->GetFloat("DriveTrain::RightTalon2::QuadEncoder::PulsesPerInch",200.584198);
-    Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon2::Slaved",true);
-    Preferences::GetInstance()->GetInt("DriveTrain::RightTalon2::MasterCANID",1);
-
-
-	Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon1::Enabled",true);
-	Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon1::CANID",3);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon1::Reversed",true);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon1::HasSensor",true);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon1::SensorReversed",true);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon1::EnablePID",true);
-	Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon1::Profile::0::PID::P",1.0);
-	Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon1::Profile::0::PID::I",0.01);
-	Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon1::Profile::0::PID::D",0);
-	Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon1::Profile::0::PID::F",0.01);
-	Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon1::Profile::0::IZone",256);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon1::Profile::0::EnableCLRampRate",false);
-	Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon1::Profile::0::CLRampRate",2500);
-	Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon1::Profile::1::PID::P",1);
-	Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon1::Profile::1::PID::I",0.01);
-	Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon1::Profile::1::PID::D",0);
-	Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon1::Profile::1::PID::F",0.01);
-	Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon1::Profile::1::IZone",256);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon1::Profile::1::EnableCLRampRate",false);
-	Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon1::Profile::1::CLRampRate",2500);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon1::EnableVoltRampRate",false);
-	Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon1::VoltRampRate",5.0);
-	Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon1::PID::CL::PM::Error",10);
-	Preferences::GetInstance()->GetFloat("DriveTrain::LeftTalon1::QuadEncoder::PulsesPerInch",200.584198);
-    Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon1::Slaved",false);
-    Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon1::MasterCANID",0);
-
-
-	Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon2::Enabled",true);
-	Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon2::CANID",4);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon2::Reversed",true);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon2::HasSensor",false);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon2::SensorReversed",false);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon2::EnablePID",true);
-	Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon2::Profile::0::PID::P",1.0);
-	Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon2::Profile::0::PID::I",0.01);
-	Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon2::Profile::0::PID::D",0);
-	Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon2::Profile::0::PID::F",0.01);
-	Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon2::Profile::0::IZone",256);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon2::Profile::0::EnableCLRampRate",false);
-	Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon2::Profile::0::CLRampRate",2500);
-	Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon2::Profile::1::PID::P",1.0);
-	Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon2::Profile::1::PID::I",0.01);
-	Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon2::Profile::1::PID::D",0.0);
-	Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon2::Profile::1::PID::F",0.01);
-	Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon2::Profile::1::IZone",256);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon2::Profile::1::EnableCLRampRate",false);
-	Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon2::Profile::1::CLRampRate",2500);
-	Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon2::EnableVoltRampRate",false);
-	Preferences::GetInstance()->GetDouble("DriveTrain::LeftTalon2::VoltRampRate",5.0);
-	Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon2::PID::CL::PM::Error",10);
-	Preferences::GetInstance()->GetFloat("DriveTrain::LeftTalon2::QuadEncoder::PulsesPerInch",200.584198);
-    Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon2::Slaved",true);
-    Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon2::MasterCANID",3);
-
-}
-*/
-
 
 void DriveTrain::Configure()
 {
@@ -434,7 +238,8 @@ void DriveTrain::Configure()
         if (myConfig->DriveTrain_LeftTalon1_HasSensor)
         {
         	leftTalon1->SetFeedbackDevice(CANTalon::QuadEncoder);
-			if (myConfig->DriveTrain_LeftTalon1_SensorReversed)
+        	leftTalon1->ConfigEncoderCodesPerRev(myConfig->DriveTrain_QuadEncoder_CodesPerRev);
+			if (myConfig->DriveTrain_Left_SensorReversed)
 			{
 				leftTalon1->SetSensorDirection(true);
 			} else
@@ -445,33 +250,33 @@ void DriveTrain::Configure()
         if (myConfig->DriveTrain_LeftTalon1_EnablePID)
         {
         	leftTalon1->SelectProfileSlot(0);
-        	leftTalon1->SetP(myConfig->DriveTrain_LeftTalon1_Profile_0_PID_P);
-        	leftTalon1->SetI(myConfig->DriveTrain_LeftTalon1_Profile_0_PID_I);
-        	leftTalon1->SetD(myConfig->DriveTrain_LeftTalon1_Profile_0_PID_D);
-        	leftTalon1->SetF(myConfig->DriveTrain_LeftTalon1_Profile_0_PID_F);
-			if (myConfig->DriveTrain_LeftTalon1_Profile_0_EnableCLRampRate)
+        	leftTalon1->SetP(myConfig->DriveTrain_Left_Profile_0_PID_P);
+        	leftTalon1->SetI(myConfig->DriveTrain_Left_Profile_0_PID_I);
+        	leftTalon1->SetD(myConfig->DriveTrain_Left_Profile_0_PID_D);
+        	leftTalon1->SetF(myConfig->DriveTrain_Left_Profile_0_PID_F);
+			if (myConfig->DriveTrain_Left_Profile_0_EnableCLRampRate)
 			{
-				leftTalon1->SetCloseLoopRampRate(myConfig->DriveTrain_LeftTalon1_Profile_0_CLRampRate);
+				leftTalon1->SetCloseLoopRampRate(myConfig->DriveTrain_Left_Profile_0_CLRampRate);
 			}
 
-			leftTalon1->SetIzone(myConfig->DriveTrain_LeftTalon1_Profile_0_IZone);
+			leftTalon1->SetIzone(myConfig->DriveTrain_Left_Profile_0_IZone);
 
 			leftTalon1->SelectProfileSlot(1);
-			leftTalon1->SetP(myConfig->DriveTrain_LeftTalon1_Profile_1_PID_P);
-			leftTalon1->SetI(myConfig->DriveTrain_LeftTalon1_Profile_1_PID_I);
-			leftTalon1->SetD(myConfig->DriveTrain_LeftTalon1_Profile_1_PID_D);
-			leftTalon1->SetF(myConfig->DriveTrain_LeftTalon1_Profile_1_PID_F);
-			if (myConfig->DriveTrain_LeftTalon1_Profile_1_EnableCLRampRate)
+			leftTalon1->SetP(myConfig->DriveTrain_Left_Profile_1_PID_P);
+			leftTalon1->SetI(myConfig->DriveTrain_Left_Profile_1_PID_I);
+			leftTalon1->SetD(myConfig->DriveTrain_Left_Profile_1_PID_D);
+			leftTalon1->SetF(myConfig->DriveTrain_Left_Profile_1_PID_F);
+			if (myConfig->DriveTrain_Left_Profile_1_EnableCLRampRate)
 			{
-				leftTalon1->SetCloseLoopRampRate(myConfig->DriveTrain_LeftTalon1_Profile_1_CLRampRate);
+				leftTalon1->SetCloseLoopRampRate(myConfig->DriveTrain_Left_Profile_1_CLRampRate);
 			}
 
-			leftTalon1->SetIzone(myConfig->DriveTrain_LeftTalon1_Profile_1_IZone);
+			leftTalon1->SetIzone(myConfig->DriveTrain_Left_Profile_1_IZone);
         }
 
-		if(myConfig->DriveTrain_LeftTalon1_EnableVoltRampRate)
+		if(myConfig->DriveTrain_EnableVoltRampRate)
 		{
-			leftTalon1->SetVoltageRampRate(myConfig->DriveTrain_LeftTalon1_VoltRampRate);
+			leftTalon1->SetVoltageRampRate(myConfig->DriveTrain_VoltRampRate);
 		}
 
 		if(myConfig->DriveTrain_LeftTalon1_Slaved)
@@ -487,7 +292,8 @@ void DriveTrain::Configure()
         if (myConfig->DriveTrain_LeftTalon2_HasSensor)
         {
         	leftTalon2->SetFeedbackDevice(CANTalon::QuadEncoder);
-			if (myConfig->DriveTrain_LeftTalon2_SensorReversed)
+        	leftTalon2->ConfigEncoderCodesPerRev(myConfig->DriveTrain_QuadEncoder_CodesPerRev);
+			if (myConfig->DriveTrain_Left_SensorReversed)
 			{
 				leftTalon2->SetSensorDirection(true);
 			} else
@@ -498,33 +304,33 @@ void DriveTrain::Configure()
         if (myConfig->DriveTrain_LeftTalon2_EnablePID)
         {
         	leftTalon2->SelectProfileSlot(0);
-        	leftTalon2->SetP(myConfig->DriveTrain_LeftTalon2_Profile_0_PID_P);
-        	leftTalon2->SetI(myConfig->DriveTrain_LeftTalon2_Profile_0_PID_I);
-        	leftTalon2->SetD(myConfig->DriveTrain_LeftTalon2_Profile_0_PID_D);
-        	leftTalon2->SetF(myConfig->DriveTrain_LeftTalon2_Profile_0_PID_F);
-			if (myConfig->DriveTrain_LeftTalon2_Profile_0_EnableCLRampRate)
+        	leftTalon2->SetP(myConfig->DriveTrain_Left_Profile_0_PID_P);
+        	leftTalon2->SetI(myConfig->DriveTrain_Left_Profile_0_PID_I);
+        	leftTalon2->SetD(myConfig->DriveTrain_Left_Profile_0_PID_D);
+        	leftTalon2->SetF(myConfig->DriveTrain_Left_Profile_0_PID_F);
+			if (myConfig->DriveTrain_Left_Profile_0_EnableCLRampRate)
 			{
-				leftTalon2->SetCloseLoopRampRate(myConfig->DriveTrain_LeftTalon2_Profile_0_CLRampRate);
+				leftTalon2->SetCloseLoopRampRate(myConfig->DriveTrain_Left_Profile_0_CLRampRate);
 			}
 
-			leftTalon2->SetIzone(myConfig->DriveTrain_LeftTalon2_Profile_0_IZone);
+			leftTalon2->SetIzone(myConfig->DriveTrain_Left_Profile_0_IZone);
 
 			leftTalon2->SelectProfileSlot(1);
-			leftTalon2->SetP(myConfig->DriveTrain_LeftTalon2_Profile_1_PID_P);
-			leftTalon2->SetI(myConfig->DriveTrain_LeftTalon2_Profile_1_PID_I);
-			leftTalon2->SetD(myConfig->DriveTrain_LeftTalon2_Profile_1_PID_D);
-			leftTalon2->SetF(myConfig->DriveTrain_LeftTalon2_Profile_1_PID_F);
-			if (myConfig->DriveTrain_LeftTalon2_Profile_1_EnableCLRampRate)
+			leftTalon2->SetP(myConfig->DriveTrain_Left_Profile_1_PID_P);
+			leftTalon2->SetI(myConfig->DriveTrain_Left_Profile_1_PID_I);
+			leftTalon2->SetD(myConfig->DriveTrain_Left_Profile_1_PID_D);
+			leftTalon2->SetF(myConfig->DriveTrain_Left_Profile_1_PID_F);
+			if (myConfig->DriveTrain_Left_Profile_1_EnableCLRampRate)
 			{
-				leftTalon2->SetCloseLoopRampRate(myConfig->DriveTrain_LeftTalon2_Profile_1_CLRampRate);
+				leftTalon2->SetCloseLoopRampRate(myConfig->DriveTrain_Left_Profile_1_CLRampRate);
 			}
 
-			leftTalon2->SetIzone(myConfig->DriveTrain_LeftTalon2_Profile_1_IZone);
+			leftTalon2->SetIzone(myConfig->DriveTrain_Left_Profile_1_IZone);
         }
 
-		if(myConfig->DriveTrain_LeftTalon2_EnableVoltRampRate)
+		if(myConfig->DriveTrain_EnableVoltRampRate)
 		{
-			leftTalon2->SetVoltageRampRate(myConfig->DriveTrain_LeftTalon2_VoltRampRate);
+			leftTalon2->SetVoltageRampRate(myConfig->DriveTrain_VoltRampRate);
 		}
 
 		if(myConfig->DriveTrain_LeftTalon2_Slaved)
@@ -534,6 +340,21 @@ void DriveTrain::Configure()
 		}
 	}
 
+    if (myConfig->DriveTrain_LeftTalon2_HasSensor)
+    {
+    	leftMaster = leftTalon2;
+    } else
+    {
+    	leftMaster = leftTalon1;
+    }
+
+    if(myConfig->DriveTrain_Left_Reversed)
+    {
+    	leftTalon1->SetInverted(true);
+    	leftTalon2->SetInverted(true);
+    }
+
+
 
 // Right Side
 
@@ -542,7 +363,8 @@ void DriveTrain::Configure()
         if (myConfig->DriveTrain_RightTalon1_HasSensor)
         {
         	rightTalon1->SetFeedbackDevice(CANTalon::QuadEncoder);
-			if (myConfig->DriveTrain_RightTalon1_SensorReversed)
+        	rightTalon1->ConfigEncoderCodesPerRev(myConfig->DriveTrain_QuadEncoder_CodesPerRev);
+			if (myConfig->DriveTrain_Right_SensorReversed)
 			{
 				rightTalon1->SetSensorDirection(true);
 			} else
@@ -553,33 +375,33 @@ void DriveTrain::Configure()
         if (myConfig->DriveTrain_RightTalon1_EnablePID)
         {
         	rightTalon1->SelectProfileSlot(0);
-        	rightTalon1->SetP(myConfig->DriveTrain_RightTalon1_Profile_0_PID_P);
-        	rightTalon1->SetI(myConfig->DriveTrain_RightTalon1_Profile_0_PID_I);
-        	rightTalon1->SetD(myConfig->DriveTrain_RightTalon1_Profile_0_PID_D);
-        	rightTalon1->SetF(myConfig->DriveTrain_RightTalon1_Profile_0_PID_F);
-			if (myConfig->DriveTrain_RightTalon1_Profile_0_EnableCLRampRate)
+        	rightTalon1->SetP(myConfig->DriveTrain_Right_Profile_0_PID_P);
+        	rightTalon1->SetI(myConfig->DriveTrain_Right_Profile_0_PID_I);
+        	rightTalon1->SetD(myConfig->DriveTrain_Right_Profile_0_PID_D);
+        	rightTalon1->SetF(myConfig->DriveTrain_Right_Profile_0_PID_F);
+			if (myConfig->DriveTrain_Right_Profile_0_EnableCLRampRate)
 			{
-				rightTalon1->SetCloseLoopRampRate(myConfig->DriveTrain_RightTalon1_Profile_0_CLRampRate);
+				rightTalon1->SetCloseLoopRampRate(myConfig->DriveTrain_Right_Profile_0_CLRampRate);
 			}
 
-			rightTalon1->SetIzone(myConfig->DriveTrain_RightTalon1_Profile_0_IZone);
+			rightTalon1->SetIzone(myConfig->DriveTrain_Right_Profile_0_IZone);
 
 			rightTalon1->SelectProfileSlot(1);
-			rightTalon1->SetP(myConfig->DriveTrain_RightTalon1_Profile_1_PID_P);
-			rightTalon1->SetI(myConfig->DriveTrain_RightTalon1_Profile_1_PID_I);
-			rightTalon1->SetD(myConfig->DriveTrain_RightTalon1_Profile_1_PID_D);
-			rightTalon1->SetF(myConfig->DriveTrain_RightTalon1_Profile_1_PID_F);
-			if (myConfig->DriveTrain_RightTalon1_Profile_1_EnableCLRampRate)
+			rightTalon1->SetP(myConfig->DriveTrain_Right_Profile_1_PID_P);
+			rightTalon1->SetI(myConfig->DriveTrain_Right_Profile_1_PID_I);
+			rightTalon1->SetD(myConfig->DriveTrain_Right_Profile_1_PID_D);
+			rightTalon1->SetF(myConfig->DriveTrain_Right_Profile_1_PID_F);
+			if (myConfig->DriveTrain_Right_Profile_1_EnableCLRampRate)
 			{
-				rightTalon1->SetCloseLoopRampRate(myConfig->DriveTrain_RightTalon1_Profile_1_CLRampRate);
+				rightTalon1->SetCloseLoopRampRate(myConfig->DriveTrain_Right_Profile_1_CLRampRate);
 			}
 
-			rightTalon1->SetIzone(myConfig->DriveTrain_RightTalon1_Profile_1_IZone);
+			rightTalon1->SetIzone(myConfig->DriveTrain_Right_Profile_1_IZone);
         }
 
-		if(myConfig->DriveTrain_RightTalon1_EnableVoltRampRate)
+		if(myConfig->DriveTrain_EnableVoltRampRate)
 		{
-			rightTalon1->SetVoltageRampRate(myConfig->DriveTrain_RightTalon1_VoltRampRate);
+			rightTalon1->SetVoltageRampRate(myConfig->DriveTrain_VoltRampRate);
 		}
 
 		if(myConfig->DriveTrain_RightTalon1_Slaved)
@@ -594,7 +416,8 @@ void DriveTrain::Configure()
         if (myConfig->DriveTrain_RightTalon2_HasSensor)
         {
         	rightTalon2->SetFeedbackDevice(CANTalon::QuadEncoder);
-			if (myConfig->DriveTrain_RightTalon2_SensorReversed)
+        	rightTalon2->ConfigEncoderCodesPerRev(myConfig->DriveTrain_QuadEncoder_CodesPerRev);
+			if (myConfig->DriveTrain_Right_SensorReversed)
 			{
 				rightTalon2->SetSensorDirection(true);
 			} else
@@ -605,33 +428,33 @@ void DriveTrain::Configure()
         if (myConfig->DriveTrain_RightTalon2_EnablePID)
         {
         	rightTalon2->SelectProfileSlot(0);
-        	rightTalon2->SetP(myConfig->DriveTrain_RightTalon2_Profile_0_PID_P);
-        	rightTalon2->SetI(myConfig->DriveTrain_RightTalon2_Profile_0_PID_I);
-        	rightTalon2->SetD(myConfig->DriveTrain_RightTalon2_Profile_0_PID_D);
-        	rightTalon2->SetF(myConfig->DriveTrain_RightTalon2_Profile_0_PID_F);
-			if (myConfig->DriveTrain_RightTalon2_Profile_0_EnableCLRampRate)
+        	rightTalon2->SetP(myConfig->DriveTrain_Right_Profile_0_PID_P);
+        	rightTalon2->SetI(myConfig->DriveTrain_Right_Profile_0_PID_I);
+        	rightTalon2->SetD(myConfig->DriveTrain_Right_Profile_0_PID_D);
+        	rightTalon2->SetF(myConfig->DriveTrain_Right_Profile_0_PID_F);
+			if (myConfig->DriveTrain_Right_Profile_0_EnableCLRampRate)
 			{
-				rightTalon2->SetCloseLoopRampRate(myConfig->DriveTrain_RightTalon2_Profile_0_CLRampRate);
+				rightTalon2->SetCloseLoopRampRate(myConfig->DriveTrain_Right_Profile_0_CLRampRate);
 			}
 
-			rightTalon2->SetIzone(myConfig->DriveTrain_RightTalon2_Profile_0_IZone);
+			rightTalon2->SetIzone(myConfig->DriveTrain_Right_Profile_0_IZone);
 
 			rightTalon2->SelectProfileSlot(1);
-			rightTalon2->SetP(myConfig->DriveTrain_RightTalon2_Profile_1_PID_P);
-			rightTalon2->SetI(myConfig->DriveTrain_RightTalon2_Profile_1_PID_I);
-			rightTalon2->SetD(myConfig->DriveTrain_RightTalon2_Profile_1_PID_D);
-			rightTalon2->SetF(myConfig->DriveTrain_RightTalon2_Profile_1_PID_F);
-			if (myConfig->DriveTrain_RightTalon2_Profile_1_EnableCLRampRate)
+			rightTalon2->SetP(myConfig->DriveTrain_Right_Profile_1_PID_P);
+			rightTalon2->SetI(myConfig->DriveTrain_Right_Profile_1_PID_I);
+			rightTalon2->SetD(myConfig->DriveTrain_Right_Profile_1_PID_D);
+			rightTalon2->SetF(myConfig->DriveTrain_Right_Profile_1_PID_F);
+			if (myConfig->DriveTrain_Right_Profile_1_EnableCLRampRate)
 			{
-				rightTalon2->SetCloseLoopRampRate(myConfig->DriveTrain_RightTalon2_Profile_1_CLRampRate);
+				rightTalon2->SetCloseLoopRampRate(myConfig->DriveTrain_Right_Profile_1_CLRampRate);
 			}
 
-			rightTalon2->SetIzone(myConfig->DriveTrain_RightTalon2_Profile_1_IZone);
+			rightTalon2->SetIzone(myConfig->DriveTrain_Right_Profile_1_IZone);
         }
 
-		if(myConfig->DriveTrain_RightTalon2_EnableVoltRampRate)
+		if(myConfig->DriveTrain_EnableVoltRampRate)
 		{
-			rightTalon2->SetVoltageRampRate(myConfig->DriveTrain_RightTalon2_VoltRampRate);
+			rightTalon2->SetVoltageRampRate(myConfig->DriveTrain_VoltRampRate);
 		}
 		if(myConfig->DriveTrain_RightTalon2_Slaved)
 		{
@@ -639,12 +462,28 @@ void DriveTrain::Configure()
 			rightTalon2->Set(myConfig->DriveTrain_RightTalon2_MasterCANID);
 		}
 	}
+	if (myConfig->DriveTrain_RightTalon2_HasSensor)
+	{
+		rightMaster = rightTalon2;
+	} else
+	{
+		rightMaster = rightTalon1;
+	}
+
+    if(myConfig->DriveTrain_Right_Reversed)
+    {
+    	rightTalon1->SetInverted(true);
+    	rightTalon2->SetInverted(true);
+    }
+
 }
 
 void DriveTrain::LiveConfigure()
 {
 	RetrieveConfig();
 	Configure();
+	turnController->LiveConfigure();
+	linearController->LiveConfigure();
 }
 
 void DriveTrain::Stop()
@@ -653,12 +492,16 @@ void DriveTrain::Stop()
 	leftTalon2->Disable();
 	rightTalon1->Disable();
 	rightTalon2->Disable();
+	if (turnController->IsEnabled()) turnController->Disable();
+	if (linearController->IsEnabled()) linearController->Disable();
+	if (posPID.IsEnabled()) posPID.Disable();
 	positioning = false;
+	turning = false;
 }
 
 void DriveTrain::Set_PositionMode()
 {
-	leftTalon1->SelectProfileSlot(1);
+/*	leftTalon1->SelectProfileSlot(1);
 	leftTalon2->SelectProfileSlot(1);
 	rightTalon1->SelectProfileSlot(1);
 	rightTalon2->SelectProfileSlot(1);
@@ -693,12 +536,36 @@ void DriveTrain::Set_PositionMode()
 
 	leftTalon2->EnableControl();
 	rightTalon2->EnableControl();
+*/
+	leftMaster->SelectProfileSlot(1);
+	rightMaster->SelectProfileSlot(1);
+
+	leftMaster->SetControlMode(CANSpeedController::kPosition);
+	rightMaster->SetControlMode(CANSpeedController::kPosition);
+
+	leftMaster->SetAllowableClosedLoopErr(myConfig->DriveTrain_PID_CL_Allowable_Error);
+	rightMaster->SetAllowableClosedLoopErr(myConfig->DriveTrain_PID_CL_Allowable_Error);
+
+	Zero_DriveEncoders();
+	leftMaster->ClearError();
+	rightMaster->ClearError();
+
+	leftMaster->ClearIaccum();
+	rightMaster->ClearIaccum();
+
+	leftMaster->EnableControl();
+	rightMaster->EnableControl();
+
+	leftMaster->Set(0);
+	rightMaster->Set(0);
 
 }
 
 void DriveTrain::Set_VoltageMode()
 {
-	leftTalon1->SelectProfileSlot(0);
+/*
+
+ 	leftTalon1->SelectProfileSlot(0);
 	rightTalon1->SelectProfileSlot(0);
 
 	leftTalon2->SelectProfileSlot(0);
@@ -721,16 +588,38 @@ void DriveTrain::Set_VoltageMode()
 
 	leftTalon2->Set(0);
 	rightTalon2->Set(0);
+*/
+	leftMaster->SelectProfileSlot(0);
+	rightMaster->SelectProfileSlot(0);
+
+	Zero_DriveEncoders();
+
+    leftMaster->SetControlMode(CANSpeedController::kPercentVbus);
+    rightMaster->SetControlMode(CANSpeedController::kPercentVbus);
+
+    leftMaster->EnableControl();
+    rightMaster->EnableControl();
+
+    leftMaster->Set(0);
+    rightMaster->Set(0);
 }
 
 void DriveTrain::Zero_Encoders()
 {
-	lZeroPoint = leftTalon1->GetPosition();
-	rZeroPoint = rightTalon1->GetPosition();
+	lZeroPoint = leftMaster->GetPosition();
+	rZeroPoint = rightMaster->GetPosition();
 
 	lLastPosDelta = 0.0;
 	rLastPosDelta = 0.0;
 	hasMoved = false;
+}
+
+void DriveTrain::Zero_DriveEncoders()
+{
+	leftMaster->SetEncPosition(0);
+	leftMaster->SetPosition(0.0);
+	rightMaster->SetEncPosition(0);
+	rightMaster->SetPosition(0.0);
 }
 
 float DriveTrain::Limit(float num)
@@ -767,27 +656,134 @@ bool DriveTrain::AtCommandedPosition()
 		printf("SD:ACP return cpos %f distance %f", cpos, distance);
 		return true;
 	}*/
+	if (!yawLock)
+	{
+		double current = rightMaster->GetPosition();
+		double lastSet = rightMaster->GetSetpoint();
+		double delta;
+
+		if (current > lastSet)
+		{
+			delta = current - lastSet;
+		} else
+		{
+			delta = lastSet - current;
+		}
+		if (abs(delta) <= myConfig->DriveTrain_PID_CL_Allowable_Error)
+		{
+			return true;
+		}
+		return false;
+	} else
+	{
+		return linearController->OnTarget();
+	}
 	return false;
 }
+
+/*
+ * Notes for Automodes
+ * To turn only:
+ * 1) Invoke Enable_Auto_Mode
+ * 2) Invoke AutoDrive_Rotate in the execute and poll OnTarget in is finished.
+ *
+ * To move:
+ * 1) Enable_Auto_Mode
+ * 2) Invoke AutoDrive_SetYawLock(true)
+ * 3)
+ */
+
+
 
 void DriveTrain::Enable_Auto_Mode()
 {
 	autoEnabled = true;
+	Zero_DriveEncoders();
+	Robot::sensorPkg->imu->ZeroYaw();
+	Robot::sensorPkg->imu->ResetDisplacement();
 }
 
-void DriveTrain::AutoDrive_SetHeading(float heading)
+void DriveTrain::AutoDrive_SetYawLock(bool lockYaw)
 {
-
+	yawLock = lockYaw;
+	if (yawLock)
+	{
+		holdYaw = Robot::sensorPkg->imu->GetYaw();
+		if (yawFlipped)
+		{
+			holdYaw = 0 - holdYaw;
+		}
+		turnController->SetSetpoint(holdYaw);
+		turnController->Enable();
+	} else
+	{
+		holdYaw = 0;
+		if (turnController->IsEnabled()) turnController->Disable();
+	}
 }
 
-void DriveTrain::AutoDrive_Rotate(float rotate, float speed)
+void DriveTrain::AutoDrive_Rotate(float rotate)
 {
-
+	if (!turning)
+	{
+		Zero_DriveEncoders();
+		Robot::sensorPkg->imu->ZeroYaw();
+		leftMaster->EnableControl();
+		rightMaster->EnableControl();
+		turnController->SetSetpoint(rotate);
+		turnController->Enable();
+		turning = true;
+	}
 }
 
-void DriveTrain::AutoDrive_SetDistance(float feet)
+bool DriveTrain::On_Target()
 {
+	return turnController->OnTarget();
+}
 
+void DriveTrain::AutoDrive_SetDistance(float inches)
+{
+	float throttle = 0;
+	if (!yawLock)
+	{
+		if (!positioning)
+		{
+			Zero_DriveEncoders();
+			ldistance = (inches / myConfig->DriveTrain_InchesPerRotation) * myConfig->DriveTrain_QuadEncoder_CodesPerRev;
+			if (myConfig->DriveTrain_Left_SensorReversed) ldistance = 0 - ldistance;
+
+			rdistance = (inches / myConfig->DriveTrain_InchesPerRotation) * myConfig->DriveTrain_QuadEncoder_CodesPerRev;
+			if (myConfig->DriveTrain_Right_SensorReversed) rdistance = 0 - rdistance;
+
+			//if (leftMaster->GetPosition())
+
+
+			printf("direct linear: set right %f  left %f \n",rdistance, ldistance);
+			leftMaster->Set(ldistance);
+			rightMaster->Set(rdistance);
+			leftMaster->EnableControl();
+			rightMaster->EnableControl();
+			positioning = true;
+		}
+	} else
+	{
+		if (!positioning)
+		{
+			rdistance = (inches / myConfig->DriveTrain_InchesPerRotation) * myConfig->DriveTrain_QuadEncoder_CodesPerRev;
+			if (myConfig->DriveTrain_Right_SensorReversed) rdistance = 0 - rdistance;
+
+			printf("yawlock linear: set %f  \n",rdistance);
+			linearController->SetSetpoint(rdistance);
+			linearController->Enable();
+			leftMaster->EnableControl();
+			rightMaster->EnableControl();
+			positioning = true;
+		} else
+		{
+			if (posPID.IsEnabled()) throttle = posPID.Get_Output();
+			SetDrive_Auto(lastturn, throttle);
+		}
+	}
 }
 
 void DriveTrain::AutoDrive_Move(float throttle)
@@ -795,10 +791,35 @@ void DriveTrain::AutoDrive_Move(float throttle)
 
 }
 
+void DriveTrain::PIDWrite(float output)
+{
+	float turn = 0;
+	float throttle = 0;
+
+	if (posPID.IsEnabled()) throttle = posPID.Get_Output();
+
+	if (yawFlipped)
+	{
+		turn = 0 - output;
+	} else
+	{
+		turn = output;
+	}
+
+	lastturn = turn;
+	SetDrive_Auto(turn, throttle);
+}
 
 void DriveTrain::Disable_Auto_Mode()
 {
 	autoEnabled = false;
+	if (turnController->IsEnabled()) turnController->Disable();
+	if (linearController->IsEnabled()) linearController->Disable();
+	if (posPID.IsEnabled()) posPID.Disable();
+	Set_VoltageMode();
+    lastturn = 0;
+	turning = false;
+	positioning = false;
 }
 
 void DriveTrain::SetDriveType(DriveType type)
@@ -843,7 +864,7 @@ void DriveTrain::SetDrive(XBOX_AxisState axisState)
 		break;
 
 	case DriveType_Tank:
-			Robot::driveTrain->SetDrive_Tank(axisState.Raw_LY, axisState.Raw_RY, highspeed);
+			Robot::driveTrain->SetDrive_Tank(axisState.Raw_RY, axisState.Raw_LY, highspeed);
 		break;
 
 	case DriveType_Split:
@@ -927,7 +948,7 @@ void DriveTrain::SetDrive_Tank(float left, float right, bool highRate)
 	tx = Limit(left);
 	ty = Limit(right);
 
-    printf("Tank Drive: Left %f  Right %f\n",tx,ty);
+    printf("Tank Drive: Left %f  Right %f\n",ty,tx);
 
 	leftMotorOutput = tx;
 	rightMotorOutput = ty;
@@ -1003,4 +1024,59 @@ void DriveTrain::SetDrive_Split(float turn, float throttle, bool highRate)
 		leftTalon1->Set(leftMotorOutput*myConfig->DriveTrain_LowSpeed);
 		rightTalon1->Set(rightMotorOutput*myConfig->DriveTrain_LowSpeed);
 	}
+}
+
+
+void DriveTrain::SetDrive_Auto(float turn, float throttle)
+{
+	float tx, ty;
+
+	tx = Limit(turn);
+	ty = Limit(throttle);
+
+    printf("Auto Drive: Turn %f  Throttle %f\n",tx,ty);
+
+
+	if (rightTalon1->GetControlMode() != CANSpeedController::kPercentVbus)
+	{
+		positioning = false;
+		Set_VoltageMode();
+	}
+
+	if (ty > 0.0)
+	{
+		if (tx > 0.0)
+		{
+			leftMotorOutput = ty - tx;
+			rightMotorOutput = std::max(ty, tx);
+		}
+		else if (tx < 0.0)
+		{
+			leftMotorOutput = std::max(ty, -tx);
+			rightMotorOutput = ty + tx;
+		} else
+		{
+			leftMotorOutput = ty;
+			rightMotorOutput = ty;
+		}
+	}
+	else
+	{
+		if (tx > 0.0)
+		{
+			leftMotorOutput = - std::max(-ty, tx);
+			rightMotorOutput = ty + tx;
+		}
+		else if (tx < 0.0)
+		{
+			leftMotorOutput = ty - tx;
+			rightMotorOutput = - std::max(-ty, -tx);
+		} else
+		{
+			leftMotorOutput = ty;
+			rightMotorOutput = ty;
+		}
+	}
+	leftMaster->Set(leftMotorOutput);
+	rightMaster->Set(rightMotorOutput);
 }
