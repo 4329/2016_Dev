@@ -22,7 +22,7 @@ Shooter::Shooter() : Subsystem("Shooter") , Configurable("Shooter") {
 
     myConfig = new Shooter_Config;
 
-	CheckConfig("Speed1");
+	CheckConfig("UseSpeed");
 	Configure();
     isShooting = false;
 }
@@ -44,13 +44,15 @@ Shooter::~Shooter()
 void Shooter::RetrieveConfig()
 {
 	myConfig->Shooter_Speed1 = Preferences::GetInstance()->GetFloat("Shooter::Speed1",-4100);
-	myConfig->Shooter_Speed2 = Preferences::GetInstance()->GetFloat("Shooter::Speed2",0.75);
+	myConfig->Shooter_PercentVoltage = Preferences::GetInstance()->GetFloat("Shooter::PercentVoltage",-0.75);
+	myConfig->Shooter_UseSpeed = Preferences::GetInstance()->GetBoolean("Shooter::UseSpeed",false);
+	myConfig->Shooter_Fire_Timeout = Preferences::GetInstance()->GetDouble("Shooter::Fire::Timeout",5.0);
 
 	myConfig->Shooter_TopTalon_Enabled = Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::Enabled",true);
 	myConfig->Shooter_TopTalon_CANID = Preferences::GetInstance()->GetInt("Shooter::TopTalon::CANID",8);
 	myConfig->Shooter_TopTalon_Reversed = Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::Reversed",false);
-	myConfig->Shooter_TopTalon_HasSensor = false; //Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::HasSensor",false);
-	myConfig->Shooter_TopTalon_SensorReversed = false; //Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::SensorReversed",false);
+	myConfig->Shooter_TopTalon_HasSensor = Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::HasSensor",false);
+	myConfig->Shooter_TopTalon_SensorReversed = Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::SensorReversed",false);
 	myConfig->Shooter_TopTalon_EnablePID = Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::EnablePID",false);
 	myConfig->Shooter_TopTalon_EnableVoltRampRate = Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::EnableVoltRampRate",true);
 	myConfig->Shooter_TopTalon_VoltRampRate = Preferences::GetInstance()->GetDouble("Shooter::TopTalon::VoltRampRate",4.0);
@@ -83,14 +85,14 @@ void Shooter::Configure()
 {
 	if (myConfig->Shooter_TopTalon_Enabled)
 	{
-		//printf("S:Configure ST1 enabled\n");
+		printf("S:Configure STop enabled\n");
         if (myConfig->Shooter_TopTalon_HasSensor)
         {
-    		//printf("S:Configure ST1 Has Sensor\n");
+    		printf("S:Configure STop Has Sensor\n");
         	TopTalon->SetFeedbackDevice(CANTalon::QuadEncoder);
 			if (myConfig->Shooter_TopTalon_SensorReversed)
 			{
-				//printf("S:Configure ST1 Sensor Reversed\n");
+				printf("S:Configure STop Sensor Reversed\n");
 				TopTalon->SetSensorDirection(true);
 			} else
 			{
@@ -99,31 +101,34 @@ void Shooter::Configure()
         }
         if (myConfig->Shooter_TopTalon_EnablePID)
         {
-        	//printf("S:Configure ST1 PID enabled\n");
+        	printf("S:Configure STop PID enabled\n");
         }
 
 		if(myConfig->Shooter_TopTalon_EnableVoltRampRate)
 		{
-			//printf("S:Configure ST1 enable volt ramp rate %f\n",myConfig->Shooter_TopTalon_VoltRampRate);
+			printf("S:Configure STop enable volt ramp rate %f\n",myConfig->Shooter_TopTalon_VoltRampRate);
 			TopTalon->SetVoltageRampRate(myConfig->Shooter_TopTalon_VoltRampRate);
 		}
 
 		if(myConfig->Shooter_TopTalon_Slaved)
 		{
-			//printf("S:Configure ST1 enable slave %d\n",myConfig->Shooter_TopTalon_MasterCANID);
+			printf("S:Configure STop enable slave %d\n",myConfig->Shooter_TopTalon_MasterCANID);
 			TopTalon->SetControlMode(CANSpeedController::kFollower);
 			TopTalon->Set(myConfig->Shooter_TopTalon_MasterCANID);
+			master = BottomTalon;
 		}
 	}
 
 	if (myConfig->Shooter_BottomTalon_Enabled)
 	{
-		//printf("S:Configure ST2 enabled\n");
+		printf("S:Configure SBot enabled\n");
         if (myConfig->Shooter_BottomTalon_HasSensor)
         {
+        	printf("S:Configure SBot Has Sensor\n");
         	BottomTalon->SetFeedbackDevice(CANTalon::CtreMagEncoder_Relative);
 			if (myConfig->Shooter_BottomTalon_SensorReversed)
 			{
+				printf("S:Configure SBot Sensor Reversed\n");
 				BottomTalon->SetSensorDirection(true);
 			} else
 			{
@@ -132,7 +137,7 @@ void Shooter::Configure()
         }
         if (myConfig->Shooter_BottomTalon_EnablePID)
         {
-        	//printf("S:Configure ST2 PID enabled\n");
+        	printf("S:Configure SBot PID enabled\n");
         	BottomTalon->SelectProfileSlot(0);
         	BottomTalon->SetP(myConfig->Shooter_BottomTalon_Profile_0_PID_P);
         	BottomTalon->SetI(myConfig->Shooter_BottomTalon_Profile_0_PID_I);
@@ -148,13 +153,14 @@ void Shooter::Configure()
 
 		if(myConfig->Shooter_BottomTalon_EnableVoltRampRate)
 		{
-			//printf("S:Configure ST2 enable volt ramp rate %f\n",myConfig->Shooter_BottomTalon_VoltRampRate);
+			printf("S:Configure SBot enable volt ramp rate %f\n",myConfig->Shooter_BottomTalon_VoltRampRate);
 			BottomTalon->SetVoltageRampRate(myConfig->Shooter_BottomTalon_VoltRampRate);
 		}
 		if(myConfig->Shooter_BottomTalon_Slaved)
 		{
 			BottomTalon->SetControlMode(CANSpeedController::kFollower);
 			BottomTalon->Set(myConfig->Shooter_BottomTalon_MasterCANID);
+			master = TopTalon;
 		}
 	}
 	BottomTalon->SetControlMode(CANSpeedController::kSpeed);
@@ -163,7 +169,9 @@ void Shooter::Configure()
 void Shooter::SaveConfig()
 {
 	Preferences::GetInstance()->PutFloat("Shooter::Speed1",myConfig->Shooter_Speed1);
-	Preferences::GetInstance()->PutFloat("Shooter::Speed2",myConfig->Shooter_Speed2);
+	Preferences::GetInstance()->PutFloat("Shooter::PercentVoltage",myConfig->Shooter_PercentVoltage);
+	Preferences::GetInstance()->PutBoolean("Shooter::UseSpeed",myConfig->Shooter_UseSpeed);
+	Preferences::GetInstance()->PutDouble("Shooter::Fire::Timeout",myConfig->Shooter_Fire_Timeout);
 
 	Preferences::GetInstance()->PutBoolean("Shooter::TopTalon::Enabled",myConfig->Shooter_TopTalon_Enabled);
 	Preferences::GetInstance()->PutInt("Shooter::TopTalon::CANID",myConfig->Shooter_TopTalon_CANID);
@@ -204,7 +212,19 @@ void Shooter::LiveConfigure()
 	Configure();
 }
 
-void Shooter::Fire(float value)
+float Shooter::Fire()
+{
+	if (myConfig->Shooter_UseSpeed)
+	{
+		return FireSpeed();
+	} else
+	{
+		return FireVolt();
+	}
+}
+
+
+void Shooter::FireVal(float value)
 {
 	BottomTalon->SetControlMode(CANSpeedController::kSpeed);
     BottomTalon->EnableControl();
@@ -214,7 +234,7 @@ void Shooter::Fire(float value)
 	isShooting = true;
 }
 
-int Shooter::Fire1()
+float Shooter::FireSpeed()
 {
 	BottomTalon->SetControlMode(CANSpeedController::kSpeed);
 	BottomTalon->EnableControl();
@@ -224,16 +244,26 @@ int Shooter::Fire1()
 	return tgtRPM;
 }
 
-int Shooter::Fire2()
+float Shooter::FireVolt()
 {
-	BottomTalon->SetControlMode(CANSpeedController::kSpeed);
+	BottomTalon->SetControlMode(CANSpeedController::kPercentVbus);
     BottomTalon->EnableControl();
-	BottomTalon->Set(myConfig->Shooter_Speed2);
-	tgtRPM = myConfig->Shooter_Speed2;
+	BottomTalon->Set(myConfig->Shooter_PercentVoltage);
 	isShooting = true;
-	return tgtRPM;
+	tgtVolt = myConfig->Shooter_PercentVoltage;
+	return myConfig->Shooter_PercentVoltage;
 }
 
+bool Shooter::ReadyToFire()
+{
+	if (myConfig->Shooter_UseSpeed)
+	{
+		return AtRPM();
+	} else
+	{
+		return AtVolt();
+	}
+}
 
 bool Shooter::AtRPM()
 {
@@ -254,6 +284,26 @@ bool Shooter::AtRPM()
 	return false;
 }
 
+bool Shooter::AtVolt()
+{
+	SmartDashboard::PutNumber("Shooter Volt",BottomTalon->GetOutputVoltage());
+	if (tgtVolt < 0)
+	{
+		if (BottomTalon->GetOutputVoltage() <= tgtVolt)
+		{
+			return true;
+		}
+	} else
+	{
+		if (BottomTalon->GetOutputVoltage() >= tgtVolt)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+
 bool Shooter::IsShooting()
 {
 	return isShooting;
@@ -262,7 +312,8 @@ bool Shooter::IsShooting()
 void Shooter::Stop()
 {
 	BottomTalon->Set(0);
-	BottomTalon->Disable();
+	BottomTalon->StopMotor();
 	tgtRPM = 0;
+	tgtVolt = 0;
 	isShooting = false;
 }

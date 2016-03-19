@@ -48,7 +48,9 @@ private:
 	DriveTrain_Config *myConfig;
 
 	std::shared_ptr<CANTalon> leftMaster;
+	std::shared_ptr<CANTalon> leftSlave;
 	std::shared_ptr<CANTalon> rightMaster;
+	std::shared_ptr<CANTalon> rightSlave;
 
 	float  leftMotorOutput;
 	float  rightMotorOutput;
@@ -107,6 +109,10 @@ public:
 	void AutoDrive_SetDistance(float inches);
 	void AutoDrive_Move(float throttle);
 	bool AtCommandedPosition();
+
+
+	double Get_CurrentPosition();
+	double Get_PulsesPerInch();
 
 	void SetDrive_Auto(float turn, float throttle);
     void Disable_Auto_Mode();

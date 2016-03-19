@@ -5,7 +5,9 @@ class Shooter_Config
 {
 public:
 	float  Shooter_Speed1;
-	float  Shooter_Speed2;
+	float  Shooter_PercentVoltage;
+	bool   Shooter_UseSpeed;
+	double Shooter_Fire_Timeout;
 	bool   Shooter_TopTalon_Enabled;
 	int    Shooter_TopTalon_CANID;
 	bool   Shooter_TopTalon_Reversed;

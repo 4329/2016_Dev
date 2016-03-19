@@ -13,6 +13,7 @@
 #define ROBOTMAP_H
 #include "WPILib.h"
 #include "AHRS.h"
+#include "Autonomous_Config.h"
 
 
 /**
@@ -34,22 +35,21 @@ public:
 	static std::shared_ptr<CANTalon> shooterBottomTalon;
 
 	static std::shared_ptr<Compressor> theCompressor;
-	static std::shared_ptr<Solenoid> brakeSolenoid;
 	static std::shared_ptr<DoubleSolenoid> stabilizerSolenoid;
 	static std::shared_ptr<Solenoid> pivotStage1Solenoid;
 	static std::shared_ptr<Solenoid> pivotStage2Solenoid;
-	static std::shared_ptr<Solenoid> scalerStage1Solenoid;
-	static std::shared_ptr<Solenoid> scalerStage2Solenoid;
+	static std::shared_ptr<Solenoid> scalerSolenoid;
+
 
 	static std::shared_ptr<PowerDistributionPanel> pDPPowerDistributionPanel;
 
-	static std::shared_ptr<Encoder> pivotEncoder;
 	static std::shared_ptr<AnalogInput> sensorIRdSensor;
 	static std::shared_ptr<AnalogInput> sensorIRdSensorFront;
 	static std::shared_ptr<AnalogInput> sensorIRdSensorTower;
 	static std::shared_ptr<AnalogInput> pressureSensor;
 
 	static std::shared_ptr<AHRS> imu;
+    static std::shared_ptr<Autonomous_Config> autoConfig;
 
 	static void init();
 };

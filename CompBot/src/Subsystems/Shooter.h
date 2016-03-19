@@ -28,8 +28,9 @@ private:
 	// for methods that implement subsystem capabilities
 	std::shared_ptr<CANTalon> TopTalon;
 	std::shared_ptr<CANTalon> BottomTalon;
+	std::shared_ptr<CANTalon> master;
 	Shooter_Config *myConfig;
-	float tgtRPM;
+	float tgtRPM, tgtVolt;
 	bool isShooting;
 
 public:
@@ -42,11 +43,14 @@ public:
 	virtual void SaveConfig();
 	virtual void LiveConfigure();
 
-	void Fire(float value);
-	int  Fire1();
-	int  Fire2();
+	float Fire();
+	float FireSpeed();
+	float FireVolt();
+	void FireVal(float value);
 	void Stop();
+	bool ReadyToFire();
 	bool AtRPM();
+	bool AtVolt();
 	bool IsShooting();
 };
 

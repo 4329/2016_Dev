@@ -18,7 +18,6 @@
 
 Sensors::Sensors() : Subsystem("Sensors"), Configurable("Sensors") {
 	printf("Sensors Start\n");
-    pivotEnc = RobotMap::pivotEncoder;
     IR_Front.reset( new IR_Sensor(RobotMap::sensorIRdSensorFront, "IR_Sensor::Front"));
     IR_Shooter.reset( new IR_Sensor(RobotMap::sensorIRdSensor, "IR_Sensor::Shooter"));
     IR_Tower.reset(new IR_Sensor(RobotMap::sensorIRdSensorTower, "IR_Sensor::Tower"));
@@ -28,7 +27,7 @@ Sensors::Sensors() : Subsystem("Sensors"), Configurable("Sensors") {
 
     TowerInRangeRumble = 0;
 
-	CheckConfig("Pivot::PivotOffset");
+	CheckConfig("Tower::InRangeRumble");
 	Configure();
 }
     
@@ -43,12 +42,6 @@ void Sensors::RetrieveConfig()
 	IR_Shooter->RetrieveConfig();
 	IR_Tower->RetrieveConfig();
 	imu->RetrieveConfig();
-	Pivot_Enc_ChannelA = Preferences::GetInstance()->GetInt(_prefix + prefSep + "Pivot::Enc::ChannelA",8);
-	Pivot_Enc_ChannelB = Preferences::GetInstance()->GetInt(_prefix + prefSep + "Pivot::Enc::ChannelB",9);
-	Pivot_Enc_Reversed = Preferences::GetInstance()->GetBoolean(_prefix + prefSep + "Pivot::Enc::Reversed",true);
-    Pivot_PivotOffset  = Preferences::GetInstance()->GetFloat(_prefix + prefSep + "Pivot::PivotOffset",282);
-    Pivot_LowOffset    = Preferences::GetInstance()->GetFloat(_prefix + prefSep + "Pivot::PivotAngleFromHome",351);
-	Pivot_PosIsUp      = Preferences::GetInstance()->GetBoolean(_prefix + prefSep + "Pivot::PosIsUp",false);
 	TowerInRangeRumble = Preferences::GetInstance()->GetFloat(_prefix + prefSep + "Tower::InRangeRumble",0.0);
 }
 
@@ -58,12 +51,6 @@ void Sensors::SaveConfig()
 	IR_Shooter->SaveConfig();
 	IR_Tower->SaveConfig();
 	imu->SaveConfig();
-	Preferences::GetInstance()->PutInt(_prefix + prefSep + "Pivot::Enc::ChannelA",Pivot_Enc_ChannelA);
-	Preferences::GetInstance()->PutInt(_prefix + prefSep + "Pivot::Enc::ChannelB",Pivot_Enc_ChannelB);
-	Preferences::GetInstance()->PutBoolean(_prefix + prefSep + "Pivot::Enc::Reversed",Pivot_Enc_Reversed);
-    Preferences::GetInstance()->PutFloat(_prefix + prefSep + "Pivot::PivotOffset",Pivot_PivotOffset);
-    Preferences::GetInstance()->PutFloat(_prefix + prefSep + "Pivot::PivotAngleFromHome",Pivot_LowOffset);
-	Preferences::GetInstance()->PutBoolean(_prefix + prefSep + "Pivot::PosIsUp",Pivot_PosIsUp);
 	Preferences::GetInstance()->PutFloat(_prefix + prefSep + "Tower::InRangeRumble",TowerInRangeRumble);
 }
 

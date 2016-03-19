@@ -28,16 +28,7 @@ private:
 	std::shared_ptr<IR_Sensor> IR_Tower;
 	std::shared_ptr<PowerDistributionPanel> _pDp;
 	std::shared_ptr<AnalogInput> pressure;
-	std::shared_ptr<Encoder>  pivotEnc;
 
-
-
-	int    Pivot_Enc_ChannelA;
-	int    Pivot_Enc_ChannelB;
-	bool   Pivot_Enc_Reversed;
-	float  Pivot_PivotOffset;
-	float  Pivot_LowOffset;
-	bool   Pivot_PosIsUp;
 	float  TowerInRangeRumble;
 
 

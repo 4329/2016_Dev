@@ -343,9 +343,11 @@ void DriveTrain::Configure()
     if (myConfig->DriveTrain_LeftTalon2_HasSensor)
     {
     	leftMaster = leftTalon2;
+    	leftSlave  = leftTalon1;
     } else
     {
     	leftMaster = leftTalon1;
+    	leftSlave  = leftTalon2;
     }
 
     if(myConfig->DriveTrain_Left_Reversed)
@@ -465,9 +467,11 @@ void DriveTrain::Configure()
 	if (myConfig->DriveTrain_RightTalon2_HasSensor)
 	{
 		rightMaster = rightTalon2;
+		rightSlave =  rightTalon1;
 	} else
 	{
 		rightMaster = rightTalon1;
+		rightSlave  = rightTalon2;
 	}
 
     if(myConfig->DriveTrain_Right_Reversed)
@@ -501,17 +505,7 @@ void DriveTrain::Stop()
 
 void DriveTrain::Set_PositionMode()
 {
-/*	leftTalon1->SelectProfileSlot(1);
-	leftTalon2->SelectProfileSlot(1);
-	rightTalon1->SelectProfileSlot(1);
-	rightTalon2->SelectProfileSlot(1);
-
-
-	leftTalon1->SetControlMode(CANSpeedController::kPosition);
-	rightTalon1->SetControlMode(CANSpeedController::kPosition);
-	leftTalon2->SetControlMode(CANSpeedController::kFollower);
-	rightTalon2->SetControlMode(CANSpeedController::kFollower);
-
+/*
 	Zero_Encoders();
 
 	leftTalon1->Set(lZeroPoint);
@@ -519,29 +513,15 @@ void DriveTrain::Set_PositionMode()
 	rightTalon1->Set(rZeroPoint);
 	rightTalon2->Set(rZeroPoint);
 
-	leftTalon1->ClearError();
-	leftTalon2->ClearError();
 
-	rightTalon1->ClearError();
-	rightTalon2->ClearError();
-
-	leftTalon1->ClearIaccum();
-	leftTalon2->ClearIaccum();
-
-	rightTalon1->ClearIaccum();
-	rightTalon2->ClearIaccum();
-
-	leftTalon1->EnableControl();
-	rightTalon1->EnableControl();
-
-	leftTalon2->EnableControl();
-	rightTalon2->EnableControl();
 */
 	leftMaster->SelectProfileSlot(1);
 	rightMaster->SelectProfileSlot(1);
 
 	leftMaster->SetControlMode(CANSpeedController::kPosition);
 	rightMaster->SetControlMode(CANSpeedController::kPosition);
+	leftSlave->SetControlMode(CANSpeedController::kFollower);
+	rightSlave->SetControlMode(CANSpeedController::kFollower);
 
 	leftMaster->SetAllowableClosedLoopErr(myConfig->DriveTrain_PID_CL_Allowable_Error);
 	rightMaster->SetAllowableClosedLoopErr(myConfig->DriveTrain_PID_CL_Allowable_Error);
@@ -553,11 +533,14 @@ void DriveTrain::Set_PositionMode()
 	leftMaster->ClearIaccum();
 	rightMaster->ClearIaccum();
 
-	leftMaster->EnableControl();
-	rightMaster->EnableControl();
-
 	leftMaster->Set(0);
 	rightMaster->Set(0);
+
+	leftSlave->EnableControl();
+	rightSlave->EnableControl();
+
+	leftMaster->EnableControl();
+	rightMaster->EnableControl();
 
 }
 
@@ -565,29 +548,7 @@ void DriveTrain::Set_VoltageMode()
 {
 /*
 
- 	leftTalon1->SelectProfileSlot(0);
-	rightTalon1->SelectProfileSlot(0);
 
-	leftTalon2->SelectProfileSlot(0);
-	rightTalon2->SelectProfileSlot(0);
-
-	leftTalon1->SetControlMode(CANSpeedController::kPercentVbus);
-	rightTalon1->SetControlMode(CANSpeedController::kPercentVbus);
-
-	leftTalon2->SetControlMode(CANSpeedController::kFollower);
-	rightTalon2->SetControlMode(CANSpeedController::kFollower);
-
-	leftTalon1->EnableControl();
-	rightTalon1->EnableControl();
-
-	leftTalon2->EnableControl();
-	rightTalon2->EnableControl();
-
-	leftTalon1->Set(0);
-	rightTalon1->Set(0);
-
-	leftTalon2->Set(0);
-	rightTalon2->Set(0);
 */
 	leftMaster->SelectProfileSlot(0);
 	rightMaster->SelectProfileSlot(0);
@@ -596,12 +557,17 @@ void DriveTrain::Set_VoltageMode()
 
     leftMaster->SetControlMode(CANSpeedController::kPercentVbus);
     rightMaster->SetControlMode(CANSpeedController::kPercentVbus);
+	leftSlave->SetControlMode(CANSpeedController::kFollower);
+	rightSlave->SetControlMode(CANSpeedController::kFollower);
 
-    leftMaster->EnableControl();
-    rightMaster->EnableControl();
+	leftSlave->EnableControl();
+	rightSlave->EnableControl();
 
     leftMaster->Set(0);
     rightMaster->Set(0);
+
+    leftMaster->EnableControl();
+    rightMaster->EnableControl();
 }
 
 void DriveTrain::Zero_Encoders()
@@ -620,6 +586,7 @@ void DriveTrain::Zero_DriveEncoders()
 	leftMaster->SetPosition(0.0);
 	rightMaster->SetEncPosition(0);
 	rightMaster->SetPosition(0.0);
+	Zero_Encoders();
 }
 
 float DriveTrain::Limit(float num)
@@ -741,6 +708,11 @@ bool DriveTrain::On_Target()
 	return turnController->OnTarget();
 }
 
+double DriveTrain::Get_PulsesPerInch()
+{
+	return myConfig->DriveTrain_QuadEncoder_CodesPerRev / myConfig->DriveTrain_InchesPerRotation;
+}
+
 void DriveTrain::AutoDrive_SetDistance(float inches)
 {
 	float throttle = 0;
@@ -789,7 +761,16 @@ void DriveTrain::AutoDrive_SetDistance(float inches)
 
 void DriveTrain::AutoDrive_Move(float throttle)
 {
+	float limThrottle = Limit(throttle);
 
+	if (rightMaster->GetControlMode() != CANSpeedController::kPercentVbus)
+	{
+		positioning = false;
+		Set_VoltageMode();
+	}
+
+	leftMaster->Set(limThrottle);
+	rightMaster->Set(limThrottle);
 }
 
 void DriveTrain::PIDWrite(float output)
@@ -810,6 +791,12 @@ void DriveTrain::PIDWrite(float output)
 	lastturn = turn;
 	SetDrive_Auto(turn, throttle);
 }
+
+double DriveTrain::Get_CurrentPosition()
+{
+	return rightMaster->GetPosition();
+}
+
 
 void DriveTrain::Disable_Auto_Mode()
 {

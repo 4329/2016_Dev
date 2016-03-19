@@ -73,8 +73,7 @@ void Pivot::LiveConfigure()
 
 void Pivot::SetPivotHome()
 {
-	RobotMap::pivotEncoder->Reset();
-    printf("Setting Pivot Home to %d\n",RobotMap::pivotEncoder->Get());
+
 }
 
 void Pivot::SetPivotToHome()
@@ -136,7 +135,6 @@ void Pivot::UpPivot()
 	{
 		printf("Setting Pivot Up to Home\n");
 		RetractPivotStage1();
-		RobotMap::pivotEncoder->Reset();
 	}
 }
 void Pivot::DownPivot()

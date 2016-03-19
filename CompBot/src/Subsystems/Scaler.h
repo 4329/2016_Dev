@@ -24,14 +24,13 @@ class Scaler: public Subsystem , public Configurable {
 private:
 	// It's desirable that everything possible is private except
 	// for methods that implement subsystem capabilities
-	std::shared_ptr<Solenoid> scalerStage1;
-	std::shared_ptr<Solenoid> scalerStage2;
+	std::shared_ptr<Solenoid> _scaler;
+
 
 	int  PCMID;
-	int  scalarStage1Channel;
-	int  scalarStage2Channel;
-	bool stage1ActiveIsExtended;
-	bool stage2ActiveIsExtended;
+	int  Channel;
+	bool ActiveIsExtended;
+
 
 public:
 	Scaler();
@@ -43,14 +42,9 @@ public:
 	virtual void SaveConfig();
 	virtual void LiveConfigure();
 
-	void Stage1Extend();
-	void Stage1Retract();
-	bool IsStage1Extended();
-
-	void Stage2Extend();
-	void Stage2Retract();
-	bool IsStage2Extended();
-
+	void Extend();
+	void Retract();
+	bool IsExtended();
 };
 
 #endif

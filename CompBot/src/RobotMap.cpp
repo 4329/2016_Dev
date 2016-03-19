@@ -24,24 +24,24 @@ std::shared_ptr<CANTalon> RobotMap::shooterTopTalon;
 std::shared_ptr<CANTalon> RobotMap::shooterBottomTalon;
 
 std::shared_ptr<Compressor> RobotMap::theCompressor;
-std::shared_ptr<Solenoid> RobotMap::brakeSolenoid;
 std::shared_ptr<DoubleSolenoid> RobotMap::stabilizerSolenoid;
 std::shared_ptr<Solenoid> RobotMap::pivotStage1Solenoid;
 std::shared_ptr<Solenoid> RobotMap::pivotStage2Solenoid;
-std::shared_ptr<Solenoid> RobotMap::scalerStage1Solenoid;
-std::shared_ptr<Solenoid> RobotMap::scalerStage2Solenoid;
+std::shared_ptr<Solenoid> RobotMap::scalerSolenoid;
 
 std::shared_ptr<PowerDistributionPanel> RobotMap::pDPPowerDistributionPanel;
-std::shared_ptr<Encoder> RobotMap::pivotEncoder;
 std::shared_ptr<AnalogInput> RobotMap::sensorIRdSensor;
 std::shared_ptr<AnalogInput> RobotMap::sensorIRdSensorFront;
 std::shared_ptr<AnalogInput> RobotMap::sensorIRdSensorTower;
 std::shared_ptr<AnalogInput> RobotMap::pressureSensor;
 std::shared_ptr<AHRS> RobotMap::imu;
-
+std::shared_ptr<Autonomous_Config> RobotMap::autoConfig;
 
 void RobotMap::init() {
     LiveWindow *lw = LiveWindow::GetInstance();
+
+    autoConfig.reset(new Autonomous_Config());
+	printf("RobotMap autoConfig Complete\n");
 
     driveTrainLeftTalon1.reset(new CANTalon(Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon1::CANID",1)));
      lw->AddActuator("DriveTrain", "LeftTalon1", driveTrainLeftTalon1);
@@ -78,23 +78,16 @@ void RobotMap::init() {
 
     theCompressor.reset(new Compressor(Preferences::GetInstance()->GetInt("Compressor::PCMID",0)));
 
-    scalerStage1Solenoid.reset(new Solenoid(Preferences::GetInstance()->GetInt("Scaler::PCMID",0),
+    scalerSolenoid.reset(new Solenoid(Preferences::GetInstance()->GetInt("Scaler::PCMID",0),
     		Preferences::GetInstance()->GetInt("Scaler::Stage1::Channel",0)));
-    lw->AddActuator("Scaler1", "scalerStage1", scalerStage1Solenoid);
+    lw->AddActuator("Scaler", "scaler", scalerSolenoid);
 
-    scalerStage2Solenoid.reset(new Solenoid(Preferences::GetInstance()->GetInt("Scaler::PCMID",0),
-    		Preferences::GetInstance()->GetInt("Scaler::Stage2::ForwardChannel",1)));
-    lw->AddActuator("Scaler2", "scalerStage2", scalerStage2Solenoid);
 
     stabilizerSolenoid.reset(new DoubleSolenoid(Preferences::GetInstance()->GetInt("Stabilizer::PCMID",0),
     		Preferences::GetInstance()->GetInt("Stabilizer::ForwardChannel",2),
 			Preferences::GetInstance()->GetInt("Stabilizer::ReverseChannel",3)));
     lw->AddActuator("Stabilizer", "Stabilizer", stabilizerSolenoid);
     
-    brakeSolenoid.reset(new Solenoid(Preferences::GetInstance()->GetInt("Brake::PCMID",0),
-    		Preferences::GetInstance()->GetInt("Brake::Channel",4)));
-    lw->AddActuator("Brake", "Brake", brakeSolenoid);
-
     pivotStage1Solenoid.reset(new Solenoid(Preferences::GetInstance()->GetInt("Pivot::PCMID",0),
     		Preferences::GetInstance()->GetInt("Pivot::Stage1::Channel",5)));
     lw->AddActuator("Pivot1", "PivotStage1", pivotStage1Solenoid);
@@ -104,11 +97,6 @@ void RobotMap::init() {
     lw->AddActuator("Pivot2", "PivotStage2", pivotStage2Solenoid);
 
     printf("RobotMap Pivot Complete\n");
-
-    pivotEncoder.reset(new Encoder(Preferences::GetInstance()->GetInt("Pivot::Enc::ChannelA",8),
-    		Preferences::GetInstance()->GetInt("Pivot::Enc::ChannelB",9),
-			Preferences::GetInstance()->GetBoolean("Pivot::Enc::IsReversed",true),Encoder::EncodingType::k4X));
-    lw->AddSensor("Intake", "PivotSensor", pivotEncoder);
 
     sensorIRdSensorTower.reset(new AnalogInput(1));
     lw->AddSensor("IR", "Tower", sensorIRdSensorTower);
