@@ -35,24 +35,25 @@ std::shared_ptr<AnalogInput> RobotMap::sensorIRdSensorFront;
 std::shared_ptr<AnalogInput> RobotMap::sensorIRdSensorTower;
 std::shared_ptr<AnalogInput> RobotMap::pressureSensor;
 std::shared_ptr<AHRS> RobotMap::imu;
-std::shared_ptr<Autonomous_Config> RobotMap::autoConfig;
+
 
 void RobotMap::init() {
     LiveWindow *lw = LiveWindow::GetInstance();
 
-    autoConfig.reset(new Autonomous_Config());
-	printf("RobotMap autoConfig Complete\n");
-
-    driveTrainLeftTalon1.reset(new CANTalon(Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon1::CANID",1)));
+    // CANID 1
+    driveTrainLeftTalon1.reset(new CANTalon(Robot::theConfig->_DriveCfg.LeftTalon1_CANID));
      lw->AddActuator("DriveTrain", "LeftTalon1", driveTrainLeftTalon1);
 
-    driveTrainLeftTalon2.reset(new CANTalon(Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon2::CANID",2)));
+     // CANID 2
+    driveTrainLeftTalon2.reset(new CANTalon(Robot::theConfig->_DriveCfg.LeftTalon2_CANID));
     lw->AddActuator("DriveTrain", "LeftTalon2", driveTrainLeftTalon2);
 
-    driveTrainRightTalon1.reset(new CANTalon(Preferences::GetInstance()->GetInt("DriveTrain::RightTalon1::CANID",3)));
+    // CANID 3
+    driveTrainRightTalon1.reset(new CANTalon(Robot::theConfig->_DriveCfg.RightTalon1_CANID));
     lw->AddActuator("DriveTrain", "RightTalon1", driveTrainRightTalon1);
     
-    driveTrainRightTalon2.reset(new CANTalon(Preferences::GetInstance()->GetInt("DriveTrain::RightTalon2::CANID",4)));
+    // CANID 4
+    driveTrainRightTalon2.reset(new CANTalon(Robot::theConfig->_DriveCfg.RightTalon2_CANID));
     lw->AddActuator("DriveTrain", "RightTalon2", driveTrainRightTalon2);
 
     driveTrainRobotDrive.reset(new RobotDrive(driveTrainLeftTalon1, driveTrainLeftTalon2,
@@ -65,52 +66,62 @@ void RobotMap::init() {
     driveTrainRobotDrive->SetInvertedMotor(RobotDrive::kFrontLeftMotor, true);
     driveTrainRobotDrive->SetInvertedMotor(RobotDrive::kRearLeftMotor, true);
 
-    intakeTalon.reset(new CANTalon(Preferences::GetInstance()->GetInt("Intake::Talon::CANID",5)));
+    // CANID 5
+    intakeTalon.reset(new CANTalon(Robot::theConfig->_IntakeCfg.Talon_CANID));
     lw->AddActuator("Intake", "IntakeTalon", intakeTalon);
     
+    // CANID 8
     // Top and bottom in the shooter code are swapped.  Will address later when time permits.
-    shooterTopTalon.reset(new CANTalon(Preferences::GetInstance()->GetInt("Shooter::TopTalon::CANID",8))); // Top Shooter
+    shooterTopTalon.reset(new CANTalon(Robot::theConfig->_ShooterCfg.TopTalon_CANID)); // Top Shooter
     lw->AddActuator("Shooter", "ShooterTop", shooterTopTalon);
 
-    shooterBottomTalon.reset(new CANTalon(Preferences::GetInstance()->GetInt("Shooter::BottomTalon::CANID",9))); //Bottom Shooter
+    // CANID 9
+    shooterBottomTalon.reset(new CANTalon(Robot::theConfig->_ShooterCfg.BottomTalon_CANID)); //Bottom Shooter
     lw->AddActuator("Shooter", "ShooterBottom", shooterBottomTalon);
 
 
     theCompressor.reset(new Compressor(Preferences::GetInstance()->GetInt("Compressor::PCMID",0)));
 
-    scalerSolenoid.reset(new Solenoid(Preferences::GetInstance()->GetInt("Scaler::PCMID",0),
-    		Preferences::GetInstance()->GetInt("Scaler::Stage1::Channel",0)));
+    // Channel 0
+    scalerSolenoid.reset(new Solenoid(Robot::theConfig->_ScalarCfg.PCMID,
+    		Robot::theConfig->_ScalarCfg.Channel));
     lw->AddActuator("Scaler", "scaler", scalerSolenoid);
 
-
-    stabilizerSolenoid.reset(new DoubleSolenoid(Preferences::GetInstance()->GetInt("Stabilizer::PCMID",0),
-    		Preferences::GetInstance()->GetInt("Stabilizer::ForwardChannel",2),
-			Preferences::GetInstance()->GetInt("Stabilizer::ReverseChannel",3)));
+    // Channels 2 3
+    stabilizerSolenoid.reset(new DoubleSolenoid(Robot::theConfig->_StabilizerCfg.PCMID,
+    		Robot::theConfig->_StabilizerCfg.FwdChannel,
+			Robot::theConfig->_StabilizerCfg.RevChannel));
     lw->AddActuator("Stabilizer", "Stabilizer", stabilizerSolenoid);
     
-    pivotStage1Solenoid.reset(new Solenoid(Preferences::GetInstance()->GetInt("Pivot::PCMID",0),
-    		Preferences::GetInstance()->GetInt("Pivot::Stage1::Channel",5)));
+    // Channel 5
+    pivotStage1Solenoid.reset(new Solenoid(Robot::theConfig->_PivotCfg.PCMID,
+    		Robot::theConfig->_PivotCfg.Stage1_Channel));
     lw->AddActuator("Pivot1", "PivotStage1", pivotStage1Solenoid);
 
-    pivotStage2Solenoid.reset(new Solenoid(Preferences::GetInstance()->GetInt("Pivot::PCMID",0),
-			Preferences::GetInstance()->GetInt("Pivot::Stage2::Channel",6)));
+    // Channel 6
+    pivotStage2Solenoid.reset(new Solenoid(Robot::theConfig->_PivotCfg.PCMID,
+			Robot::theConfig->_PivotCfg.Stage2_Channel));
     lw->AddActuator("Pivot2", "PivotStage2", pivotStage2Solenoid);
 
     printf("RobotMap Pivot Complete\n");
 
-    sensorIRdSensorTower.reset(new AnalogInput(1));
+    // Analog 1
+    sensorIRdSensorTower.reset(new AnalogInput(Robot::theConfig->_SensorCfg.Tower_AnalogChannel));
     lw->AddSensor("IR", "Tower", sensorIRdSensorTower);
 
-    sensorIRdSensorFront.reset(new AnalogInput(2));
+    // Analog 2
+    sensorIRdSensorFront.reset(new AnalogInput(Robot::theConfig->_SensorCfg.Front_AnalogChannel));
     lw->AddSensor("IR", "SensorFront", sensorIRdSensorFront);
 
-    sensorIRdSensor.reset(new AnalogInput(3));
+    // Analog 3
+    sensorIRdSensor.reset(new AnalogInput(Robot::theConfig->_SensorCfg.Shooter_AnalogChannel));
     lw->AddSensor("IR", "Sensor", sensorIRdSensor);
 
-    pressureSensor.reset(new AnalogInput(0));
+    // Analog 0
+    pressureSensor.reset(new AnalogInput(Robot::theConfig->_SensorCfg.Pressure_AnalogChannel));
     lw->AddSensor("Air","Pressure", pressureSensor);
 
-    pDPPowerDistributionPanel.reset(new PowerDistributionPanel(Preferences::GetInstance()->GetInt("PDP::CANID",0)));
+    pDPPowerDistributionPanel.reset(new PowerDistributionPanel(Robot::theConfig->_SensorCfg.PDP_CANID));
     lw->AddSensor("PDP", "PowerDistributionPanel", pDPPowerDistributionPanel);
     
     imu.reset(new AHRS(SPI::Port::kMXP));

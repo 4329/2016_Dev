@@ -13,15 +13,14 @@
 
 #include "Pivot.h"
 #include "../RobotMap.h"
+#include "../Robot.h"
 
-
-//#include "Commands/Pivot_Stick.h"
 
 Pivot::Pivot() : Subsystem("Pivot") , Configurable("Pivot") {
     pivotStage1 = RobotMap::pivotStage1Solenoid;
     pivotStage2 = RobotMap::pivotStage2Solenoid;
 
-    CheckConfig("PCMID");
+    myCfg.reset(&(Robot::theConfig->_PivotCfg));
 	Configure();
 }
 
@@ -43,11 +42,7 @@ Pivot::~Pivot()
 
 void Pivot::RetrieveConfig()
 {
-	Pivot_PCMID                     = Preferences::GetInstance()->GetInt("Pivot::PCMID",0);
-	Pivot_Stage1_Channel            = Preferences::GetInstance()->GetInt("Pivot::Stage1::Channel",5);
-	Pivot_Stage1_ActiveIsExtended   = Preferences::GetInstance()->GetBoolean("Pivot::Stage1::ActiveIsExtended",false);
-	Pivot_Stage2_Channel            = Preferences::GetInstance()->GetInt("Pivot::Stage2::Channel",6);
-	Pivot_Stage2_ActiveIsExtended   = Preferences::GetInstance()->GetBoolean("Pivot::Stage2::ActiveIsExtended",false);
+
 }
 
 void Pivot::Configure()
@@ -57,11 +52,7 @@ void Pivot::Configure()
 
 void Pivot::SaveConfig()
 {
-	Preferences::GetInstance()->PutInt("Pivot::PCMID",Pivot_PCMID);
-	Preferences::GetInstance()->PutInt("Pivot::Stage1::Channel",Pivot_Stage1_Channel);
-	Preferences::GetInstance()->PutBoolean("Pivot::Stage1::ActiveIsExtended",Pivot_Stage1_ActiveIsExtended);
-	Preferences::GetInstance()->PutInt("Pivot::Stage2::Channel",Pivot_Stage2_Channel);
-	Preferences::GetInstance()->PutBoolean("Pivot::Stage2::ActiveIsExtended",Pivot_Stage2_ActiveIsExtended);
+
 }
 
 void Pivot::LiveConfigure()
@@ -85,7 +76,7 @@ void Pivot::SetPivotToHome()
 
 bool Pivot::IsPivotAtHome()
 {
-	if (!(Pivot_Stage1_ActiveIsExtended == pivotStage1->Get()) && !(Pivot_Stage2_ActiveIsExtended && pivotStage2->Get()) )
+	if (!(myCfg->Stage1_ActiveIsExtended == pivotStage1->Get()) && !(myCfg->Stage2_ActiveIsExtended && pivotStage2->Get()) )
 	{
 	    return true;
 	}
@@ -101,7 +92,7 @@ void Pivot::SetPivotIntake()
 
 bool Pivot::IsPivotAtIntake()
 {
-	if ( (Pivot_Stage1_ActiveIsExtended == pivotStage1->Get()) && !(Pivot_Stage2_ActiveIsExtended && pivotStage2->Get()) )
+	if ( (myCfg->Stage1_ActiveIsExtended == pivotStage1->Get()) && !(myCfg->Stage2_ActiveIsExtended && pivotStage2->Get()) )
 	{
 	    return true;
 	}
@@ -118,7 +109,7 @@ void Pivot::SetPivotLow()
 
 bool Pivot::IsPivotAtLow()
 {
-	if ( (Pivot_Stage1_ActiveIsExtended == pivotStage1->Get()) && (Pivot_Stage2_ActiveIsExtended && pivotStage2->Get()) )
+	if ( (myCfg->Stage1_ActiveIsExtended == pivotStage1->Get()) && (myCfg->Stage2_ActiveIsExtended && pivotStage2->Get()) )
 	{
 	    return true;
 	}
@@ -152,29 +143,29 @@ void Pivot::DownPivot()
 
 void Pivot::ExtendPivotStage1()
 {
-	pivotStage1->Set(Pivot_Stage1_ActiveIsExtended);
+	pivotStage1->Set(myCfg->Stage1_ActiveIsExtended);
 }
 
 void Pivot::ExtendPivotStage2()
 {
-	pivotStage2->Set(Pivot_Stage2_ActiveIsExtended);
+	pivotStage2->Set(myCfg->Stage2_ActiveIsExtended);
 }
 
 void Pivot::RetractPivotStage1()
 {
-	pivotStage1->Set(!Pivot_Stage1_ActiveIsExtended);
+	pivotStage1->Set(!myCfg->Stage1_ActiveIsExtended);
 }
 
 void Pivot::RetractPivotStage2()
 {
-	pivotStage2->Set(!Pivot_Stage2_ActiveIsExtended);
+	pivotStage2->Set(!myCfg->Stage2_ActiveIsExtended);
 }
 
 bool Pivot::IsPivotStage1Extended()
 {
 	bool retval = pivotStage1->Get();
 
-	if ((Pivot_Stage1_ActiveIsExtended && retval) || (!Pivot_Stage1_ActiveIsExtended && !retval))
+	if ((myCfg->Stage1_ActiveIsExtended && retval) || (!myCfg->Stage1_ActiveIsExtended && !retval))
 	{
 		return true;
 	}
@@ -185,7 +176,7 @@ bool Pivot::IsPivotStage2Extended()
 {
 	bool retval = pivotStage2->Get();
 
-	if ((Pivot_Stage2_ActiveIsExtended && retval) || (!Pivot_Stage2_ActiveIsExtended && !retval))
+	if ((myCfg->Stage2_ActiveIsExtended && retval) || (!myCfg->Stage2_ActiveIsExtended && !retval))
 	{
 		return true;
 	}

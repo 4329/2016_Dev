@@ -39,6 +39,7 @@ private:
 	XBOX_AxisState axisState;
 	int obsCount;
 	std::shared_ptr<FireSequence> theShotCmd;
+	bool shooting;
 };
 
 #endif

@@ -14,16 +14,14 @@
 #include "Commands/Subsystem.h"
 #include "WPILib.h"
 #include "../Configurable.h"
+#include "../Robot_Config.h"
 
 class Stabilizer: public Subsystem, public Configurable {
 private:
 	// It's desirable that everything possible under private except
 	// for methods that implement subsystem capabilities
-	int    PCMID;
-	int    FwdChannel;
-	int    RevChannel;
-	bool   ForwardIsDeployed;
 	std::shared_ptr<DoubleSolenoid> StabilizerSolenoid;
+    std::shared_ptr<StabilizerCfg>  myCfg;
 
 public:
 	Stabilizer();

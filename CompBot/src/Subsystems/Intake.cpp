@@ -19,8 +19,8 @@
 Intake::Intake() : Subsystem("Intake") , Configurable("Intake") {
 
     intakeTalon = RobotMap::intakeTalon;
+    myCfg.reset(&(Robot::theConfig->_IntakeCfg));
 
-    CheckConfig("InSpeed");
 	Configure();
 
 }
@@ -42,24 +42,16 @@ Intake::~Intake()
 
 void Intake::RetrieveConfig()
 {
-	Intake_InSpeed                  = Preferences::GetInstance()->GetFloat("Intake::InSpeed",-1.0);
-	Intake_OutSpeed                 = Preferences::GetInstance()->GetFloat("Intake::OutSpeed",1.0);
-	Intake_PreFireOut               = Preferences::GetInstance()->GetFloat("Intake::PreFireOut",0.5);
 
-	Intake_Talon_Enabled            = Preferences::GetInstance()->GetBoolean("Intake::Talon::Enabled",true);
-	Intake_Talon_CANID              = Preferences::GetInstance()->GetInt("Intake::Talon::CANID",5);
-	Intake_Talon_Reversed           = Preferences::GetInstance()->GetBoolean("Intake::Talon::Reversed",false);
-	Intake_Talon_EnableVoltRampRate = Preferences::GetInstance()->GetBoolean("Intake::Talon::EnableVoltRampRate",false);
-	Intake_Talon_VoltRampRate       = Preferences::GetInstance()->GetDouble("Intake::Talon::VoltRampRate",5.0);
 }
 
 void Intake::Configure()
 {
-	if (Intake_Talon_Enabled)
+	if (myCfg->Talon_Enabled)
 	{
-		if(Intake_Talon_EnableVoltRampRate)
+		if(myCfg->Talon_EnableVoltRampRate)
 		{
-			intakeTalon->SetVoltageRampRate(Intake_Talon_VoltRampRate);
+			intakeTalon->SetVoltageRampRate(myCfg->Talon_VoltRampRate);
 		}
 	}
 }
@@ -73,15 +65,7 @@ void Intake::LiveConfigure()
 
 void Intake::SaveConfig()
 {
-	Preferences::GetInstance()->PutFloat("Intake::InSpeed",Intake_InSpeed);
-	Preferences::GetInstance()->PutFloat("Intake::OutSpeed",Intake_OutSpeed);
-	Preferences::GetInstance()->PutFloat("Intake::PreFireOut",Intake_PreFireOut);
 
-	Preferences::GetInstance()->PutBoolean("Intake::Talon::Enabled",Intake_Talon_Enabled);
-	Preferences::GetInstance()->PutInt("Intake::Talon::CANID",Intake_Talon_CANID);
-	Preferences::GetInstance()->PutBoolean("Intake::Talon::Reversed",Intake_Talon_Reversed);
-	Preferences::GetInstance()->PutBoolean("Intake::Talon::EnableVoltRampRate",Intake_Talon_EnableVoltRampRate);
-	Preferences::GetInstance()->PutDouble("Intake::Talon::VoltRampRate",Intake_Talon_VoltRampRate);
 }
 
 
@@ -89,10 +73,10 @@ void Intake::SetIntake(bool in, float percent_speed)
 {
 	if (in)
 	{
-		intakeTalon->Set(Intake_InSpeed * percent_speed);
+		intakeTalon->Set(myCfg->InSpeed * percent_speed);
 	} else
 	{
-		intakeTalon->Set(Intake_OutSpeed * percent_speed);
+		intakeTalon->Set(myCfg->OutSpeed * percent_speed);
 	}
 }
 
@@ -134,5 +118,5 @@ bool Intake::IsBallAtShooter()
 }
 
 float Intake::Get_PreFireOut(){
-	return Intake_PreFireOut;
+	return myCfg->PreFireOut;
 }

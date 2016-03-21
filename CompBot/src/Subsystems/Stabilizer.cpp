@@ -11,15 +11,14 @@
 #include "Stabilizer.h"
 #include "../RobotMap.h"
 #include "../Robot_Config.h"
-
+#include "../Robot.h"
 
 
 Stabilizer::Stabilizer() : Subsystem("Stabilizer"), Configurable("Stabilizer") {
 
 	StabilizerSolenoid = RobotMap::stabilizerSolenoid;
-	ForwardIsDeployed = true;
+    myCfg.reset(&(Robot::theConfig->_StabilizerCfg));
 
-	CheckConfig("PCMID");
 	Configure();
 }
     
@@ -30,18 +29,12 @@ Stabilizer::~Stabilizer()
 
 void Stabilizer::RetrieveConfig()
 {
-	PCMID = Preferences::GetInstance()->GetInt("Stabilizer::PCMID",0);
-	FwdChannel = Preferences::GetInstance()->GetInt("Stabilizer::ForwardChannel",2);
-	RevChannel = Preferences::GetInstance()->GetInt("Stabilizer::ReverseChannel",3);
-	ForwardIsDeployed = Preferences::GetInstance()->GetBoolean("Stabilizer::ForwardIsDeployed",false);
+
 }
 
 void Stabilizer::SaveConfig()
 {
-	Preferences::GetInstance()->PutInt("Stabilizer::PCMID",PCMID);
-	Preferences::GetInstance()->PutInt("Stabilizer::ForwardChannel",FwdChannel);
-	Preferences::GetInstance()->PutInt("Stabilizer::ReverseChannel",RevChannel);
-	Preferences::GetInstance()->PutBoolean("Stabilizer::ForwardIsDeployed",ForwardIsDeployed);
+
 }
 
 void Stabilizer::Configure()
@@ -67,7 +60,7 @@ void Stabilizer::InitDefaultCommand() {
 // here. Call these from Commands.
 void Stabilizer::Deploy()
 {
-	if (ForwardIsDeployed)
+	if (myCfg->ForwardIsDeployed)
 	{
 		StabilizerSolenoid->Set(DoubleSolenoid::kForward);
 	} else
@@ -78,7 +71,7 @@ void Stabilizer::Deploy()
 
 void Stabilizer::Retract()
 {
-	if (ForwardIsDeployed)
+	if (myCfg->ForwardIsDeployed)
 	{
 		StabilizerSolenoid->Set(DoubleSolenoid::kReverse);
 	} else
@@ -89,7 +82,7 @@ void Stabilizer::Retract()
 
 bool Stabilizer::IsDeployed()
 {
-	if (ForwardIsDeployed)
+	if (myCfg->ForwardIsDeployed)
 	{
 		if (StabilizerSolenoid->Get() == DoubleSolenoid::kForward) return true;
 		return false;

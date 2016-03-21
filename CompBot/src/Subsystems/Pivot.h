@@ -14,6 +14,7 @@
 #include "Commands/Subsystem.h"
 #include "WPILib.h"
 #include "../Configurable.h"
+#include "../Robot_Config.h"
 
 /**
  *
@@ -28,12 +29,7 @@ private:
 	std::shared_ptr<Solenoid> pivotStage1;
 	std::shared_ptr<Solenoid> pivotStage2;
 
-	int    Pivot_PCMID;
-	int    Pivot_Stage1_Channel;
-	bool   Pivot_Stage1_ActiveIsExtended;
-	int    Pivot_Stage2_Channel;
-	bool   Pivot_Stage2_ActiveIsExtended;
-
+	std::shared_ptr<PivotCfg> myCfg;
 
 public:
 	Pivot();

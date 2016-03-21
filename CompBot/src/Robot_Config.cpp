@@ -64,6 +64,14 @@ void Robot_Config::Print_Config()
     Print_VideoCfg();
 }
 
+void Robot_Config::Update_Config(){
+    printf("Updating Config: override %d\n",_override);
+	Read_Config();
+	Save_Config();
+	Print_Config();
+	_override = 0;
+}
+
 bool Robot_Config::Exists(std::string theKey)
 {
 	return Preferences::GetInstance()->ContainsKey(theKey);
@@ -426,10 +434,10 @@ void Robot_Config::Read_SensorCfg()
 	_SensorCfg.Front_distThreshold = Preferences::GetInstance()->GetFloat("Sensor::Front::DistThreshold",1.5);
 	_SensorCfg.Shooter_distThreshold = Preferences::GetInstance()->GetFloat("Sensor::Shooter::DistThreshold",1.5);
 	_SensorCfg.TowerInRangeRumble = Preferences::GetInstance()->GetFloat("Sensor::Tower::InRangeRumble",0.0);
-	_SensorCfg.IMU_flipYaw = Preferences::GetInstance()->GetBoolean("Sensor::IMU::FlipYaw",false);
-	_SensorCfg.IMU_COLLISION_THRESHOLD_DELTA_G = Preferences::GetInstance()->GetFloat("Sensor::IMU::ColThreshold_DeltaG",1.5);
-	_SensorCfg.IMU_MOVE_THRESHOLD_DELTA_MAG = Preferences::GetInstance()->GetFloat("Sensor::IMU::MoveThreshold_DeltaMag",1.5);
-	_SensorCfg.IMU_ROT_THRESHOLD_DELTA = Preferences::GetInstance()->GetFloat("Sensor::IMU::RotThreshold_Delta",1.5);
+	_SensorCfg._IMUcfg.flipYaw = Preferences::GetInstance()->GetBoolean("Sensor::IMU::FlipYaw",false);
+	_SensorCfg._IMUcfg.COLLISION_THRESHOLD_DELTA_G = Preferences::GetInstance()->GetFloat("Sensor::IMU::ColThreshold_DeltaG",1.5);
+	_SensorCfg._IMUcfg.MOVE_THRESHOLD_DELTA_MAG = Preferences::GetInstance()->GetFloat("Sensor::IMU::MoveThreshold_DeltaMag",1.5);
+	_SensorCfg._IMUcfg.ROT_THRESHOLD_DELTA = Preferences::GetInstance()->GetFloat("Sensor::IMU::RotThreshold_Delta",1.5);
 }
 
 void Robot_Config::Save_SensorCfg()
@@ -443,10 +451,10 @@ void Robot_Config::Save_SensorCfg()
 	Preferences::GetInstance()->PutFloat("Sensor::Front::DistThreshold",_SensorCfg.Front_distThreshold);
 	Preferences::GetInstance()->PutFloat("Sensor::Shooter::DistThreshold",_SensorCfg.Shooter_distThreshold);
 	Preferences::GetInstance()->PutFloat("Sensor::Tower::InRangeRumble",_SensorCfg.TowerInRangeRumble);
-    Preferences::GetInstance()->PutFloat("Sensor::IMU::COLLISION_THRESHOLD_DELTA_G",_SensorCfg.IMU_COLLISION_THRESHOLD_DELTA_G);
-    Preferences::GetInstance()->PutFloat("Sensor::IMU::MOVE_THRESHOLD_DELTA_MAG",_SensorCfg.IMU_MOVE_THRESHOLD_DELTA_MAG);
-    Preferences::GetInstance()->PutFloat("Sensor::IMU::ROT_THRESHOLD_DELTA",_SensorCfg.IMU_ROT_THRESHOLD_DELTA);
-    Preferences::GetInstance()->PutBoolean("Sensor::IMU::YawFlipped",_SensorCfg.IMU_flipYaw);
+    Preferences::GetInstance()->PutFloat("Sensor::IMU::COLLISION_THRESHOLD_DELTA_G",_SensorCfg._IMUcfg.COLLISION_THRESHOLD_DELTA_G);
+    Preferences::GetInstance()->PutFloat("Sensor::IMU::MOVE_THRESHOLD_DELTA_MAG",_SensorCfg._IMUcfg.MOVE_THRESHOLD_DELTA_MAG);
+    Preferences::GetInstance()->PutFloat("Sensor::IMU::ROT_THRESHOLD_DELTA",_SensorCfg._IMUcfg.ROT_THRESHOLD_DELTA);
+    Preferences::GetInstance()->PutBoolean("Sensor::IMU::YawFlipped",_SensorCfg._IMUcfg.flipYaw);
 }
 
 void Robot_Config::Print_SensorCfg()
@@ -461,18 +469,21 @@ void Robot_Config::Print_SensorCfg()
 	printf("Sensor::Front::DistThreshold %f\n",_SensorCfg.Front_distThreshold);
 	printf("Sensor::Shooter::DistThreshold %f\n",_SensorCfg.Shooter_distThreshold);
 	printf("Sensor::Tower::InRangeRumble %f\n",_SensorCfg.TowerInRangeRumble);
-    printf("Sensor::IMU::COLLISION_THRESHOLD_DELTA_G %f\n",_SensorCfg.IMU_COLLISION_THRESHOLD_DELTA_G);
-    printf("Sensor::IMU::MOVE_THRESHOLD_DELTA_MAG %f\n",_SensorCfg.IMU_MOVE_THRESHOLD_DELTA_MAG);
-    printf("Sensor::IMU::ROT_THRESHOLD_DELTA %f\n",_SensorCfg.IMU_ROT_THRESHOLD_DELTA);
-    printf("Sensor::IMU::YawFlipped %d\n",_SensorCfg.IMU_flipYaw);
+    printf("Sensor::IMU::COLLISION_THRESHOLD_DELTA_G %f\n",_SensorCfg._IMUcfg.COLLISION_THRESHOLD_DELTA_G);
+    printf("Sensor::IMU::MOVE_THRESHOLD_DELTA_MAG %f\n",_SensorCfg._IMUcfg.MOVE_THRESHOLD_DELTA_MAG);
+    printf("Sensor::IMU::ROT_THRESHOLD_DELTA %f\n",_SensorCfg._IMUcfg.ROT_THRESHOLD_DELTA);
+    printf("Sensor::IMU::YawFlipped %d\n",_SensorCfg._IMUcfg.flipYaw);
 }
 
 void Robot_Config::Read_ShooterCfg()
 {
-	_ShooterCfg.Speed = Preferences::GetInstance()->GetFloat("Shooter::Speed",-4100);
-	_ShooterCfg.PercentVoltage = Preferences::GetInstance()->GetFloat("Shooter::PercentVoltage",-0.75);
-	_ShooterCfg.UseSpeed = Preferences::GetInstance()->GetBoolean("Shooter::UseSpeed",false);
+	_ShooterCfg.Speed1 = Preferences::GetInstance()->GetFloat("Shooter::Speed1",-4100);
+	_ShooterCfg.Speed2 = Preferences::GetInstance()->GetFloat("Shooter::Speed2",-4100);
+	_ShooterCfg.PercentVoltage1 = Preferences::GetInstance()->GetFloat("Shooter::PercentVoltage1",-0.75);
+	_ShooterCfg.PercentVoltage2 = Preferences::GetInstance()->GetFloat("Shooter::PercentVoltage2",-0.75);
+	_ShooterCfg.UseSpeed = Preferences::GetInstance()->GetBoolean("Shooter::UseSpeed",true);
 	_ShooterCfg.Fire_Timeout = Preferences::GetInstance()->GetDouble("Shooter::Fire::Timeout",5.0);
+	_ShooterCfg.StallRPM_Threshold = Preferences::GetInstance()->GetDouble("Shooter::StallRPMthreshold",100.0);
 
 	_ShooterCfg.TopTalon_Enabled = Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::Enabled",true);
 	_ShooterCfg.TopTalon_CANID = Preferences::GetInstance()->GetInt("Shooter::TopTalon::CANID",8);
@@ -491,27 +502,49 @@ void Robot_Config::Read_ShooterCfg()
 	_ShooterCfg.BottomTalon_Reversed = Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::Reversed",false);
 	_ShooterCfg.BottomTalon_HasSensor = Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::HasSensor",true);
 	_ShooterCfg.BottomTalon_SensorReversed = Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::SensorReversed",false);
-	_ShooterCfg.BottomTalon_EnablePID = Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::EnablePID",false);
-	_ShooterCfg.BottomTalon_Profile_0_PID_P = Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::PID::P",1.0);
-	_ShooterCfg.BottomTalon_Profile_0_PID_I = Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::PID::I",0.01);
-	_ShooterCfg.BottomTalon_Profile_0_PID_D = Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::PID::D",0.0);
-	_ShooterCfg.BottomTalon_Profile_0_PID_F = Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::PID::F",0.01);
+
+
+	// Calculate Feed forward for the requested RPM to be the baseline motor output.  4096 units per rotation.
+	float fgain1,fgain2;
+	fgain1 = 1023 / ((_ShooterCfg.Speed1 / 600 ) * 4096);
+	fgain2 = 1023 / ((_ShooterCfg.Speed2 / 600 ) * 4096);
+	if (_override == 1)
+	{
+		_ShooterCfg.BottomTalon_EnablePID = true;
+		_ShooterCfg.BottomTalon_Profile_0_PID_P = 0;
+		_ShooterCfg.BottomTalon_Profile_0_PID_I = 0;
+		_ShooterCfg.BottomTalon_Profile_0_PID_D = 0;
+		_ShooterCfg.BottomTalon_Profile_0_PID_F1 = fgain1;
+		_ShooterCfg.BottomTalon_Profile_0_PID_F2 = fgain2;
+	} else
+	{
+		_ShooterCfg.BottomTalon_EnablePID = Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::EnablePID",true);
+		_ShooterCfg.BottomTalon_Profile_0_PID_P = Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::PID::P",0.0);
+		_ShooterCfg.BottomTalon_Profile_0_PID_I = Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::PID::I",0.0);
+		_ShooterCfg.BottomTalon_Profile_0_PID_D = Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::PID::D",0.0);
+		_ShooterCfg.BottomTalon_Profile_0_PID_F1 = Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::PID::F1",fgain1);
+		_ShooterCfg.BottomTalon_Profile_0_PID_F2 = Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::PID::F2",fgain2);
+	}
+
 	_ShooterCfg.BottomTalon_Profile_0_IZone = Preferences::GetInstance()->GetInt("Shooter::BottomTalon::Profile::0::IZone",256);
 	_ShooterCfg.BottomTalon_Profile_0_EnableCLRampRate = Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::Profile::0::EnableCLRampRate",false);
 	_ShooterCfg.BottomTalon_Profile_0_CLRampRate = Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::CLRampRate",2500);
 	_ShooterCfg.BottomTalon_EnableVoltRampRate = Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::EnableVoltRampRate",true);
 	_ShooterCfg.BottomTalon_VoltRampRate = Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::VoltRampRate",4.0);
-	_ShooterCfg.BottomTalon_PID_CL_PM_Error = Preferences::GetInstance()->GetInt("Shooter::BottomTalon::PID::CL::PM::Error",10);
+	_ShooterCfg.BottomTalon_PID_CL_PM_Error = Preferences::GetInstance()->GetInt("Shooter::BottomTalon::PID::CL::PM::Error",100);
 	_ShooterCfg.BottomTalon_Slaved = Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::Slaved",false);
 	_ShooterCfg.BottomTalon_MasterCANID = Preferences::GetInstance()->GetInt("Shooter::BottomTalon::MasterCANID",0);
 }
 
 void Robot_Config::Save_ShooterCfg()
 {
-	Preferences::GetInstance()->PutFloat("Shooter::Speed",_ShooterCfg.Speed);
-	Preferences::GetInstance()->PutFloat("Shooter::PercentVoltage",_ShooterCfg.PercentVoltage);
+	Preferences::GetInstance()->PutFloat("Shooter::Speed1",_ShooterCfg.Speed1);
+	Preferences::GetInstance()->PutFloat("Shooter::Speed2",_ShooterCfg.Speed2);
+	Preferences::GetInstance()->PutFloat("Shooter::PercentVoltage1",_ShooterCfg.PercentVoltage1);
+	Preferences::GetInstance()->PutFloat("Shooter::PercentVoltage2",_ShooterCfg.PercentVoltage2);
 	Preferences::GetInstance()->PutBoolean("Shooter::UseSpeed",_ShooterCfg.UseSpeed);
 	Preferences::GetInstance()->PutDouble("Shooter::Fire::Timeout",_ShooterCfg.Fire_Timeout);
+	Preferences::GetInstance()->PutDouble("Shooter::StallRPMthreshold",_ShooterCfg.StallRPM_Threshold);
 
 	Preferences::GetInstance()->PutBoolean("Shooter::TopTalon::Enabled",_ShooterCfg.TopTalon_Enabled);
 	Preferences::GetInstance()->PutInt("Shooter::TopTalon::CANID",_ShooterCfg.TopTalon_CANID);
@@ -534,7 +567,8 @@ void Robot_Config::Save_ShooterCfg()
 	Preferences::GetInstance()->PutDouble("Shooter::BottomTalon::Profile::0::PID::P",_ShooterCfg.BottomTalon_Profile_0_PID_P);
 	Preferences::GetInstance()->PutDouble("Shooter::BottomTalon::Profile::0::PID::I",_ShooterCfg.BottomTalon_Profile_0_PID_I);
 	Preferences::GetInstance()->PutDouble("Shooter::BottomTalon::Profile::0::PID::D",_ShooterCfg.BottomTalon_Profile_0_PID_D);
-	Preferences::GetInstance()->PutDouble("Shooter::BottomTalon::Profile::0::PID::F",_ShooterCfg.BottomTalon_Profile_0_PID_F);
+	Preferences::GetInstance()->PutDouble("Shooter::BottomTalon::Profile::0::PID::F1",_ShooterCfg.BottomTalon_Profile_0_PID_F1);
+	Preferences::GetInstance()->PutDouble("Shooter::BottomTalon::Profile::0::PID::F2",_ShooterCfg.BottomTalon_Profile_0_PID_F2);
 	Preferences::GetInstance()->PutInt("Shooter::BottomTalon::Profile::0::IZone",_ShooterCfg.BottomTalon_Profile_0_IZone);
 	Preferences::GetInstance()->PutBoolean("Shooter::BottomTalon::Profile::0::EnableCLRampRate",_ShooterCfg.BottomTalon_Profile_0_EnableCLRampRate);
 	Preferences::GetInstance()->PutDouble("Shooter::BottomTalon::Profile::0::CLRampRate",_ShooterCfg.BottomTalon_Profile_0_CLRampRate);
@@ -548,10 +582,13 @@ void Robot_Config::Save_ShooterCfg()
 void Robot_Config::Print_ShooterCfg()
 {
 	printf("Printing Shooter Config.\n");
-	printf("Shooter::Speed %f\n",_ShooterCfg.Speed);
-	printf("Shooter::PercentVoltage %f\n",_ShooterCfg.PercentVoltage);
+	printf("Shooter::Speed1 %f\n",_ShooterCfg.Speed1);
+	printf("Shooter::Speed2 %f\n",_ShooterCfg.Speed2);
+	printf("Shooter::PercentVoltage1 %f\n",_ShooterCfg.PercentVoltage1);
+	printf("Shooter::PercentVoltage2 %f\n",_ShooterCfg.PercentVoltage2);
 	printf("Shooter::UseSpeed %d\n",_ShooterCfg.UseSpeed);
 	printf("Shooter::Fire::Timeout %f\n",_ShooterCfg.Fire_Timeout);
+	printf("Shooter::StallRPMthreshold %f\n",_ShooterCfg.StallRPM_Threshold);
 
 	printf("Shooter::TopTalon::Enabled %d\n",_ShooterCfg.TopTalon_Enabled);
 	printf("Shooter::TopTalon::CANID %d\n",_ShooterCfg.TopTalon_CANID);
@@ -574,7 +611,8 @@ void Robot_Config::Print_ShooterCfg()
 	printf("Shooter::BottomTalon::Profile::0::PID::P %f\n",_ShooterCfg.BottomTalon_Profile_0_PID_P);
 	printf("Shooter::BottomTalon::Profile::0::PID::I %f\n",_ShooterCfg.BottomTalon_Profile_0_PID_I);
 	printf("Shooter::BottomTalon::Profile::0::PID::D %f\n",_ShooterCfg.BottomTalon_Profile_0_PID_D);
-	printf("Shooter::BottomTalon::Profile::0::PID::F %f\n",_ShooterCfg.BottomTalon_Profile_0_PID_F);
+	printf("Shooter::BottomTalon::Profile::0::PID::F1 %f\n",_ShooterCfg.BottomTalon_Profile_0_PID_F1);
+	printf("Shooter::BottomTalon::Profile::0::PID::F2 %f\n",_ShooterCfg.BottomTalon_Profile_0_PID_F2);
 	printf("Shooter::BottomTalon::Profile::0::IZone %d\n",_ShooterCfg.BottomTalon_Profile_0_IZone);
 	printf("Shooter::BottomTalon::Profile::0::EnableCLRampRate %d\n",_ShooterCfg.BottomTalon_Profile_0_EnableCLRampRate);
 	printf("Shooter::BottomTalon::Profile::0::CLRampRate %f\n",_ShooterCfg.BottomTalon_Profile_0_CLRampRate);
@@ -702,13 +740,13 @@ void Robot_Config::Read_VideoCfg()
 	_VideoCfg.RearFPS = Preferences::GetInstance()->GetFloat("Video::Rear::FPS",15);
 
 	_VideoCfg.FrontHeight = Preferences::GetInstance()->GetInt("Video::Front::Height",320);
-	_VideoCfg.FrontWidth = Preferences::GetInstance()->GetInt("Video::Front::Width",480);
+	_VideoCfg.FrontWidth = Preferences::GetInstance()->GetInt("Video::Front::Width",240);
 
 	_VideoCfg.RearHeight = Preferences::GetInstance()->GetInt("Video::Rear::Height",320);
-	_VideoCfg.RearWidth = Preferences::GetInstance()->GetInt("Video::Rear::Width",480);
+	_VideoCfg.RearWidth = Preferences::GetInstance()->GetInt("Video::Rear::Width",240);
 
-	_VideoCfg.FrontBrightness = Preferences::GetInstance()->GetInt("Video::Front::Brightness",320);
-	_VideoCfg.RearBrightness = Preferences::GetInstance()->GetInt("Video::Rear::Brightness",480);
+	_VideoCfg.FrontBrightness = Preferences::GetInstance()->GetFloat("Video::Front::Brightness",0.8);
+	_VideoCfg.RearBrightness = Preferences::GetInstance()->GetFloat("Video::Rear::Brightness",0.8);
 
 	_VideoCfg.FrontWBAuto = Preferences::GetInstance()->GetBoolean("Video::Front::WBAuto",true);
 	_VideoCfg.RearWBAuto = Preferences::GetInstance()->GetBoolean("Video::Rear::WBAuto",true);
@@ -716,11 +754,11 @@ void Robot_Config::Read_VideoCfg()
 	_VideoCfg.FrontWB = Preferences::GetInstance()->GetInt("Video::Front::WB",320);
 	_VideoCfg.RearWB = Preferences::GetInstance()->GetInt("Video::Rear::WB",480);
 
-    _VideoCfg.FrontExpAuto = Preferences::GetInstance()->GetBoolean("Video::Front::ExpAuto",true);
-	_VideoCfg.RearExpAuto = Preferences::GetInstance()->GetBoolean("Video::Rear::ExpAuto",true);
+    _VideoCfg.FrontExpAuto = Preferences::GetInstance()->GetBoolean("Video::Front::ExpAuto",false);
+	_VideoCfg.RearExpAuto = Preferences::GetInstance()->GetBoolean("Video::Rear::ExpAuto",false);
 
-	_VideoCfg.FrontExp = Preferences::GetInstance()->GetInt("Video::Front::Exp",320);
-	_VideoCfg.RearExp = Preferences::GetInstance()->GetInt("Video::Rear::Exp",480);
+	_VideoCfg.FrontExp = Preferences::GetInstance()->GetFloat("Video::Front::Exp",0.75);
+	_VideoCfg.RearExp = Preferences::GetInstance()->GetFloat("Video::Rear::Exp",0.75);
 
 	_VideoCfg.FrontName = Preferences::GetInstance()->GetString("Video::Front","cam1");
 	_VideoCfg.RearName = Preferences::GetInstance()->GetString("Video::Rear","cam2");
@@ -742,8 +780,8 @@ void Robot_Config::Save_VideoCfg()
 	Preferences::GetInstance()->PutInt("Video::Rear::Height",_VideoCfg.RearHeight);
 	Preferences::GetInstance()->PutInt("Video::Rear::Width",_VideoCfg.RearWidth);
 
-	Preferences::GetInstance()->PutInt("Video::Front::Brightness",_VideoCfg.FrontBrightness);
-	Preferences::GetInstance()->PutInt("Video::Rear::Brightness",_VideoCfg.RearBrightness);
+	Preferences::GetInstance()->PutFloat("Video::Front::Brightness",_VideoCfg.FrontBrightness);
+	Preferences::GetInstance()->PutFloat("Video::Rear::Brightness",_VideoCfg.RearBrightness);
 
 	Preferences::GetInstance()->PutBoolean("Video::Front::WBAuto",_VideoCfg.FrontWBAuto);
 	Preferences::GetInstance()->PutBoolean("Video::Rear::WBAuto",_VideoCfg.RearWBAuto);
@@ -754,8 +792,8 @@ void Robot_Config::Save_VideoCfg()
     Preferences::GetInstance()->PutBoolean("Video::Front::ExpAuto",_VideoCfg.FrontExpAuto);
 	Preferences::GetInstance()->PutBoolean("Video::Rear::ExpAuto",_VideoCfg.RearExpAuto);
 
-	Preferences::GetInstance()->PutInt("Video::Front::Exp",_VideoCfg.FrontExp);
-	Preferences::GetInstance()->PutInt("Video::Rear::Exp",_VideoCfg.RearExp);
+	Preferences::GetInstance()->PutFloat("Video::Front::Exp",_VideoCfg.FrontExp);
+	Preferences::GetInstance()->PutFloat("Video::Rear::Exp",_VideoCfg.RearExp);
 
 	Preferences::GetInstance()->PutString("Video::Front",_VideoCfg.FrontName);
 	Preferences::GetInstance()->PutString("Video::Rear",_VideoCfg.RearName);
@@ -773,17 +811,17 @@ void Robot_Config::Print_VideoCfg()
 	printf("Video::Front::Height %d\n",_VideoCfg.FrontHeight);
 	printf("Video::Front::Width %d\n",_VideoCfg.FrontWidth);
 	printf("Video::Rear::Height %d\n",_VideoCfg.RearHeight);
-	printf("Video::Rear::Width %\n",_VideoCfg.RearWidth);
-	printf("Video::Front::Brightness %d\n",_VideoCfg.FrontBrightness);
-	printf("Video::Rear::Brightness %d\n",_VideoCfg.RearBrightness);
+	printf("Video::Rear::Width %d\n",_VideoCfg.RearWidth);
+	printf("Video::Front::Brightness %f\n",_VideoCfg.FrontBrightness);
+	printf("Video::Rear::Brightness %f\n",_VideoCfg.RearBrightness);
 	printf("Video::Front::WBAuto %d\n",_VideoCfg.FrontWBAuto);
 	printf("Video::Rear::WBAuto %d\n",_VideoCfg.RearWBAuto);
 	printf("Video::Front::WB %d\n",_VideoCfg.FrontWB);
 	printf("Video::Rear::WB %d\n",_VideoCfg.RearWB );
 	printf("Video::Front::ExpAuto %d\n",_VideoCfg.FrontExpAuto);
 	printf("Video::Rear::ExpAuto %d\n",_VideoCfg.RearExpAuto);
-	printf("Video::Front::Exp %d\n",_VideoCfg.FrontExp);
-	printf("Video::Rear::Exp %d\n",_VideoCfg.RearExp);
+	printf("Video::Front::Exp %f\n",_VideoCfg.FrontExp);
+	printf("Video::Rear::Exp %f\n",_VideoCfg.RearExp);
 	printf("Video::Front %s\n",_VideoCfg.FrontName.c_str());
 	printf("Video::Rear %s\n",_VideoCfg.RearName.c_str());
 }

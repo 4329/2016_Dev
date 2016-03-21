@@ -27,9 +27,9 @@ private:
 	XBOX360_Controller *myController;
 	int currentUpdate;
 
-	IMAQdxSession Front;
+/*	IMAQdxSession Front;
 	IMAQdxSession Back;
-	IMAQdxSession current;
+	IMAQdxSession current;*/
 	Image *frame;
 	CameraServer *server;
 	std::shared_ptr<USBCamera> frontCam;

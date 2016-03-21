@@ -4,22 +4,25 @@
 #include "WPILib.h"
 #include "AHRS.h"
 #include "Configurable.h"
+#include "Robot_Config.h"
 
 class IMU: public Configurable {
 private:
     double last_world_linear_accel_x;
     double last_world_linear_accel_y;
     double last_world_linear_accel_z;
-    bool   flipYaw;
 
+   /* bool   flipYaw;
     float COLLISION_THRESHOLD_DELTA_G;
     float MOVE_THRESHOLD_DELTA_MAG;
-    float ROT_THRESHOLD_DELTA;
+    float ROT_THRESHOLD_DELTA;*/
+
+    IMUCfg myCfg;
 
 public:
     std::shared_ptr<AHRS> _myIMU;
 
-	IMU();
+	IMU(IMUCfg &cfg);
 	virtual ~IMU();
 	virtual void RetrieveConfig();
 	virtual void Configure();

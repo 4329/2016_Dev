@@ -14,6 +14,7 @@
 #include "Commands/Subsystem.h"
 #include "WPILib.h"
 #include "../Configurable.h"
+#include "../Robot_Config.h"
 
 /**
  *
@@ -25,12 +26,7 @@ private:
 	// It's desirable that everything possible is private except
 	// for methods that implement subsystem capabilities
 	std::shared_ptr<Solenoid> _scaler;
-
-
-	int  PCMID;
-	int  Channel;
-	bool ActiveIsExtended;
-
+    std::shared_ptr<ScalarCfg> myCfg;
 
 public:
 	Scaler();

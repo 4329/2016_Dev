@@ -16,6 +16,7 @@
 #include "../Configurable.h"
 #include "IR_Sensor.h"
 #include "../IMU.h"
+#include "../Robot_Config.h"
 
 
 class Sensors: public Subsystem, public Configurable {
@@ -28,6 +29,8 @@ private:
 	std::shared_ptr<IR_Sensor> IR_Tower;
 	std::shared_ptr<PowerDistributionPanel> _pDp;
 	std::shared_ptr<AnalogInput> pressure;
+
+	std::shared_ptr<SensorCfg> myCfg;
 
 	float  TowerInRangeRumble;
 

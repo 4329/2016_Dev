@@ -35,7 +35,6 @@ bool Video::Init(VideoCfg *config,XBOX360_Controller *controller)
 }
 
 void Video::Run(){
-	//frame = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
 	server = CameraServer::GetInstance();
 
 	LiveConfigure();
@@ -52,14 +51,6 @@ void Video::Run(){
 
 void Video::ProcessStream()
 {
-/*	int imaqError;
-	imaqError = IMAQdxGrab(current, frame, true, NULL);
-	if(imaqError != IMAQdxErrorSuccess) {
-		DriverStation::ReportError("IMAQdxGrab error: " + std::to_string((long)imaqError) + "\n");
-	}
-	server->SetImage(frame);
-	*/
-
 	if (FrontActive)
 	{
 		frontCam->GetImage(frame);
@@ -73,8 +64,6 @@ void Video::ProcessStream()
 
 void Video::LiveConfigure()
 {
-//	int imaqError;
-//	server->SetQuality(myConfig->FrontQuality);
 	currentUpdate = myConfig->configUpdateCount;
 
 }
@@ -98,24 +87,7 @@ void Video::SelectFront()
 	if (myConfig->FrontEnable)
 	{
 		printf("Selecting Front Camera\n");
-/*		int imaqError;
-		IMAQdxStopAcquisition(current);
 
-		if (myConfig->FrontEnable)
-		{
-			imaqError = IMAQdxOpenCamera(myConfig->FrontName.c_str() , IMAQdxCameraControlModeController, &Front);
-			if(imaqError != IMAQdxErrorSuccess) {
-				DriverStation::ReportError("IMAQdxOpenCamera error: " + std::to_string((long)imaqError) + "\n");
-			}
-			current = Front;
-		}
-		imaqError = IMAQdxConfigureGrab(Front);
-		if(imaqError != IMAQdxErrorSuccess) {
-			DriverStation::ReportError("IMAQdxConfigureGrab error: " + std::to_string((long)imaqError) + "\n");
-		}
-		IMAQdxStartAcquisition(Front);
-		current = Front;
-	*/
 	if (!FrontActive)
 	{
 		rearCam->StopCapture();
@@ -137,10 +109,9 @@ void Video::SelectFront()
 	{
 		frontCam->SetWhiteBalanceManual(myConfig->FrontWB);
 	}
-		//frontCam->SetBrightness(myConfig->FrontBrightness);
+		frontCam->SetBrightness(myConfig->FrontBrightness);
 		//frontCam->SetSize(myConfig->FrontWidth,myConfig->FrontHeight);
 		frontCam->StartCapture();
-		//server->StartAutomaticCapture(frontCam);
 		FrontActive = true;
 	} else
 	{
@@ -158,25 +129,6 @@ void Video::SelectRear()
 	if (myConfig->RearEnable)
 	{
 		printf("Selecting Rear Camera\n");
-		/*int imaqError;
-		IMAQdxStopAcquisition(current);
-
-		if (myConfig->RearEnable)
-		{
-			imaqError = IMAQdxOpenCamera(myConfig->RearName.c_str(), IMAQdxCameraControlModeController, &Back);
-			if(imaqError != IMAQdxErrorSuccess) {
-				DriverStation::ReportError("IMAQdxOpenCamera error: " + std::to_string((long)imaqError) + "\n");
-			}
-			current = Back;
-		}
-		imaqError = IMAQdxConfigureGrab(Back);
-		if(imaqError != IMAQdxErrorSuccess) {
-			DriverStation::ReportError("IMAQdxConfigureGrab error: " + std::to_string((long)imaqError) + "\n");
-		}
-		IMAQdxStartAcquisition(Back);
-		current = Back;
-
-	*/
 		if (FrontActive)
 		{
 			frontCam->StopCapture();
@@ -199,10 +151,9 @@ void Video::SelectRear()
 		{
 			rearCam->SetWhiteBalanceManual(myConfig->RearWB);
 		}
-		//rearCam->SetBrightness(myConfig->RearBrightness);
+		rearCam->SetBrightness(myConfig->RearBrightness);
 		//rearCam->SetSize(myConfig->RearWidth,myConfig->RearHeight);
 		rearCam->StartCapture();
-		//server->StartAutomaticCapture(rearCam);
 	} else
 	{
 		printf("Rear Camera not enabled\n");
@@ -216,5 +167,5 @@ bool Video::IsRearSelected()
 
 void Video::End()
 {
-	//IMAQdxStopAcquisition(current);
+
 }

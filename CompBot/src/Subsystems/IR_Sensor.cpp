@@ -4,11 +4,11 @@
 #include "../RobotMap.h"
 #include "math.h"
 
-IR_Sensor::IR_Sensor(std::shared_ptr<AnalogInput> sensor, std::string name) : Configurable(name)  {
+IR_Sensor::IR_Sensor(std::shared_ptr<AnalogInput> sensor, float &threshold, std::string name) : Configurable(name)  {
 	theSensor = sensor;
 	myName = name;
-
-    CheckConfig("DistThreshold");
+    distThreshold = threshold;
+    cnt = 0;
 	Configure();
 }
 
@@ -41,7 +41,7 @@ bool IR_Sensor::IsInRange() {
 
 void IR_Sensor::RetrieveConfig()
 {
-	distThreshold = Preferences::GetInstance()->GetFloat(myName + prefSep + "DistThreshold",1.5);
+	//distThreshold = Preferences::GetInstance()->GetFloat(myName + prefSep + "DistThreshold",1.5);
 }
 
 void IR_Sensor::Configure()
@@ -57,7 +57,7 @@ void IR_Sensor::LiveConfigure()
 
 void IR_Sensor::SaveConfig()
 {
-	Preferences::GetInstance()->PutFloat(myName + prefSep + "DistThreshold",distThreshold);
+	//Preferences::GetInstance()->PutFloat(myName + prefSep + "DistThreshold",distThreshold);
 }
 
 
@@ -77,7 +77,7 @@ void  IR_Sensor::StoreCalibration()
 {
 	float temp = (In - Out)/2;
 	distThreshold = In - temp;
-	Preferences::GetInstance()->PutFloat(myName + prefSep + "DistThreshold",distThreshold);
+	//Preferences::GetInstance()->PutFloat(myName + prefSep + "DistThreshold",distThreshold);
 }
 
 void  IR_Sensor::Signature()

@@ -14,6 +14,7 @@
 #include "Commands/Subsystem.h"
 #include "WPILib.h"
 #include "../Configurable.h"
+#include "../Robot_Config.h"
 
 /**
  *
@@ -26,6 +27,7 @@ private:
 	// for methods that implement subsystem capabilities
 
 	std::shared_ptr<CANTalon> intakeTalon;
+    std::shared_ptr<IntakeCfg> myCfg;
 
 	float  Intake_InSpeed;
 	float  Intake_OutSpeed;

@@ -115,6 +115,13 @@ typedef struct {
 } ScalarCfg;
 
 typedef struct {
+    bool  flipYaw;
+    float COLLISION_THRESHOLD_DELTA_G;
+    float MOVE_THRESHOLD_DELTA_MAG;
+    float ROT_THRESHOLD_DELTA;
+} IMUCfg;
+
+typedef struct {
 	int    PDP_CANID;
 	int    Tower_AnalogChannel;
 	float  Tower_distThreshold;
@@ -124,22 +131,18 @@ typedef struct {
 	float  Shooter_distThreshold;
 	float  TowerInRangeRumble;
 	int    Pressure_AnalogChannel;
+    IMUCfg _IMUcfg;
 
-    double IMU_last_world_linear_accel_x;
-    double IMU_last_world_linear_accel_y;
-    double IMU_last_world_linear_accel_z;
-    bool   IMU_flipYaw;
-
-    float IMU_COLLISION_THRESHOLD_DELTA_G;
-    float IMU_MOVE_THRESHOLD_DELTA_MAG;
-    float IMU_ROT_THRESHOLD_DELTA;
 } SensorCfg;
 
 typedef struct {
-	float  Speed;
-	float  PercentVoltage;
+	float  Speed1;
+	float  Speed2;
+	float  PercentVoltage1;
+	float  PercentVoltage2;
 	bool   UseSpeed;
 	double Fire_Timeout;
+	float  StallRPM_Threshold;
 	bool   TopTalon_Enabled;
 	int    TopTalon_CANID;
 	bool   TopTalon_Reversed;
@@ -161,7 +164,8 @@ typedef struct {
 	double BottomTalon_Profile_0_PID_P;
 	double BottomTalon_Profile_0_PID_I;
 	double BottomTalon_Profile_0_PID_D;
-	double BottomTalon_Profile_0_PID_F;
+	double BottomTalon_Profile_0_PID_F1;
+	double BottomTalon_Profile_0_PID_F2;
 	int    BottomTalon_Profile_0_IZone;
 	bool   BottomTalon_Profile_0_EnableCLRampRate;
 	double BottomTalon_Profile_0_CLRampRate;
@@ -194,16 +198,16 @@ typedef struct {
     float  RearFPS;
     unsigned int FrontHeight, FrontWidth;
     unsigned int RearHeight, RearWidth;
-    unsigned int FrontBrightness;
-    unsigned int RearBrightness;
+    float FrontBrightness;
+    float RearBrightness;
     bool FrontWBAuto;
     bool RearWBAuto;
     unsigned int FrontWB;
     unsigned int RearWB;
     bool FrontExpAuto;
     bool RearExpAuto;
-    unsigned int FrontExp;
-    unsigned int RearExp;
+    float FrontExp;
+    float RearExp;
 	std::string FrontName;
 	std::string RearName;
 	bool StopCapture;
@@ -213,7 +217,7 @@ typedef struct {
 class Robot_Config
 {
 public:
-
+    int           _override; // 0: Use networktable values. 1: generate default PID values.
 	AutonomousCfg _AutoCfg;
 	DriveTrainCfg _DriveCfg;
 	IntakeCfg     _IntakeCfg;
@@ -232,6 +236,7 @@ public:
 	void Read_Config();
 	void Save_Config();
     void Print_Config();
+    void Update_Config();
 
     void Read_AutonomousCfg();
     void Read_DriveTrainCfg();

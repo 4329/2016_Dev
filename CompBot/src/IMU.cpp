@@ -1,13 +1,13 @@
 #include "IMU.h"
 #include "RobotMap.h"
 
-IMU::IMU() : Configurable("IMU") {
+IMU::IMU(IMUCfg &cfg) : Configurable("IMU") {
 	_myIMU = RobotMap::imu;
     last_world_linear_accel_x = 0.0f;
     last_world_linear_accel_y = 0.0f;
     last_world_linear_accel_z = 0.0f;
 
-	CheckConfig("COLLISION_THRESHOLD_DELTA_G");
+    myCfg = cfg;
 	Configure();
 }
 
@@ -18,10 +18,6 @@ IMU::~IMU()
 
 void IMU::RetrieveConfig()
 {
-	COLLISION_THRESHOLD_DELTA_G = Preferences::GetInstance()->GetFloat("IMU::COLLISION_THRESHOLD_DELTA_G",0.5);
-	MOVE_THRESHOLD_DELTA_MAG    = Preferences::GetInstance()->GetFloat("IMU::MOVE_THRESHOLD_DELTA_MAG",0.25);
-	ROT_THRESHOLD_DELTA         = Preferences::GetInstance()->GetFloat("IMU::ROT_THRESHOLD_DELTA",1.5);
-	flipYaw                     = Preferences::GetInstance()->GetBoolean("IMU::YawFlipped",false);
 }
 
 void IMU::Configure()
@@ -31,10 +27,6 @@ void IMU::Configure()
 
 void IMU::SaveConfig()
 {
-    Preferences::GetInstance()->PutFloat("IMU::COLLISION_THRESHOLD_DELTA_G",COLLISION_THRESHOLD_DELTA_G);
-    Preferences::GetInstance()->PutFloat("IMU::MOVE_THRESHOLD_DELTA_MAG",MOVE_THRESHOLD_DELTA_MAG);
-    Preferences::GetInstance()->PutFloat("IMU::ROT_THRESHOLD_DELTA",ROT_THRESHOLD_DELTA);
-    Preferences::GetInstance()->PutBoolean("IMU::YawFlipped",flipYaw);
 }
 
 void IMU::LiveConfigure()
@@ -77,7 +69,7 @@ bool   IMU::IsCalibrating()
 
 bool   IMU::IsYawFlipped()
 {
-	return flipYaw;
+	return myCfg.flipYaw;
 }
 
 bool   IMU::GetAccels(float &x, float &y, float &z)
@@ -100,7 +92,7 @@ bool   IMU::IsMoving()
 	    double y = _myIMU->GetWorldLinearAccelY();
 	    double z = _myIMU->GetWorldLinearAccelZ();
 
-	    if ((x >= MOVE_THRESHOLD_DELTA_MAG) || (y >= MOVE_THRESHOLD_DELTA_MAG) || (z >= MOVE_THRESHOLD_DELTA_MAG)) return true;
+	    if ((x >= myCfg.MOVE_THRESHOLD_DELTA_MAG) || (y >= myCfg.MOVE_THRESHOLD_DELTA_MAG) || (z >= myCfg.MOVE_THRESHOLD_DELTA_MAG)) return true;
 	}
 	return false;
 }
@@ -113,7 +105,7 @@ bool   IMU::IsRotating()
 		float y  = _myIMU->GetRawGyroY();
 		float z  = _myIMU->GetRawGyroZ();
 
-		if ((x >= ROT_THRESHOLD_DELTA) || (y >= ROT_THRESHOLD_DELTA) || (z >=ROT_THRESHOLD_DELTA)) return true;
+		if ((x >= myCfg.ROT_THRESHOLD_DELTA) || (y >= myCfg.ROT_THRESHOLD_DELTA) || (z >= myCfg.ROT_THRESHOLD_DELTA)) return true;
 	}
 	return false;
 }
@@ -203,9 +195,9 @@ bool   IMU::IsColliding()
     last_world_linear_accel_y = curr_world_linear_accel_y;
     last_world_linear_accel_z = curr_world_linear_accel_z;
 
-    if ( ( fabs(currentJerkX) > COLLISION_THRESHOLD_DELTA_G)  ||
-         ( fabs(currentJerkY) > COLLISION_THRESHOLD_DELTA_G)  ||
-         ( fabs(currentJerkZ) > COLLISION_THRESHOLD_DELTA_G))
+    if ( ( fabs(currentJerkX) > myCfg.COLLISION_THRESHOLD_DELTA_G)  ||
+         ( fabs(currentJerkY) > myCfg.COLLISION_THRESHOLD_DELTA_G)  ||
+         ( fabs(currentJerkZ) > myCfg.COLLISION_THRESHOLD_DELTA_G))
     {
         return true;
     }

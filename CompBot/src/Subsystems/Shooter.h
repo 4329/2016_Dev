@@ -14,13 +14,13 @@
 #include "Commands/Subsystem.h"
 #include "WPILib.h"
 #include "../Configurable.h"
+#include "../Robot_Config.h"
 
 /**
  *
  *
  * @author ExampleAuthor
  */
-class Shooter_Config;
 
 class Shooter: public Subsystem , public Configurable {
 private:
@@ -29,9 +29,12 @@ private:
 	std::shared_ptr<CANTalon> TopTalon;
 	std::shared_ptr<CANTalon> BottomTalon;
 	std::shared_ptr<CANTalon> master;
-	Shooter_Config *myConfig;
+	std::shared_ptr<ShooterCfg> myCfg;
+
 	float tgtRPM, tgtVolt;
 	bool isShooting;
+	bool isConfigured;
+	int stallCheck;
 
 public:
 	Shooter();
@@ -43,9 +46,13 @@ public:
 	virtual void SaveConfig();
 	virtual void LiveConfigure();
 
-	float Fire();
-	float FireSpeed();
-	float FireVolt();
+	bool Is_SensorPresent(); // Master Talon will have sensor. Use to check for unplugged.
+
+	int Is_Stalling();  // 0 = Not Stalled, 5 = Possibly Stalling, 10 = Stalled Take Action Now.
+
+	float Fire(bool pos1 = true);
+	float FireSpeed(bool pos1);
+	float FireVolt(bool pos1);
 	void FireVal(float value);
 	void Stop();
 	bool ReadyToFire();

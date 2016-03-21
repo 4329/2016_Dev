@@ -13,7 +13,6 @@
 #define ROBOTMAP_H
 #include "WPILib.h"
 #include "AHRS.h"
-#include "Autonomous_Config.h"
 
 
 /**
@@ -49,7 +48,6 @@ public:
 	static std::shared_ptr<AnalogInput> pressureSensor;
 
 	static std::shared_ptr<AHRS> imu;
-    static std::shared_ptr<Autonomous_Config> autoConfig;
 
 	static void init();
 };

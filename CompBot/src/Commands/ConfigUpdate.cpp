@@ -50,7 +50,6 @@ void ConfigUpdate::Execute() {
 	Robot::theConfig->Read_Config();
 	Robot::theConfig->Save_Config();
 	Robot::theConfig->Print_Config();
-	RobotMap::autoConfig->LiveConfigure();
 	Robot::driveTrain->LiveConfigure();
 	Robot::intake->LiveConfigure();
 	Robot::pivot->LiveConfigure();

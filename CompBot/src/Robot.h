@@ -34,7 +34,6 @@
 
 
 #include "OI.h"
-#include "Autonomous_Config.h"
 #include "SmartDashboard/SmartDashboard.h"
 #include "SmartDashboard/SendableChooser.h"
 
@@ -70,6 +69,7 @@ public:
 	virtual void AutonomousPeriodic();
 	virtual void TeleopInit();
 	virtual void TeleopPeriodic();
+	virtual void TestInit();
 	virtual void TestPeriodic();
 private:
 

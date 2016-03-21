@@ -19,7 +19,7 @@ private:
     void  Signature();
 
 public:
-	IR_Sensor(std::shared_ptr<AnalogInput> sensor, std::string name);
+	IR_Sensor(std::shared_ptr<AnalogInput> sensor, float &threshold, std::string name);
 	virtual ~IR_Sensor();
 
 	virtual void RetrieveConfig();

@@ -13,21 +13,21 @@
 
 #include "Sensors.h"
 #include "../RobotMap.h"
+#include "../Robot.h"
 
 
 
 Sensors::Sensors() : Subsystem("Sensors"), Configurable("Sensors") {
 	printf("Sensors Start\n");
-    IR_Front.reset( new IR_Sensor(RobotMap::sensorIRdSensorFront, "IR_Sensor::Front"));
-    IR_Shooter.reset( new IR_Sensor(RobotMap::sensorIRdSensor, "IR_Sensor::Shooter"));
-    IR_Tower.reset(new IR_Sensor(RobotMap::sensorIRdSensorTower, "IR_Sensor::Tower"));
+    myCfg.reset(&(Robot::theConfig->_SensorCfg));
+
+    IR_Front.reset( new IR_Sensor(RobotMap::sensorIRdSensorFront, myCfg->Front_distThreshold, "IR_Sensor::Front"));
+    IR_Shooter.reset( new IR_Sensor(RobotMap::sensorIRdSensor, myCfg->Shooter_distThreshold, "IR_Sensor::Shooter"));
+    IR_Tower.reset(new IR_Sensor(RobotMap::sensorIRdSensorTower, myCfg->Tower_distThreshold, "IR_Sensor::Tower"));
     pressure = RobotMap::pressureSensor;
     _pDp = RobotMap::pDPPowerDistributionPanel;
-    imu.reset(new IMU());
+    imu.reset(new IMU(myCfg->_IMUcfg));
 
-    TowerInRangeRumble = 0;
-
-	CheckConfig("Tower::InRangeRumble");
 	Configure();
 }
     
@@ -42,7 +42,7 @@ void Sensors::RetrieveConfig()
 	IR_Shooter->RetrieveConfig();
 	IR_Tower->RetrieveConfig();
 	imu->RetrieveConfig();
-	TowerInRangeRumble = Preferences::GetInstance()->GetFloat(_prefix + prefSep + "Tower::InRangeRumble",0.0);
+
 }
 
 void Sensors::SaveConfig()
@@ -51,7 +51,6 @@ void Sensors::SaveConfig()
 	IR_Shooter->SaveConfig();
 	IR_Tower->SaveConfig();
 	imu->SaveConfig();
-	Preferences::GetInstance()->PutFloat(_prefix + prefSep + "Tower::InRangeRumble",TowerInRangeRumble);
 }
 
 void Sensors::Configure()
@@ -79,7 +78,7 @@ void Sensors::InitDefaultCommand() {
 
 float Sensors::GetTowerInRangeRumble()
 {
-	return TowerInRangeRumble;
+	return myCfg->TowerInRangeRumble;
 }
 
 bool Sensors::RobotHasBall()
