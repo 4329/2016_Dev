@@ -36,7 +36,7 @@
 #include "Commands/Pivot_Low.h"
 
 #include "Commands/ConfigUpdate.h"
-
+#include "Commands/Fire.h"
 
 #include "Commands/Cal_Front_In.h"
 #include "Commands/Cal_Front_Out.h"
@@ -67,6 +67,7 @@ OI::OI() : Configurable("OI") {
 
     SmartDashboard::PutData("Drive Turn", new Drive_Turn(45.0));
     SmartDashboard::PutData("Drive Straight", new Drive_Straight(12.0));
+    SmartDashboard::PutData("Fire", new Fire(true));
 
     operatorInterface->Assign_ButtonCommand(XBOX360_BUTTON::XBOX360_RIGHT_BUMPER, new Intake_In(),ButtonAction::ButtonAction_Pressed);
     operatorInterface->Assign_ButtonCommand(XBOX360_BUTTON::XBOX360_RIGHT_BUMPER, new Intake_Stop(),ButtonAction::ButtonAction_Released);

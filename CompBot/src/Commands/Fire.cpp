@@ -17,95 +17,132 @@
 Fire::Fire(bool pos1): Command() {
 	Requires(Robot::shooter.get());
 	Requires(Robot::intake.get());
-	//Requires(Robot::sensorPkg.get());
     shot = false;
     TimeOut = 5.0;
 	hasStalled = false;
 	abort = false;
 	isPos1 = pos1;
+	stall = 0;
 }
 
 
 // Called just before this Command runs the first time
 void Fire::Initialize() {
+	// Retrieve the command timeout for shooting the ball.
 	TimeOut = Robot::theConfig->_ShooterCfg.Fire_Timeout;
+
+	// Set the timeout.
 	SetTimeout(TimeOut);
+
+	// Initialize default state variables.
 	hasStalled = false;
 	abort = false;
+	stall = 0;
+
 	SmartDashboard::PutBoolean("Shot Aborted",false);
 }
 
 // Called repeatedly when this Command is scheduled to run
 void Fire::Execute() {
-	printf("Fire Executing\n");
-	float tgt = Robot::shooter->Fire();
+    // Tell the shooter to fire based on left or right trigger (associated with a fire config)
+	float tgt = Robot::shooter->Fire(isPos1);
+
+	// If this is the first execution, specify what the target setpoint is.
 	if (!shot) SmartDashboard::PutNumber("Shooter Firing target",tgt);
 
-	int stall = Robot::shooter->Is_Stalling();
-	if (stall > 0) SmartDashboard::PutBoolean("Shooter Stalled",true);
+    // If stall has been detected 5 times in a row, report to dashboard.
+	if (stall == 5) SmartDashboard::PutBoolean("Shooter Stalled",true);
 
-	if (stall >= 5)
+	// If stall continues, take action.
+	if (stall > 5)
 	{
+		// First action is the default action.  Back out the ball in
+		// preparation to fire.  (Nominal case)
 		if (!hasStalled)
 		{
 			printf("Shooter stall detected. Expelling ball.\n");
 		}
-		// If the shooter is stalling
+
+		// Set a state variable.
 		hasStalled = true;
 
 		// Command the ball away from the shooter.
 		Robot::intake->SetIntake(false,Robot::intake->Get_PreFireOut());
-	} else
+	}
+
+	if (hasStalled)
 	{
-		if (hasStalled)
+		// if we detected stalling the last execution,
+		// lets see if moving the ball back has resolved the problem.
+		if (stall == 0)
 		{
-			// if we detected stalling the last execution,
-			// lets see if moving the ball back has resolved the problem.
-			if (Robot::shooter->Is_Stalling() <= 0)
-			{
-				// if no longer stalling then stop the intake.
-				Robot::intake->StopIntake();
-				hasStalled = false;
-				printf("Stall has been resolved. Proceeding with shot.\n");
-				SmartDashboard::PutBoolean("Shooter Stalled",false);
-			} else
-			{
-				if (Robot::shooter->Is_Stalling() >= 10)
-				{
-					// if serious stall abort the shot.
-					abort = true;
-					printf("Aborting shot due to shooter stall\n");
-					SmartDashboard::PutBoolean("Shot Aborted",true);
-				}
-			}
+			// if no longer stalling then stop the intake.
+			Robot::intake->StopIntake();
+			hasStalled = false;
+			printf("Stall has been resolved. Proceeding with shot.\n");
+			SmartDashboard::PutBoolean("Shooter Stalled",false);
+		}
+
+		// If stall has lasted for approximately 2 seconds abort
+		// the shot to protect the motors.
+		if (stall >= 100) // 100 = 100 * 0.020ms = 2secs
+		{
+			// if stalled for 2 seconds abort the shot.
+			abort = true;
+			printf("Aborting shot due to shooter stall\n");
+			SmartDashboard::PutBoolean("Shot Aborted",true);
 		}
 	}
 
+    // Lets check if the shooter has reached firing RPM.
 	if (Robot::shooter->ReadyToFire())
 	{
+		printf("Shooter ready to fire. Driving ball into shooter\n");
+
+		// If we still have the ball continue to push the ball into the shooter wheel.
 		if (Robot::sensorPkg->RobotHasBall())
 		{
 			Robot::intake->SetIntake(true);
 		}
 	}
+	// Indicate we are past the first execution.
 	shot = true;
 }
 
 // Make this return true when this Command no longer needs to run execute()
 bool Fire::IsFinished() {
-	if (abort) return true;
+	// Check if the shooter is stalling.
+	if (Robot::shooter->Is_Stalling())
+	{
+		stall++;  // If it is increase the stall count.
+	} else
+	{
+		// If not set stall to 0 and cancel abort.
+		stall = 0;
+		abort = false;
+	}
+	if (abort) return true;  // If abort commanded indicate finished.
+
+	if (stall > 0) return false;  // If not aborted and stall is being indicated then continue.
     if (Robot::sensorPkg->RobotHasBall())
    	{
-   	   return false;
+   	   return false;  // If the robot still is in possession of the ball then continue.
    	}
-    return true;
+    return true;  // Otherwise the shot is complete.
 }
 
 // Called once after isFinished returns true
 void Fire::End() {
+	// Update status on dashboard.
 	SmartDashboard::PutBoolean("Shooting",false);
+
+	// Spin down the shooter.
 	Robot::shooter->Stop();
+
+	// Stop the intake.
 	Robot::intake->StopIntake();
+
+	// Reset state
 	shot = false;
 	hasStalled = false;
 	abort = false;

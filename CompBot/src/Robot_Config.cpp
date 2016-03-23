@@ -376,9 +376,9 @@ void Robot_Config::Read_PivotCfg()
 {
 	_PivotCfg.PCMID                     = Preferences::GetInstance()->GetInt("Pivot::PCMID",0);
 	_PivotCfg.Stage1_Channel            = Preferences::GetInstance()->GetInt("Pivot::Stage1::Channel",5);
-	_PivotCfg.Stage1_ActiveIsExtended   = Preferences::GetInstance()->GetBoolean("Pivot::Stage1::ActiveIsExtended",false);
+	_PivotCfg.Stage1_ActiveIsExtended   = Preferences::GetInstance()->GetBoolean("Pivot::Stage1::ActiveIsExtended",true);
 	_PivotCfg.Stage2_Channel            = Preferences::GetInstance()->GetInt("Pivot::Stage2::Channel",6);
-	_PivotCfg.Stage2_ActiveIsExtended   = Preferences::GetInstance()->GetBoolean("Pivot::Stage2::ActiveIsExtended",false);
+	_PivotCfg.Stage2_ActiveIsExtended   = Preferences::GetInstance()->GetBoolean("Pivot::Stage2::ActiveIsExtended",true);
 }
 
 void Robot_Config::Save_PivotCfg()
@@ -477,12 +477,12 @@ void Robot_Config::Print_SensorCfg()
 
 void Robot_Config::Read_ShooterCfg()
 {
-	_ShooterCfg.Speed1 = Preferences::GetInstance()->GetFloat("Shooter::Speed1",-4100);
+	_ShooterCfg.Speed1 = Preferences::GetInstance()->GetFloat("Shooter::Speed1",-4700);
 	_ShooterCfg.Speed2 = Preferences::GetInstance()->GetFloat("Shooter::Speed2",-4100);
 	_ShooterCfg.PercentVoltage1 = Preferences::GetInstance()->GetFloat("Shooter::PercentVoltage1",-0.75);
 	_ShooterCfg.PercentVoltage2 = Preferences::GetInstance()->GetFloat("Shooter::PercentVoltage2",-0.75);
 	_ShooterCfg.UseSpeed = Preferences::GetInstance()->GetBoolean("Shooter::UseSpeed",true);
-	_ShooterCfg.Fire_Timeout = Preferences::GetInstance()->GetDouble("Shooter::Fire::Timeout",5.0);
+	_ShooterCfg.Fire_Timeout = Preferences::GetInstance()->GetDouble("Shooter::Fire::Timeout",7.0);
 	_ShooterCfg.StallRPM_Threshold = Preferences::GetInstance()->GetDouble("Shooter::StallRPMthreshold",100.0);
 
 	_ShooterCfg.TopTalon_Enabled = Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::Enabled",true);
@@ -492,7 +492,7 @@ void Robot_Config::Read_ShooterCfg()
 	_ShooterCfg.TopTalon_SensorReversed = Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::SensorReversed",false);
 	_ShooterCfg.TopTalon_EnablePID = Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::EnablePID",false);
 	_ShooterCfg.TopTalon_EnableVoltRampRate = Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::EnableVoltRampRate",true);
-	_ShooterCfg.TopTalon_VoltRampRate = Preferences::GetInstance()->GetDouble("Shooter::TopTalon::VoltRampRate",4.0);
+	_ShooterCfg.TopTalon_VoltRampRate = Preferences::GetInstance()->GetDouble("Shooter::TopTalon::VoltRampRate",8.0);
 	_ShooterCfg.TopTalon_PID_CL_PM_Error = Preferences::GetInstance()->GetInt("Shooter::TopTalon::PID::CL::PM::Error",10);
 	_ShooterCfg.TopTalon_Slaved = Preferences::GetInstance()->GetBoolean("Shooter::TopTalon::Slaved",true);
 	_ShooterCfg.TopTalon_MasterCANID = Preferences::GetInstance()->GetInt("Shooter::TopTalon::MasterCANID",9);
@@ -506,8 +506,8 @@ void Robot_Config::Read_ShooterCfg()
 
 	// Calculate Feed forward for the requested RPM to be the baseline motor output.  4096 units per rotation.
 	float fgain1,fgain2;
-	fgain1 = 1023 / ((_ShooterCfg.Speed1 / 600 ) * 4096);
-	fgain2 = 1023 / ((_ShooterCfg.Speed2 / 600 ) * 4096);
+	fgain1 = 1023 / ((fabs(_ShooterCfg.Speed1) / 600 ) * 4096);
+	fgain2 = 1023 / ((fabs(_ShooterCfg.Speed2) / 600 ) * 4096);
 	if (_override == 1)
 	{
 		_ShooterCfg.BottomTalon_EnablePID = true;
@@ -516,6 +516,7 @@ void Robot_Config::Read_ShooterCfg()
 		_ShooterCfg.BottomTalon_Profile_0_PID_D = 0;
 		_ShooterCfg.BottomTalon_Profile_0_PID_F1 = fgain1;
 		_ShooterCfg.BottomTalon_Profile_0_PID_F2 = fgain2;
+		_ShooterCfg.BottomTalon_PID_CL_PM_Error = ((fabs(_ShooterCfg.Speed1) / 600 ) * 4096)*0.01;
 	} else
 	{
 		_ShooterCfg.BottomTalon_EnablePID = Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::EnablePID",true);
@@ -524,14 +525,15 @@ void Robot_Config::Read_ShooterCfg()
 		_ShooterCfg.BottomTalon_Profile_0_PID_D = Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::PID::D",0.0);
 		_ShooterCfg.BottomTalon_Profile_0_PID_F1 = Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::PID::F1",fgain1);
 		_ShooterCfg.BottomTalon_Profile_0_PID_F2 = Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::PID::F2",fgain2);
+		_ShooterCfg.BottomTalon_PID_CL_PM_Error = Preferences::GetInstance()->GetInt("Shooter::BottomTalon::PID::CL::PM::Error",280);
 	}
 
-	_ShooterCfg.BottomTalon_Profile_0_IZone = Preferences::GetInstance()->GetInt("Shooter::BottomTalon::Profile::0::IZone",256);
+	_ShooterCfg.BottomTalon_Profile_0_IZone = Preferences::GetInstance()->GetInt("Shooter::BottomTalon::Profile::0::IZone",0);
 	_ShooterCfg.BottomTalon_Profile_0_EnableCLRampRate = Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::Profile::0::EnableCLRampRate",false);
 	_ShooterCfg.BottomTalon_Profile_0_CLRampRate = Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::Profile::0::CLRampRate",2500);
 	_ShooterCfg.BottomTalon_EnableVoltRampRate = Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::EnableVoltRampRate",true);
-	_ShooterCfg.BottomTalon_VoltRampRate = Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::VoltRampRate",4.0);
-	_ShooterCfg.BottomTalon_PID_CL_PM_Error = Preferences::GetInstance()->GetInt("Shooter::BottomTalon::PID::CL::PM::Error",100);
+	_ShooterCfg.BottomTalon_VoltRampRate = Preferences::GetInstance()->GetDouble("Shooter::BottomTalon::VoltRampRate",8.0);
+
 	_ShooterCfg.BottomTalon_Slaved = Preferences::GetInstance()->GetBoolean("Shooter::BottomTalon::Slaved",false);
 	_ShooterCfg.BottomTalon_MasterCANID = Preferences::GetInstance()->GetInt("Shooter::BottomTalon::MasterCANID",0);
 }

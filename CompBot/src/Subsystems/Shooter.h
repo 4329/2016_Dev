@@ -29,6 +29,7 @@ private:
 	std::shared_ptr<CANTalon> TopTalon;
 	std::shared_ptr<CANTalon> BottomTalon;
 	std::shared_ptr<CANTalon> master;
+	std::shared_ptr<CANTalon> slave;
 	std::shared_ptr<ShooterCfg> myCfg;
 
 	float tgtRPM, tgtVolt;
@@ -48,7 +49,7 @@ public:
 
 	bool Is_SensorPresent(); // Master Talon will have sensor. Use to check for unplugged.
 
-	int Is_Stalling();  // 0 = Not Stalled, 5 = Possibly Stalling, 10 = Stalled Take Action Now.
+    bool Is_Stalling();
 
 	float Fire(bool pos1 = true);
 	float FireSpeed(bool pos1);

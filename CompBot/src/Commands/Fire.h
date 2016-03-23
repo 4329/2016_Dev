@@ -42,6 +42,7 @@ private:
 	bool hasStalled;
 	bool abort;
 	bool isPos1;
+	int stall;
 };
 
 #endif

@@ -31,46 +31,65 @@ void Shoot::Initialize() {
 
 // Called repeatedly when this Command is scheduled to run
 void Shoot::Execute() {
-	axisState = Robot::oi->getOperatorInterface()->Get_AxisState();
-    if (shooting)
+
+	// When not actively taking a shot, check to see if the operator
+	// is pulling the triggers.
+	if (!shooting)
     {
-    	obsCount--;
-    } else
-    {
+		// Get the operator's xbox controller state.
+    	axisState = Robot::oi->getOperatorInterface()->Get_AxisState();
+
+    	// If right trigger is pulled.
 		if (axisState.RTrigger != 0)
 		{
+			// If the specified delay count has expired.
 			if (obsCount == 0)
 			{
+				// Create new firing sequence command indicating the right trigger.
 				theShotCmd.reset(new FireSequence(true));
+
+				// Schedule the command to run.
 				theShotCmd->Start();
-				obsCount = axisState.AxisDelay;
+				obsCount = axisState.AxisDelay;  // Sample delay count.
+
+				// Set the indicator that a shot is being taken.
 				shooting = true;
 			}
 		} else
 		{
+			// If the left trigget is pulled.
 			if (axisState.LTrigger != 0)
 			{
+				// If the specified delay count has expired.
 				if (obsCount == 0)
 				{
+					// Create new firing sequence command indicating the left trigger.
 					theShotCmd.reset(new FireSequence(false));
+
+					// Schedule the command to run.
 					theShotCmd->Start();
-					obsCount = axisState.AxisDelay;
+					obsCount = axisState.AxisDelay; // Sample delay count.
+
+					// Set the indicator that a shot is being taken.
 					shooting = true;
 				}
 			}
 		}
     }
-	if (obsCount < 0 ) obsCount = 0;
+
+    obsCount--;  // Decrement the delay counter.
+
+	if (obsCount < 0 ) obsCount = 0;  // Don't let the counter go below 0.
 }
 
 // Make this return true when this Command no longer needs to run execute()
 bool Shoot::IsFinished() {
-    return Robot::shooter->IsShooting();
+    return Robot::shooter->IsShooting();  // Check if the shooter is still shooting.
 }
 
 // Called once after isFinished returns true
 void Shoot::End() {
-	theShotCmd->Cancel();
+	theShotCmd->Cancel();  // When done cancel the fire sequence command.
 }
 
 // Called when another command which requires one or more of the same

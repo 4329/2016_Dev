@@ -49,7 +49,7 @@ void Shooter::Configure()
 {
 	if (myCfg->TopTalon_Enabled)
 	{
-		printf("Shooter Top is set to enabled\n");
+		printf("Shooter Top is set to enabled. CANID %d\n",myCfg->TopTalon_CANID);
         if (myCfg->TopTalon_HasSensor)
         {
     		printf("Shooter Top configured to have Sensor\n");
@@ -80,12 +80,14 @@ void Shooter::Configure()
 			TopTalon->SetControlMode(CANSpeedController::kFollower);
 			TopTalon->Set(myCfg->TopTalon_MasterCANID);
 			master = BottomTalon;
+			slave = TopTalon;
 		}
+		TopTalon->ClearStickyFaults();
 	}
 
 	if (myCfg->BottomTalon_Enabled)
 	{
-		printf("Shooter Bottom is set to enabled\n");
+		printf("Shooter Bottom is set to enabled. CANID %d\n",myCfg->BottomTalon_CANID);
         if (myCfg->BottomTalon_HasSensor)
         {
         	printf("Shooter Bottom configured with Sensor\n");
@@ -131,7 +133,9 @@ void Shooter::Configure()
 			BottomTalon->SetControlMode(CANSpeedController::kFollower);
 			BottomTalon->Set(myCfg->BottomTalon_MasterCANID);
 			master = TopTalon;
+			slave = BottomTalon;
 		}
+		BottomTalon->ClearStickyFaults();
 	}
 
 	master->ConfigNominalOutputVoltage(0.0,0.0);
@@ -216,18 +220,23 @@ float Shooter::FireSpeed(bool pos1)
 	// adjust FeedForward while watching the RPM.
 	// FeedForward sets the base level that PID will work from.
 	// Adjust P to change how fast the controller responds to error.
-	master->SetControlMode(CANSpeedController::kSpeed);
+	if (!isShooting)
+	{
+        master->ClearIaccum();
+		master->SetControlMode(CANSpeedController::kSpeed);
+	    master->EnableControl();
+	    slave->EnableControl();
 
-	if (pos1)
-	{
-		master->SetF(myCfg->BottomTalon_Profile_0_PID_F1);
-		tgtRPM = myCfg->Speed1;
-	} else
-	{
-		master->SetF(myCfg->BottomTalon_Profile_0_PID_F2);
-		tgtRPM = myCfg->Speed2;
+		if (pos1)
+		{
+			master->SetF(myCfg->BottomTalon_Profile_0_PID_F1);
+			tgtRPM = myCfg->Speed1;
+		} else
+		{
+			master->SetF(myCfg->BottomTalon_Profile_0_PID_F2);
+			tgtRPM = myCfg->Speed2;
+		}
 	}
-	master->EnableControl();
 	master->Set(tgtRPM);
 	isShooting = true;
 	return tgtRPM;
@@ -252,46 +261,17 @@ float Shooter::FireVolt(bool pos1)
 	return tgtVolt;
 }
 
-int Shooter::Is_Stalling()
+bool Shooter::Is_Stalling()
 {
 	float rpm = master->GetSpeed();
-	float target = -2000;
-	float threshold = myCfg->StallRPM_Threshold;
 
-	if (threshold < 0)
+	if (rpm == 0)
 	{
-		threshold = 0 - threshold;
+		printf("Shooter_IS RPM: %f returning true\n",rpm);
+		return true;
 	}
-
-	if (myCfg->UseSpeed)
-	{
-		target = tgtRPM;
-	}
-
-	if (target < 0)
-	{
-		target = 0 - target;
-	}
-
-	if (rpm < 0)
-	{
-		rpm = 0 - rpm;
-	}
-
-	if ( rpm <= threshold)
-	{
-		stallCheck++;
-	} else
-	{
-		if (rpm >= (target / 10) )
-		{
-			stallCheck = 0;
-		} else
-		{
-			stallCheck--;
-		}
-	}
-	return stallCheck;
+	printf("Shooter_IS RPM: %f return false\n",rpm);
+	return false;
 }
 
 bool Shooter::ReadyToFire()
@@ -308,6 +288,12 @@ bool Shooter::ReadyToFire()
 bool Shooter::AtRPM()
 {
 	SmartDashboard::PutNumber("Shooter RPM",BottomTalon->GetSpeed());
+	float t2, r;
+	r = fabs(master->GetSpeed());
+	t2 = fabs(tgtRPM);
+
+	if (r >= t2) return true;
+/*
 	if (tgtRPM < 0)
 	{
 		if (BottomTalon->GetSpeed() <= tgtRPM)
@@ -321,6 +307,7 @@ bool Shooter::AtRPM()
 			return true;
 		}
 	}
+	*/
 	return false;
 }
 
