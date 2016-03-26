@@ -38,6 +38,7 @@ public:
 	static std::shared_ptr<Solenoid> pivotStage1Solenoid;
 	static std::shared_ptr<Solenoid> pivotStage2Solenoid;
 	static std::shared_ptr<Solenoid> scalerSolenoid;
+	static std::shared_ptr<Solenoid> deflectorSolenoid;
 
 
 	static std::shared_ptr<PowerDistributionPanel> pDPPowerDistributionPanel;

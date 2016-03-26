@@ -17,6 +17,7 @@
 #include "Commands/Cal_Save.h"
 
 std::unique_ptr<Robot_Config> Robot::theConfig;
+std::unique_ptr<Logger> Robot::theLogger;
 std::shared_ptr<DriveTrain> Robot::driveTrain;
 std::shared_ptr<Pneumatics> Robot::pneumatics;
 std::shared_ptr<Intake> Robot::intake;
@@ -40,8 +41,13 @@ void VideoT() {
 }
 
 void Robot::RobotInit() {
+	theLogger.reset(new Logger());
+
 	// Get the complete set of configuration parameters before any other initialization occurs.
 	theConfig.reset(new Robot_Config());
+
+	theLogger->Set_LoggingLevel(theConfig->_LogLevel);
+	theLogger->StartLog();
 
 	// Initialize all WPILIB components or fundamental objects.
 	RobotMap::init();
@@ -159,6 +165,7 @@ void Robot::RobotInit() {
     // Separate thread linear execution from the linear execution of main robot thread
     videoTask->detach();
 
+    if (stabilizer.get() != nullptr) stabilizer->Retract();
   }
 
 /**
@@ -179,6 +186,8 @@ void Robot::DisabledPeriodic() {
 }
 
 void Robot::AutonomousInit() {
+	if (stabilizer.get() != nullptr) stabilizer->Retract();
+
 	if (autonomousCommand.get() != nullptr)
 		autonomousCommand->Start();
 
@@ -203,6 +212,7 @@ void Robot::TeleopInit() {
 	if (sensorOut.get() != nullptr)
 		if (!sensorOut->IsRunning()) sensorOut->Start();
 
+	if (stabilizer.get() != nullptr) stabilizer->Retract();
 }
 
 void Robot::TeleopPeriodic() {

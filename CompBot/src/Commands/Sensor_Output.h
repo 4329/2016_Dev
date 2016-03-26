@@ -23,6 +23,7 @@ public:
 
 private:
 	int count;
+	int count2;
 	bool hasBall;
 	bool IsBallAtShooter;
 	bool IsTowerInRange;

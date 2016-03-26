@@ -92,6 +92,8 @@ typedef struct {
 typedef struct {
 	float  InSpeed;
 	float  OutSpeed;
+	float  SlowOutSpeed;
+	double SlowOut_Timeout;
 	float  PreFireOut;
 	bool   Talon_Enabled;
 	int    Talon_CANID;
@@ -102,15 +104,15 @@ typedef struct {
 
 typedef struct {
 	int    PCMID;
-	int    Stage1_Channel;
+	int    Stage1_Channel;				// 5
 	bool   Stage1_ActiveIsExtended;
-	int    Stage2_Channel;
+	int    Stage2_Channel;				// 6
 	bool   Stage2_ActiveIsExtended;
 } PivotCfg;
 
 typedef struct {
 	int  PCMID;
-	int  Channel;
+	int  Channel;						// 0
 	bool ActiveIsExtended;
 } ScalarCfg;
 
@@ -136,6 +138,9 @@ typedef struct {
 } SensorCfg;
 
 typedef struct {
+	int    PCMID;
+	int    Deflector_Channel;			// 1
+	bool   Deflector_ActiveIsFolded;
 	float  Speed1;
 	float  Speed2;
 	float  PercentVoltage1;
@@ -178,8 +183,8 @@ typedef struct {
 
 typedef struct {
 	int    PCMID;
-	int    FwdChannel;
-	int    RevChannel;
+	int    FwdChannel;				// 2
+	int    RevChannel; 				// 3
 	bool   ForwardIsDeployed;
 } StabilizerCfg;
 
@@ -217,7 +222,8 @@ typedef struct {
 class Robot_Config
 {
 public:
-    int           _override; // 0: Use networktable values. 1: generate default PID values.
+	int           _LogLevel;
+    int           _CompressorPCMID;
 	AutonomousCfg _AutoCfg;
 	DriveTrainCfg _DriveCfg;
 	IntakeCfg     _IntakeCfg;

@@ -40,6 +40,7 @@ void Fire::Initialize() {
 	stall = 0;
 
 	SmartDashboard::PutBoolean("Shot Aborted",false);
+	SmartDashboard::PutBoolean("Auto Expel",false);
 }
 
 // Called repeatedly when this Command is scheduled to run
@@ -48,7 +49,7 @@ void Fire::Execute() {
 	float tgt = Robot::shooter->Fire(isPos1);
 
 	// If this is the first execution, specify what the target setpoint is.
-	if (!shot) SmartDashboard::PutNumber("Shooter Firing target",tgt);
+	if (!shot) SmartDashboard::PutNumber("Shooter Firing SetPoint",tgt);
 
     // If stall has been detected 5 times in a row, report to dashboard.
 	if (stall == 5) SmartDashboard::PutBoolean("Shooter Stalled",true);
@@ -61,6 +62,7 @@ void Fire::Execute() {
 		if (!hasStalled)
 		{
 			printf("Shooter stall detected. Expelling ball.\n");
+			SmartDashboard::PutBoolean("Auto Expel",true);
 		}
 
 		// Set a state variable.
@@ -81,6 +83,7 @@ void Fire::Execute() {
 			hasStalled = false;
 			printf("Stall has been resolved. Proceeding with shot.\n");
 			SmartDashboard::PutBoolean("Shooter Stalled",false);
+			SmartDashboard::PutBoolean("Auto Expel",false);
 		}
 
 		// If stall has lasted for approximately 2 seconds abort
@@ -123,6 +126,8 @@ bool Fire::IsFinished() {
 	}
 	if (abort) return true;  // If abort commanded indicate finished.
 
+	if (IsTimedOut()) return true;  // Fire has timed out.
+
 	if (stall > 0) return false;  // If not aborted and stall is being indicated then continue.
     if (Robot::sensorPkg->RobotHasBall())
    	{
@@ -135,7 +140,7 @@ bool Fire::IsFinished() {
 void Fire::End() {
 	// Update status on dashboard.
 	SmartDashboard::PutBoolean("Shooting",false);
-
+	SmartDashboard::PutBoolean("Auto Expel",false);
 	// Spin down the shooter.
 	Robot::shooter->Stop();
 

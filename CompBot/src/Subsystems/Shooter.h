@@ -30,7 +30,9 @@ private:
 	std::shared_ptr<CANTalon> BottomTalon;
 	std::shared_ptr<CANTalon> master;
 	std::shared_ptr<CANTalon> slave;
+	std::shared_ptr<Solenoid> deflector;
 	std::shared_ptr<ShooterCfg> myCfg;
+
 
 	float tgtRPM, tgtVolt;
 	bool isShooting;
@@ -60,6 +62,11 @@ public:
 	bool AtRPM();
 	bool AtVolt();
 	bool IsShooting();
+
+	void Raise_Deflector();
+	void Lower_Deflector();
+	bool Is_DeflectorRaised();
+
 };
 
 #endif

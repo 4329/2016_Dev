@@ -192,6 +192,10 @@ float Shooter::Fire(bool pos1)
 {
 	if (isConfigured)
 	{
+		if (!isShooting)
+		{
+			Raise_Deflector();
+		}
 		if (myCfg->UseSpeed)
 		{
 			return FireSpeed(pos1);
@@ -206,8 +210,14 @@ float Shooter::Fire(bool pos1)
 
 void Shooter::FireVal(float value)
 {
-	BottomTalon->SetControlMode(CANSpeedController::kSpeed);
-    BottomTalon->EnableControl();
+	if (!isShooting)
+	{
+		Raise_Deflector();
+        master->ClearIaccum();
+		master->SetControlMode(CANSpeedController::kSpeed);
+	    master->EnableControl();
+	    slave->EnableControl();
+	}
 	BottomTalon->Set(value);
 	tgtRPM = value;
 	SmartDashboard::PutNumber("Shooter Firing RPM",tgtRPM);
@@ -222,6 +232,7 @@ float Shooter::FireSpeed(bool pos1)
 	// Adjust P to change how fast the controller responds to error.
 	if (!isShooting)
 	{
+		Raise_Deflector();
         master->ClearIaccum();
 		master->SetControlMode(CANSpeedController::kSpeed);
 	    master->EnableControl();
@@ -244,20 +255,24 @@ float Shooter::FireSpeed(bool pos1)
 
 float Shooter::FireVolt(bool pos1)
 {
-	master->SetControlMode(CANSpeedController::kPercentVbus);
-	if (pos1)
+	if (!isShooting)
 	{
-		master->SetF(myCfg->BottomTalon_Profile_0_PID_F1);
-		tgtVolt = myCfg->PercentVoltage1;
-	} else
-	{
-		master->SetF(myCfg->BottomTalon_Profile_0_PID_F2);
-		tgtVolt = myCfg->PercentVoltage2;
+		Raise_Deflector();
+		master->SetControlMode(CANSpeedController::kPercentVbus);
+		if (pos1)
+		{
+			master->SetF(myCfg->BottomTalon_Profile_0_PID_F1);
+			tgtVolt = myCfg->PercentVoltage1;
+		} else
+		{
+			master->SetF(myCfg->BottomTalon_Profile_0_PID_F2);
+			tgtVolt = myCfg->PercentVoltage2;
+		}
+		master->EnableControl();
+	    slave->EnableControl();
 	}
-	master->EnableControl();
     master->Set(tgtVolt);
 	isShooting = true;
-
 	return tgtVolt;
 }
 
@@ -265,7 +280,7 @@ bool Shooter::Is_Stalling()
 {
 	float rpm = master->GetSpeed();
 
-	if (rpm == 0)
+	if (fabs(rpm) <= myCfg->StallRPM_Threshold)
 	{
 		printf("Shooter_IS RPM: %f returning true\n",rpm);
 		return true;
@@ -293,21 +308,6 @@ bool Shooter::AtRPM()
 	t2 = fabs(tgtRPM);
 
 	if (r >= t2) return true;
-/*
-	if (tgtRPM < 0)
-	{
-		if (BottomTalon->GetSpeed() <= tgtRPM)
-		{
-			return true;
-		}
-	} else
-	{
-		if (BottomTalon->GetSpeed() >= tgtRPM)
-		{
-			return true;
-		}
-	}
-	*/
 	return false;
 }
 
@@ -344,4 +344,42 @@ void Shooter::Stop()
 	tgtRPM = 0;
 	tgtVolt = 0;
 	isShooting = false;
+	Lower_Deflector();
+}
+
+
+void Shooter::Raise_Deflector()
+{
+	if (myCfg->Deflector_ActiveIsFolded)
+	{
+		deflector->Set(!myCfg->Deflector_ActiveIsFolded);
+	} else
+	{
+		deflector->Set(myCfg->Deflector_ActiveIsFolded);
+	}
+}
+
+void Shooter::Lower_Deflector()
+{
+	if (myCfg->Deflector_ActiveIsFolded)
+	{
+		deflector->Set(myCfg->Deflector_ActiveIsFolded);
+	} else
+	{
+		deflector->Set(!myCfg->Deflector_ActiveIsFolded);
+	}
+}
+
+bool Shooter::Is_DeflectorRaised()
+{
+	if (myCfg->Deflector_ActiveIsFolded)
+	{
+		if (deflector->Get()) return false;
+		return true;
+	} else
+	{
+		if (deflector->Get()) return true;
+		return false;
+	}
+	return false;
 }

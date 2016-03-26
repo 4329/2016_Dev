@@ -18,6 +18,7 @@ Sensor_Output::Sensor_Output(): Command() {
         // Use requires() here to declare subsystem dependencies
 	//Requires(Robot::sensorPkg.get());
 	count = 0;
+	count2 = 0;
 	hasBall = false;
 	IsBallAtShooter = false;
 	airp = 0.0;
@@ -32,6 +33,7 @@ Sensor_Output::Sensor_Output(): Command() {
 // Called just before this Command runs the first time
 void Sensor_Output::Initialize() {
 	count = 0;
+	count2 = 0;
 }
 
 // Called repeatedly when this Command is scheduled to run
@@ -126,6 +128,7 @@ void Sensor_Output::Execute() {
 		airp = Robot::sensorPkg->GetAirPressure();
 		SmartDashboard::PutNumber("AirSensor_Output", airp);
 
+
 		IsTowerInRange = Robot::sensorPkg->TowerInRange();
 		SmartDashboard::PutBoolean("TowerInRange",IsTowerInRange);
 
@@ -148,6 +151,18 @@ void Sensor_Output::Execute() {
 		count = 0;
 	}
 	count++;
+	count2++;
+	if (count2 == 200)
+	{
+		Robot::theLogger->StartFrame("Sensors");
+		Robot::theLogger->Sensor("Pressure",airp);
+		Robot::theLogger->Sensor("Yaw",Robot::sensorPkg->imu->GetYaw());
+		Robot::theLogger->Sensor("Speed",Robot::sensorPkg->imu->GetVelocMag());
+		if (hasBall) Robot::theLogger->Sensor("HasBall",true);
+		if (IsTowerInRange) Robot::theLogger->Sensor("TowerInRange",true);
+		Robot::theLogger->EndFrame("Sensors");
+		count2 = 0;
+	}
 }
 
 // Make this return true when this Command no longer needs to run execute()

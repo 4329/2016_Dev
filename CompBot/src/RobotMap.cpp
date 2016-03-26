@@ -28,6 +28,7 @@ std::shared_ptr<DoubleSolenoid> RobotMap::stabilizerSolenoid;
 std::shared_ptr<Solenoid> RobotMap::pivotStage1Solenoid;
 std::shared_ptr<Solenoid> RobotMap::pivotStage2Solenoid;
 std::shared_ptr<Solenoid> RobotMap::scalerSolenoid;
+std::shared_ptr<Solenoid> RobotMap::deflectorSolenoid;
 
 std::shared_ptr<PowerDistributionPanel> RobotMap::pDPPowerDistributionPanel;
 std::shared_ptr<AnalogInput> RobotMap::sensorIRdSensor;
@@ -79,13 +80,17 @@ void RobotMap::init() {
     shooterBottomTalon.reset(new CANTalon(Robot::theConfig->_ShooterCfg.BottomTalon_CANID)); //Bottom Shooter
     lw->AddActuator("Shooter", "ShooterBottom", shooterBottomTalon);
 
-
-    theCompressor.reset(new Compressor(Preferences::GetInstance()->GetInt("Compressor::PCMID",0)));
+    theCompressor.reset(new Compressor(Robot::theConfig->_CompressorPCMID));
 
     // Channel 0
     scalerSolenoid.reset(new Solenoid(Robot::theConfig->_ScalarCfg.PCMID,
     		Robot::theConfig->_ScalarCfg.Channel));
     lw->AddActuator("Scaler", "scaler", scalerSolenoid);
+
+    // Channel 1
+    deflectorSolenoid.reset(new Solenoid(Robot::theConfig->_ShooterCfg.PCMID,
+    		Robot::theConfig->_ShooterCfg.Deflector_Channel));
+    lw->AddActuator("Shooter", "deflector", deflectorSolenoid);
 
     // Channels 2 3
     stabilizerSolenoid.reset(new DoubleSolenoid(Robot::theConfig->_StabilizerCfg.PCMID,
@@ -102,8 +107,6 @@ void RobotMap::init() {
     pivotStage2Solenoid.reset(new Solenoid(Robot::theConfig->_PivotCfg.PCMID,
 			Robot::theConfig->_PivotCfg.Stage2_Channel));
     lw->AddActuator("Pivot2", "PivotStage2", pivotStage2Solenoid);
-
-    printf("RobotMap Pivot Complete\n");
 
     // Analog 1
     sensorIRdSensorTower.reset(new AnalogInput(Robot::theConfig->_SensorCfg.Tower_AnalogChannel));

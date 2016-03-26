@@ -28,6 +28,7 @@
 #include "Commands/FireSequence.h"
 #include "Commands/Intake_In.h"
 #include "Commands/Intake_Out.h"
+#include "Commands/Intake_SlowOut.h"
 #include "Commands/Intake_Stop.h"
 #include "Commands/Stabilizer_Toggle.h"
 
@@ -79,7 +80,7 @@ OI::OI() : Configurable("OI") {
     operatorInterface->Assign_ButtonCommand(XBOX360_BUTTON::XBOX360_B, new Pivot_Intake(),ButtonAction::ButtonAction_Pressed);
     operatorInterface->Assign_ButtonCommand(XBOX360_BUTTON::XBOX360_A, new Pivot_Low(),ButtonAction::ButtonAction_Pressed);
     operatorInterface->Assign_ButtonCommand(XBOX360_BUTTON::XBOX360_X, new Scalar_Toggle(),ButtonAction::ButtonAction_Pressed);
-
+    operatorInterface->Assign_ButtonCommand(XBOX360_BUTTON::XBOX360_LEFT_STICK, new Intake_SlowOut(),ButtonAction::ButtonAction_Pressed);
 
     driverInterface->Assign_ButtonCommand(XBOX360_BUTTON::XBOX360_A, new Stabilizer_Toggle(),ButtonAction::ButtonAction_Pressed);
 
