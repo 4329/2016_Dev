@@ -90,7 +90,7 @@ void Logger::Sensor(std::string sensor, bool value)
 
 void Logger::StartFrame(std::string tag)
 {
-	if (isLogging)
+	if ((isLogging) && (logLevel >= 50))
 	{
 		fpgaTime = _timer->GetFPGATimestamp();
 		printf("FRAME: %f : %s \n{\n",fpgaTime, tag.c_str());
@@ -101,7 +101,7 @@ void Logger::StartFrame(std::string tag)
 
 void Logger::EndFrame(std::string tag)
 {
-	if (isLogging)
+	if ((isLogging) && (logLevel >= 50))
 	{
 		fpgaTime = _timer->GetFPGATimestamp();
 		printf("} %f : %s \n",fpgaTime, tag.c_str() );

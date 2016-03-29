@@ -33,7 +33,8 @@ private:
 	std::shared_ptr<SensorCfg> myCfg;
 
 	float  TowerInRangeRumble;
-
+    bool   ShooterOveride;
+    bool   FrontOveride;
 
 public:
 
@@ -46,13 +47,20 @@ public:
 
     void InitDefaultCommand();
 
-    bool RobotHasBall();
+    bool RobotHasBall(bool shooting = false);
     bool IsBallAtShooter();
     void SetFrontIn();
     void SetFrontOut();
     void SetShooterIn();
     void SetShooterOut();
     void StoreCalibration();
+
+    void Set_ShooterOveride(bool overide = true);
+    bool Is_ShooterOveridden();
+
+    void Set_FrontOveride(bool overide = true);
+    bool Is_FrontOveridden();
+
 
     bool TowerInRange();
     float GetTowerInRangeRumble();
@@ -64,6 +72,7 @@ public:
     bool IsPivotAtLow();
 
 	std::shared_ptr<IMU> imu;
+
 };
 
 #endif

@@ -28,6 +28,9 @@ Sensors::Sensors() : Subsystem("Sensors"), Configurable("Sensors") {
     _pDp = RobotMap::pDPPowerDistributionPanel;
     imu.reset(new IMU(myCfg->_IMUcfg));
 
+    ShooterOveride = false;
+    FrontOveride = false;
+
 	Configure();
 }
     
@@ -81,8 +84,16 @@ float Sensors::GetTowerInRangeRumble()
 	return myCfg->TowerInRangeRumble;
 }
 
-bool Sensors::RobotHasBall()
+bool Sensors::RobotHasBall(bool shooting)
 {
+	if (FrontOveride)
+	{
+		// If sensor has been overidden and we are shooting
+		// then tell the fire command that we still have a ball.
+		// This will force the shooter to stay spinning until timeout.
+		if (shooting) return true;
+		return false;
+	}
 	if (IR_Front->IsInRange())
 	{
 		return true;
@@ -92,11 +103,32 @@ bool Sensors::RobotHasBall()
 
 bool Sensors::IsBallAtShooter()
 {
+	if (ShooterOveride) return false;
 	if (IR_Shooter->IsInRange())
 	{
 		return true;
 	}
 	return false;
+}
+
+void Sensors::Set_ShooterOveride(bool overide)
+{
+	ShooterOveride = overide;
+}
+
+bool Sensors::Is_ShooterOveridden()
+{
+	return ShooterOveride;
+}
+
+void Sensors::Set_FrontOveride(bool overide)
+{
+	FrontOveride = overide;
+}
+
+bool Sensors::Is_FrontOveridden()
+{
+	return FrontOveride;
 }
 
 bool Sensors::TowerInRange()

@@ -90,24 +90,29 @@ bool Robot_Config::Exists(std::string theKey)
 void Robot_Config::Read_AutonomousCfg()
 {
 	_AutoCfg.AutonomousMode_Type  = Preferences::GetInstance()->GetInt("Auto::Type",1);
-	_AutoCfg.Simple_MaxThrottle   = 0.5;
-	_AutoCfg.Simple_ThrottleRamp  = 0.1;
-	_AutoCfg.Simple_TimeToRunSecs = 8.0;
-	_AutoCfg.Simple_Distance      = 60.0;
-	_AutoCfg.Simple_AllowedError  = 6.0;
+	_AutoCfg.Simple_MaxThrottle   = Preferences::GetInstance()->GetFloat("Auto::Simple::MaxThrottle",0.5);
+	_AutoCfg.Simple_ThrottleRamp  = Preferences::GetInstance()->GetFloat("Auto::Simple::ThrottleRamp",2.0);
+	_AutoCfg.Simple_TimeToRunSecs = Preferences::GetInstance()->GetDouble("Auto::Simple::TimeToRunSecs",1.0);
+	_AutoCfg.Simple_Distance      = Preferences::GetInstance()->GetDouble("Auto::Simple::Distance",60.0);
+	_AutoCfg.Simple_AllowedError  = Preferences::GetInstance()->GetDouble("Auto::Simple::AllowedError",6.0);
 }
 
 void Robot_Config::Save_AutonomousCfg()
 {
 	Preferences::GetInstance()->PutInt("Auto::Type",_AutoCfg.AutonomousMode_Type);
+	Preferences::GetInstance()->PutFloat("Auto::Simple::MaxThrottle",_AutoCfg.Simple_MaxThrottle);
+    Preferences::GetInstance()->PutFloat("Auto::Simple::ThrottleRamp",_AutoCfg.Simple_ThrottleRamp);
+	Preferences::GetInstance()->PutDouble("Auto::Simple::TimeToRunSecs",_AutoCfg.Simple_TimeToRunSecs);
+	Preferences::GetInstance()->PutDouble("Auto::Simple::Distance",_AutoCfg.Simple_Distance);
+	Preferences::GetInstance()->PutDouble("Auto::Simple::AllowedError",_AutoCfg.Simple_AllowedError);
 }
 #else
 void Robot_Config::Read_AutonomousCfg()
 {
 	_AutoCfg.AutonomousMode_Type = Preferences::GetInstance()->GetInt("Auto::Type",1);
 	_AutoCfg.Simple_MaxThrottle = Preferences::GetInstance()->GetFloat("Auto::Simple::MaxThrottle",0.5);
-	_AutoCfg.Simple_ThrottleRamp = Preferences::GetInstance()->GetFloat("Auto::Simple::ThrottleRamp",0.1);
-	_AutoCfg.Simple_TimeToRunSecs = Preferences::GetInstance()->GetDouble("Auto::Simple::TimeToRunSecs",8.0);
+	_AutoCfg.Simple_ThrottleRamp = Preferences::GetInstance()->GetFloat("Auto::Simple::ThrottleRamp",2.0);
+	_AutoCfg.Simple_TimeToRunSecs = Preferences::GetInstance()->GetDouble("Auto::Simple::TimeToRunSecs",1.0);
 	_AutoCfg.Simple_Distance = Preferences::GetInstance()->GetDouble("Auto::Simple::Distance",60.0);
 	_AutoCfg.Simple_AllowedError = Preferences::GetInstance()->GetDouble("Auto::Simple::AllowedError",6.0);
 }
@@ -135,8 +140,8 @@ void Robot_Config::Print_AutonomousCfg()
 
 #ifdef Competition_4329
 void Robot_Config::Read_DriveTrainCfg(){
-	_DriveCfg.HighSpeed = Preferences::GetInstance()->GetFloat("DriveTrain::HighSpeed",1.0);
-	_DriveCfg.LowSpeed  = Preferences::GetInstance()->GetFloat("DriveTrain::LowSpeed",0.75);
+	_DriveCfg.HighSpeed = Preferences::GetInstance()->GetFloat("DriveTrain::HighSpeed",0.75);
+	_DriveCfg.LowSpeed  = Preferences::GetInstance()->GetFloat("DriveTrain::LowSpeed",1.0);
 	_DriveCfg.QuadEncoder_CodesPerRev = 1024;
 	_DriveCfg.InchesPerRotation       = 24;
 
@@ -221,8 +226,8 @@ void Robot_Config::Save_DriveTrainCfg()
 
 void Robot_Config::Read_DriveTrainCfg()
 {
-	_DriveCfg.HighSpeed = Preferences::GetInstance()->GetFloat("DriveTrain::HighSpeed",1.0);
-	_DriveCfg.LowSpeed = Preferences::GetInstance()->GetFloat("DriveTrain::LowSpeed",0.75);
+	_DriveCfg.HighSpeed = Preferences::GetInstance()->GetFloat("DriveTrain::HighSpeed",0.75);
+	_DriveCfg.LowSpeed = Preferences::GetInstance()->GetFloat("DriveTrain::LowSpeed",1.0);
 	_DriveCfg.QuadEncoder_CodesPerRev = Preferences::GetInstance()->GetInt("DriveTrain::QuadEncoder::CodesPerRev",1024);
 	_DriveCfg.InchesPerRotation = Preferences::GetInstance()->GetFloat("DriveTrain::QuadEncoder::InchesPerRotation",24);
 
@@ -451,7 +456,8 @@ void Robot_Config::Read_IntakeCfg()
 {
 	_IntakeCfg.InSpeed                  = -1.0;
 	_IntakeCfg.OutSpeed                 = 1.0;
-	_IntakeCfg.SlowOutSpeed             = Preferences::GetInstance()->GetFloat("Intake::SlowOutSpeed",0.25);
+	_IntakeCfg.SlowOutSpeed             = Preferences::GetInstance()->GetFloat("Intake::SlowOutSpeed",0.30);
+	_IntakeCfg.SlowOut_Timeout          = Preferences::GetInstance()->GetFloat("Intake::SlowOut_Timeout",0.75);
 	_IntakeCfg.PreFireOut               = Preferences::GetInstance()->GetFloat("Intake::PreFireOut",0.5);
 	_IntakeCfg.Talon_Enabled            = true;
 	_IntakeCfg.Talon_CANID              = 5;
@@ -464,6 +470,7 @@ void Robot_Config::Save_IntakeCfg()
 {
 	Preferences::GetInstance()->PutFloat("Intake::SlowOutSpeed",_IntakeCfg.SlowOutSpeed);
 	Preferences::GetInstance()->PutFloat("Intake::PreFireOut",_IntakeCfg.PreFireOut);
+	Preferences::GetInstance()->PutFloat("Intake::SlowOut_Timeout",_IntakeCfg.SlowOut_Timeout);
 }
 
 #else
@@ -472,7 +479,8 @@ void Robot_Config::Read_IntakeCfg()
 {
 	_IntakeCfg.InSpeed                  = Preferences::GetInstance()->GetFloat("Intake::InSpeed",-1.0);
 	_IntakeCfg.OutSpeed                 = Preferences::GetInstance()->GetFloat("Intake::OutSpeed",1.0);
-	_IntakeCfg.SlowOutSpeed             = Preferences::GetInstance()->GetFloat("Intake::SlowOutSpeed",0.25);
+	_IntakeCfg.SlowOutSpeed             = Preferences::GetInstance()->GetFloat("Intake::SlowOutSpeed",0.30);
+	_IntakeCfg.SlowOut_Timeout          = Preferences::GetInstance()->GetFloat("Intake::SlowOut_Timeout",0.75);
 	_IntakeCfg.PreFireOut               = Preferences::GetInstance()->GetFloat("Intake::PreFireOut",0.5);
 	_IntakeCfg.Talon_Enabled            = Preferences::GetInstance()->GetBoolean("Intake::Talon::Enabled",true);
 	_IntakeCfg.Talon_CANID              = Preferences::GetInstance()->GetInt("Intake::Talon::CANID",5);
@@ -486,6 +494,7 @@ void Robot_Config::Save_IntakeCfg()
 	Preferences::GetInstance()->PutFloat("Intake::InSpeed",_IntakeCfg.InSpeed);
 	Preferences::GetInstance()->PutFloat("Intake::OutSpeed",_IntakeCfg.OutSpeed);
 	Preferences::GetInstance()->PutFloat("Intake::SlowOutSpeed",_IntakeCfg.SlowOutSpeed);
+	Preferences::GetInstance()->PutFloat("Intake::SlowOut_Timeout",_IntakeCfg.SlowOut_Timeout);
 	Preferences::GetInstance()->PutFloat("Intake::PreFireOut",_IntakeCfg.PreFireOut);
 	Preferences::GetInstance()->PutBoolean("Intake::Talon::Enabled",_IntakeCfg.Talon_Enabled);
 	Preferences::GetInstance()->PutInt("Intake::Talon::CANID",_IntakeCfg.Talon_CANID);
@@ -500,9 +509,10 @@ void Robot_Config::Print_IntakeCfg()
 {
 	printf("Printing Intake Config.\n");
 	printf("Intake::InSpeed %f\n",_IntakeCfg.InSpeed);
-	printf("Intake::OutSpeed%f\n",_IntakeCfg.OutSpeed);
-	printf("Intake::SlowOutSpeed%f\n",_IntakeCfg.SlowOutSpeed);
-	printf("Intake::PreFireOut%f\n",_IntakeCfg.PreFireOut);
+	printf("Intake::OutSpeed %f\n",_IntakeCfg.OutSpeed);
+	printf("Intake::SlowOutSpeed %f\n",_IntakeCfg.SlowOutSpeed);
+	printf("Intake::SlowOut_Timeout %f\n",_IntakeCfg.SlowOut_Timeout);
+	printf("Intake::PreFireOut %f\n",_IntakeCfg.PreFireOut);
 	printf("Intake::Talon::Enabled %d\n",_IntakeCfg.Talon_Enabled);
 	printf("Intake::Talon::CANID %d\n",_IntakeCfg.Talon_CANID);
 	printf("Intake::Talon::Reversed %d\n",_IntakeCfg.Talon_Reversed);
@@ -944,7 +954,7 @@ void Robot_Config::Read_XboxCfg()
 	_DriverXboxCfg.LtrigDZ   = 0.05;
 	_DriverXboxCfg.RtrigDZ   = 0.05;
 	_DriverXboxCfg.axisDelay = 10;
-	_DriverXboxCfg.flipRSy   = true;
+	_DriverXboxCfg.flipRSy   = false;
 	_DriverXboxCfg.flipLSy   = true;
 	_DriverXboxCfg.flipRSx   = false;
 	_DriverXboxCfg.flipLSx   = false;
@@ -977,7 +987,7 @@ void Robot_Config::Read_XboxCfg()
 	_DriverXboxCfg.LtrigDZ = Preferences::GetInstance()->GetFloat("Driver::XBox::DeadZone::LeftTrigger",0.05);
 	_DriverXboxCfg.RtrigDZ = Preferences::GetInstance()->GetFloat("Driver::XBox::DeadZone::RightTrigger",0.05);
 	_DriverXboxCfg.axisDelay = Preferences::GetInstance()->GetInt("Driver::XBox::AxisDelay",10);
-	_DriverXboxCfg.flipRSy = Preferences::GetInstance()->GetBoolean("Driver::XBox::RightStick::YInverted",true);
+	_DriverXboxCfg.flipRSy = Preferences::GetInstance()->GetBoolean("Driver::XBox::RightStick::YInverted",false);
 	_DriverXboxCfg.flipLSy = Preferences::GetInstance()->GetBoolean("Driver::XBox::LeftStick::YInverted",true);
 	_DriverXboxCfg.flipRSx = Preferences::GetInstance()->GetBoolean("Driver::XBox::RightStick::XInverted",false);
 	_DriverXboxCfg.flipLSx = Preferences::GetInstance()->GetBoolean("Driver::XBox::LeftStick::XInverted",false);
@@ -1077,8 +1087,8 @@ void Robot_Config::Read_VideoCfg()
 	_VideoCfg.FrontWB         = 320;
 	_VideoCfg.RearWB          = 480;
 
-    _VideoCfg.FrontExpAuto    = Preferences::GetInstance()->GetBoolean("Video::Front::ExpAuto",false);
-	_VideoCfg.RearExpAuto     = Preferences::GetInstance()->GetBoolean("Video::Rear::ExpAuto",false);
+    _VideoCfg.FrontExpAuto    = Preferences::GetInstance()->GetBoolean("Video::Front::ExpAuto",true);
+	_VideoCfg.RearExpAuto     = Preferences::GetInstance()->GetBoolean("Video::Rear::ExpAuto",true);
 
 	_VideoCfg.FrontExp        = Preferences::GetInstance()->GetFloat("Video::Front::Exp",0.75);
 	_VideoCfg.RearExp         = Preferences::GetInstance()->GetFloat("Video::Rear::Exp",0.75);
@@ -1123,8 +1133,8 @@ void Robot_Config::Read_VideoCfg()
 	_VideoCfg.FrontWB = Preferences::GetInstance()->GetInt("Video::Front::WB",320);
 	_VideoCfg.RearWB = Preferences::GetInstance()->GetInt("Video::Rear::WB",480);
 
-    _VideoCfg.FrontExpAuto = Preferences::GetInstance()->GetBoolean("Video::Front::ExpAuto",false);
-	_VideoCfg.RearExpAuto = Preferences::GetInstance()->GetBoolean("Video::Rear::ExpAuto",false);
+    _VideoCfg.FrontExpAuto = Preferences::GetInstance()->GetBoolean("Video::Front::ExpAuto",true);
+	_VideoCfg.RearExpAuto = Preferences::GetInstance()->GetBoolean("Video::Rear::ExpAuto",true);
 
 	_VideoCfg.FrontExp = Preferences::GetInstance()->GetFloat("Video::Front::Exp",0.75);
 	_VideoCfg.RearExp = Preferences::GetInstance()->GetFloat("Video::Rear::Exp",0.75);

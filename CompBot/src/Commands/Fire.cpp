@@ -103,7 +103,7 @@ void Fire::Execute() {
 		printf("Shooter ready to fire. Driving ball into shooter\n");
 
 		// If we still have the ball continue to push the ball into the shooter wheel.
-		if (Robot::sensorPkg->RobotHasBall())
+		if (Robot::sensorPkg->RobotHasBall(true))
 		{
 			Robot::intake->SetIntake(true);
 		}
@@ -129,7 +129,7 @@ bool Fire::IsFinished() {
 	if (IsTimedOut()) return true;  // Fire has timed out.
 
 	if (stall > 0) return false;  // If not aborted and stall is being indicated then continue.
-    if (Robot::sensorPkg->RobotHasBall())
+    if (Robot::sensorPkg->RobotHasBall(true))
    	{
    	   return false;  // If the robot still is in possession of the ball then continue.
    	}

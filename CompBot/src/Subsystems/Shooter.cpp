@@ -13,13 +13,23 @@
 #include "../RobotMap.h"
 #include "../Robot.h"
 #include "../Commands/Shoot.h"
+//#define DEFLECTOR_NOTPRESENT
 
 
 Shooter::Shooter() : Subsystem("Shooter") , Configurable("Shooter") {
     TopTalon    = RobotMap::shooterTopTalon;
     BottomTalon = RobotMap::shooterBottomTalon;
+
+
+#ifdef DEFLECTOR_NOTPRESENT
+
+#else
+    deflector = RobotMap::deflectorSolenoid;
+#endif
+
     isConfigured = false;
     myCfg.reset(&(Robot::theConfig->_ShooterCfg));
+
 
 	Configure();
     isShooting = false;
@@ -194,6 +204,7 @@ float Shooter::Fire(bool pos1)
 	{
 		if (!isShooting)
 		{
+			printf("Shooting \n");
 			Raise_Deflector();
 		}
 		if (myCfg->UseSpeed)
@@ -344,34 +355,53 @@ void Shooter::Stop()
 	tgtRPM = 0;
 	tgtVolt = 0;
 	isShooting = false;
+	printf("Shooter stop \n");
 	Lower_Deflector();
 }
 
 
+
+
 void Shooter::Raise_Deflector()
 {
+#ifdef DEFLECTOR_NOTPRESENT
+
+#else
 	if (myCfg->Deflector_ActiveIsFolded)
 	{
-		deflector->Set(!myCfg->Deflector_ActiveIsFolded);
+		printf("Raising Deflector true \n");
+		deflector->Set(false);
 	} else
 	{
-		deflector->Set(myCfg->Deflector_ActiveIsFolded);
+		printf("Raising Deflector false \n");
+		deflector->Set(true);
 	}
+#endif
 }
 
 void Shooter::Lower_Deflector()
 {
+#ifdef DEFLECTOR_NOTPRESENT
+
+#else
 	if (myCfg->Deflector_ActiveIsFolded)
 	{
-		deflector->Set(myCfg->Deflector_ActiveIsFolded);
+		printf("Lowering Deflector true \n");
+		deflector->Set(true);
 	} else
 	{
-		deflector->Set(!myCfg->Deflector_ActiveIsFolded);
+		printf("Lowering Deflector false \n");
+		deflector->Set(false);
 	}
+#endif
 }
 
 bool Shooter::Is_DeflectorRaised()
 {
+#ifdef DEFLECTOR_NOTPRESENT
+	return false;
+#else
+
 	if (myCfg->Deflector_ActiveIsFolded)
 	{
 		if (deflector->Get()) return false;
@@ -382,4 +412,5 @@ bool Shooter::Is_DeflectorRaised()
 		return false;
 	}
 	return false;
+#endif
 }

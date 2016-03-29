@@ -53,7 +53,7 @@ public:
 
 	float Get_PreFireOut();
 
-	bool RobotHasBall();
+	bool RobotHasBall(bool shooting = false);
 	bool IsBallAtShooter();
     float Limit(float num);
 

@@ -99,9 +99,18 @@ float Intake::Limit(float num)
 	return num;
 }
 
-bool Intake::RobotHasBall()
+bool Intake::RobotHasBall(bool shooting)
 {
-	if (Robot::sensorPkg->RobotHasBall())
+	if (Robot::sensorPkg->Is_FrontOveridden())
+	{
+		// If sensor has been overidden and we are shooting
+		// then tell the fire command that we still have a ball.
+		// This will force the shooter to stay spinning until timeout.
+		if (shooting) return true;
+		return false;
+	}
+
+	if (Robot::sensorPkg->RobotHasBall(shooting))
 	{
 		return true;
 	}
@@ -110,6 +119,8 @@ bool Intake::RobotHasBall()
 
 bool Intake::IsBallAtShooter()
 {
+	// If sensor is overidden then report false.
+	if (Robot::sensorPkg->Is_ShooterOveridden()) return false;
 	if (Robot::sensorPkg->IsBallAtShooter())
 	{
 		return true;
