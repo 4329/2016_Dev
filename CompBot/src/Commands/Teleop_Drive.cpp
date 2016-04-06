@@ -16,22 +16,13 @@ Teleop_Drive::Teleop_Drive(): Command() {
 }
 // Called just before this Command runs the first time
 void Teleop_Drive::Initialize() {
+	Robot::driveTrain->LiveConfigure();
 	Robot::driveTrain->Set_VoltageMode();
 }
 
 // Called repeatedly when this Command is scheduled to run
 void Teleop_Drive::Execute() {
 	axisState = Robot::oi->getDriverInterface()->Get_AxisState();
-/*	if (axisState.RTrigger > 0.0)
-	{
-		Robot::driveTrain->SetDrive_Arcade(axisState.Raw_LX,
-				axisState.Raw_RY, true);
-	} else
-	{
-		Robot::driveTrain->SetDrive_Arcade(axisState.Raw_LX,
-				axisState.Raw_RY, false);
-	}
-*/
 	Robot::driveTrain->SetDrive(axisState);
 
 }

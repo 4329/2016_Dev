@@ -5,6 +5,19 @@
 #include "Configurable.h"
 
 
+/*
+ *
+ * rt1      pdp 0      CAN 3
+ * rt2      pdp 1      CAN 4
+ * lt1      pdp 15     CAN 1
+ * lt2      pdp 14     CAN 2
+ * intake   pdp 3      CAN 5
+ * shoottop pdp 13     CAN 8
+ * shhotbot pdp 12     CAN 9
+ *
+ *
+ */
+
 typedef struct {
 	int   AutonomousMode_Type;
 	float Simple_MaxThrottle;

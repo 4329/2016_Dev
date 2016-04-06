@@ -145,8 +145,8 @@ void Robot_Config::Read_DriveTrainCfg(){
 	_DriveCfg.QuadEncoder_CodesPerRev = 1024;
 	_DriveCfg.InchesPerRotation       = 24;
 
-	_DriveCfg.EnableVoltRampRate      = false;
-	_DriveCfg.VoltRampRate            = 5.0;
+	_DriveCfg.EnableVoltRampRate      = Preferences::GetInstance()->GetBoolean("DriveTrain::EnableVoltRampRate",true);
+	_DriveCfg.VoltRampRate            = Preferences::GetInstance()->GetDouble("DriveTrain::VoltRampRate",5.0);
 	_DriveCfg.PID_CL_Allowable_Error  = 50;
 
 	_DriveCfg.Right_Reversed          = false;
@@ -168,31 +168,31 @@ void Robot_Config::Read_DriveTrainCfg(){
 
 
 	_DriveCfg.RightTalon1_Enabled     = true;
-	_DriveCfg.RightTalon1_CANID       = 1;
+	_DriveCfg.RightTalon1_CANID       = 3;   // 1
 	_DriveCfg.RightTalon1_HasSensor   = true;
 	_DriveCfg.RightTalon1_EnablePID   = true;
     _DriveCfg.RightTalon1_Slaved      = false;
     _DriveCfg.RightTalon1_MasterCANID = 0;
 
 	_DriveCfg.RightTalon2_Enabled     = true;
-	_DriveCfg.RightTalon2_CANID       = 2;
+	_DriveCfg.RightTalon2_CANID       = 4;   // 2
 	_DriveCfg.RightTalon2_HasSensor   = false;
 	_DriveCfg.RightTalon2_EnablePID   = false;
     _DriveCfg.RightTalon2_Slaved      = true;
-    _DriveCfg.RightTalon2_MasterCANID = 1;
+    _DriveCfg.RightTalon2_MasterCANID = 3;   // 1
 
 	_DriveCfg.Left_Reversed        = true;
 	_DriveCfg.Left_SensorReversed  = true;
 	_DriveCfg.Left_Profile_0_PID_P = 1.0;
 	_DriveCfg.Left_Profile_0_PID_I = 0.01;
-	_DriveCfg.Left_Profile_0_PID_D = 0;
+	_DriveCfg.Left_Profile_0_PID_D = 0.0;
 	_DriveCfg.Left_Profile_0_PID_F = 0.01;
 	_DriveCfg.Left_Profile_0_IZone = 256;
 	_DriveCfg.Left_Profile_0_EnableCLRampRate = false;
 	_DriveCfg.Left_Profile_0_CLRampRate       = 2500;
-	_DriveCfg.Left_Profile_1_PID_P = 1;
+	_DriveCfg.Left_Profile_1_PID_P = 1.0;
 	_DriveCfg.Left_Profile_1_PID_I = 0.01;
-	_DriveCfg.Left_Profile_1_PID_D = 0;
+	_DriveCfg.Left_Profile_1_PID_D = 0.0;
 	_DriveCfg.Left_Profile_1_PID_F = 0.01;
 	_DriveCfg.Left_Profile_1_IZone = 256;
 	_DriveCfg.Left_Profile_1_EnableCLRampRate = false;
@@ -200,18 +200,18 @@ void Robot_Config::Read_DriveTrainCfg(){
 
 
 	_DriveCfg.LeftTalon1_Enabled     = true;
-	_DriveCfg.LeftTalon1_CANID       = 3;
+	_DriveCfg.LeftTalon1_CANID       = 1;    // 3
 	_DriveCfg.LeftTalon1_HasSensor   = true;
 	_DriveCfg.LeftTalon1_EnablePID   = true;
     _DriveCfg.LeftTalon1_Slaved      = false;
     _DriveCfg.LeftTalon1_MasterCANID = 0;
 
 	_DriveCfg.LeftTalon2_Enabled     = true;
-	_DriveCfg.LeftTalon2_CANID       = 4;
+	_DriveCfg.LeftTalon2_CANID       = 2;    // 4
 	_DriveCfg.LeftTalon2_HasSensor   = false;
 	_DriveCfg.LeftTalon2_EnablePID   = false;
     _DriveCfg.LeftTalon2_Slaved      = true;
-    _DriveCfg.LeftTalon2_MasterCANID = 3;
+    _DriveCfg.LeftTalon2_MasterCANID = 1;    //3
     _DriveCfg.DriveType = Preferences::GetInstance()->GetInt("DriveTrain::DriveType",(int)DriveType::DriveType_Split);
 }
 
@@ -246,7 +246,7 @@ void Robot_Config::Read_DriveTrainCfg()
 	_DriveCfg.Right_Profile_0_CLRampRate = Preferences::GetInstance()->GetDouble("DriveTrain::Right::Profile::0::CLRampRate",2500);
 	_DriveCfg.Right_Profile_1_PID_P = Preferences::GetInstance()->GetDouble("DriveTrain::Right::Profile::1::PID::P",1.0);
 	_DriveCfg.Right_Profile_1_PID_I = Preferences::GetInstance()->GetDouble("DriveTrain::Right::Profile::1::PID::I",0.01);
-	_DriveCfg.Right_Profile_1_PID_D = Preferences::GetInstance()->GetDouble("DriveTrain::Right::Profile::1::PID::D",0);
+	_DriveCfg.Right_Profile_1_PID_D = Preferences::GetInstance()->GetDouble("DriveTrain::Right::Profile::1::PID::D",0.0);
 	_DriveCfg.Right_Profile_1_PID_F = Preferences::GetInstance()->GetDouble("DriveTrain::Right::Profile::1::PID::F",0.01);
 	_DriveCfg.Right_Profile_1_IZone = Preferences::GetInstance()->GetInt("DriveTrain::Right::Profile::1::IZone",256);
 	_DriveCfg.Right_Profile_1_EnableCLRampRate = Preferences::GetInstance()->GetBoolean("DriveTrain::Right::Profile::1::EnableCLRampRate",false);
@@ -254,31 +254,31 @@ void Robot_Config::Read_DriveTrainCfg()
 
 
 	_DriveCfg.RightTalon1_Enabled = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon1::Enabled",true);
-	_DriveCfg.RightTalon1_CANID = Preferences::GetInstance()->GetInt("DriveTrain::RightTalon1::CANID",1);
+	_DriveCfg.RightTalon1_CANID = Preferences::GetInstance()->GetInt("DriveTrain::RightTalon1::CANID",3); //1
 	_DriveCfg.RightTalon1_HasSensor = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon1::HasSensor",true);
 	_DriveCfg.RightTalon1_EnablePID = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon1::EnablePID",true);
     _DriveCfg.RightTalon1_Slaved = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon1::Slaved",false);
     _DriveCfg.RightTalon1_MasterCANID = Preferences::GetInstance()->GetInt("DriveTrain::RightTalon1::MasterCANID",0);
 
 	_DriveCfg.RightTalon2_Enabled = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon2::Enabled",true);
-	_DriveCfg.RightTalon2_CANID = Preferences::GetInstance()->GetInt("DriveTrain::RightTalon2::CANID",2);
+	_DriveCfg.RightTalon2_CANID = Preferences::GetInstance()->GetInt("DriveTrain::RightTalon2::CANID",4);   //3
 	_DriveCfg.RightTalon2_HasSensor = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon2::HasSensor",false);
 	_DriveCfg.RightTalon2_EnablePID = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon2::EnablePID",false);
     _DriveCfg.RightTalon2_Slaved = Preferences::GetInstance()->GetBoolean("DriveTrain::RightTalon2::Slaved",true);
-    _DriveCfg.RightTalon2_MasterCANID = Preferences::GetInstance()->GetInt("DriveTrain::RightTalon2::MasterCANID",1);
+    _DriveCfg.RightTalon2_MasterCANID = Preferences::GetInstance()->GetInt("DriveTrain::RightTalon2::MasterCANID",3); // 1
 
 	_DriveCfg.Left_Reversed = Preferences::GetInstance()->GetBoolean("DriveTrain::Left::Reversed",true);
 	_DriveCfg.Left_SensorReversed = Preferences::GetInstance()->GetBoolean("DriveTrain::Left::SensorReversed",true);
 	_DriveCfg.Left_Profile_0_PID_P = Preferences::GetInstance()->GetDouble("DriveTrain::Left::Profile::0::PID::P",1.0);
 	_DriveCfg.Left_Profile_0_PID_I = Preferences::GetInstance()->GetDouble("DriveTrain::Left::Profile::0::PID::I",0.01);
-	_DriveCfg.Left_Profile_0_PID_D = Preferences::GetInstance()->GetDouble("DriveTrain::Left::Profile::0::PID::D",0);
+	_DriveCfg.Left_Profile_0_PID_D = Preferences::GetInstance()->GetDouble("DriveTrain::Left::Profile::0::PID::D",0.0);
 	_DriveCfg.Left_Profile_0_PID_F = Preferences::GetInstance()->GetDouble("DriveTrain::Left::Profile::0::PID::F",0.01);
 	_DriveCfg.Left_Profile_0_IZone = Preferences::GetInstance()->GetInt("DriveTrain::Left::Profile::0::IZone",256);
 	_DriveCfg.Left_Profile_0_EnableCLRampRate = Preferences::GetInstance()->GetBoolean("DriveTrain::Left::Profile::0::EnableCLRampRate",false);
 	_DriveCfg.Left_Profile_0_CLRampRate = Preferences::GetInstance()->GetDouble("DriveTrain::Left::Profile::0::CLRampRate",2500);
-	_DriveCfg.Left_Profile_1_PID_P = Preferences::GetInstance()->GetDouble("DriveTrain::Left::Profile::1::PID::P",1);
+	_DriveCfg.Left_Profile_1_PID_P = Preferences::GetInstance()->GetDouble("DriveTrain::Left::Profile::1::PID::P",1.0);
 	_DriveCfg.Left_Profile_1_PID_I = Preferences::GetInstance()->GetDouble("DriveTrain::Left::Profile::1::PID::I",0.01);
-	_DriveCfg.Left_Profile_1_PID_D = Preferences::GetInstance()->GetDouble("DriveTrain::Left::Profile::1::PID::D",0);
+	_DriveCfg.Left_Profile_1_PID_D = Preferences::GetInstance()->GetDouble("DriveTrain::Left::Profile::1::PID::D",0.0);
 	_DriveCfg.Left_Profile_1_PID_F = Preferences::GetInstance()->GetDouble("DriveTrain::Left::Profile::1::PID::F",0.01);
 	_DriveCfg.Left_Profile_1_IZone = Preferences::GetInstance()->GetInt("DriveTrain::Left::Profile::1::IZone",256);
 	_DriveCfg.Left_Profile_1_EnableCLRampRate = Preferences::GetInstance()->GetBoolean("DriveTrain::Left::Profile::1::EnableCLRampRate",false);
@@ -286,18 +286,18 @@ void Robot_Config::Read_DriveTrainCfg()
 
 
 	_DriveCfg.LeftTalon1_Enabled = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon1::Enabled",true);
-	_DriveCfg.LeftTalon1_CANID = Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon1::CANID",3);
+	_DriveCfg.LeftTalon1_CANID = Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon1::CANID",1);  //3
 	_DriveCfg.LeftTalon1_HasSensor = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon1::HasSensor",true);
 	_DriveCfg.LeftTalon1_EnablePID = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon1::EnablePID",true);
     _DriveCfg.LeftTalon1_Slaved = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon1::Slaved",false);
     _DriveCfg.LeftTalon1_MasterCANID = Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon1::MasterCANID",0);
 
 	_DriveCfg.LeftTalon2_Enabled = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon2::Enabled",true);
-	_DriveCfg.LeftTalon2_CANID = Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon2::CANID",4);
+	_DriveCfg.LeftTalon2_CANID = Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon2::CANID",2);  //4
 	_DriveCfg.LeftTalon2_HasSensor = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon2::HasSensor",false);
 	_DriveCfg.LeftTalon2_EnablePID = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon2::EnablePID",false);
     _DriveCfg.LeftTalon2_Slaved = Preferences::GetInstance()->GetBoolean("DriveTrain::LeftTalon2::Slaved",true);
-    _DriveCfg.LeftTalon2_MasterCANID = Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon2::MasterCANID",3);
+    _DriveCfg.LeftTalon2_MasterCANID = Preferences::GetInstance()->GetInt("DriveTrain::LeftTalon2::MasterCANID",1);   //3
     _DriveCfg.DriveType = Preferences::GetInstance()->GetInt("DriveTrain::DriveType",(int)DriveType::DriveType_Split);
 };
 
@@ -692,7 +692,7 @@ void Robot_Config::Read_ShooterCfg()
 {
 	_ShooterCfg.PCMID                    = 0;
 	_ShooterCfg.Deflector_Channel        = 1;
-	_ShooterCfg.Deflector_ActiveIsFolded = Preferences::GetInstance()->GetBoolean("Shooter::Deflector::ActiveIsFolded",true);
+	_ShooterCfg.Deflector_ActiveIsFolded = Preferences::GetInstance()->GetBoolean("Shooter::Deflector::ActiveIsFolded",false);
 	_ShooterCfg.Speed1                   = Preferences::GetInstance()->GetFloat("Shooter::Speed1",-6000);
 	_ShooterCfg.Speed2                   = Preferences::GetInstance()->GetFloat("Shooter::Speed2",-4700);
 	_ShooterCfg.PercentVoltage1          = -0.75;
@@ -944,7 +944,7 @@ void Robot_Config::Print_StabilizerCfg()
 	printf("Stabilizer::ForwardIsDeployed %d\n",_StabilizerCfg.ForwardIsDeployed);
 }
 
-#ifdef Competition_4329
+#ifndef Competition_4329
 void Robot_Config::Read_XboxCfg()
 {
 	_DriverXboxCfg.LSxDZ     = 0.05;
@@ -954,7 +954,7 @@ void Robot_Config::Read_XboxCfg()
 	_DriverXboxCfg.LtrigDZ   = 0.05;
 	_DriverXboxCfg.RtrigDZ   = 0.05;
 	_DriverXboxCfg.axisDelay = 10;
-	_DriverXboxCfg.flipRSy   = false;
+	_DriverXboxCfg.flipRSy   = true; //False
 	_DriverXboxCfg.flipLSy   = true;
 	_DriverXboxCfg.flipRSx   = false;
 	_DriverXboxCfg.flipLSx   = false;
@@ -987,7 +987,7 @@ void Robot_Config::Read_XboxCfg()
 	_DriverXboxCfg.LtrigDZ = Preferences::GetInstance()->GetFloat("Driver::XBox::DeadZone::LeftTrigger",0.05);
 	_DriverXboxCfg.RtrigDZ = Preferences::GetInstance()->GetFloat("Driver::XBox::DeadZone::RightTrigger",0.05);
 	_DriverXboxCfg.axisDelay = Preferences::GetInstance()->GetInt("Driver::XBox::AxisDelay",10);
-	_DriverXboxCfg.flipRSy = Preferences::GetInstance()->GetBoolean("Driver::XBox::RightStick::YInverted",false);
+	_DriverXboxCfg.flipRSy = Preferences::GetInstance()->GetBoolean("Driver::XBox::RightStick::YInverted",true); // false
 	_DriverXboxCfg.flipLSy = Preferences::GetInstance()->GetBoolean("Driver::XBox::LeftStick::YInverted",true);
 	_DriverXboxCfg.flipRSx = Preferences::GetInstance()->GetBoolean("Driver::XBox::RightStick::XInverted",false);
 	_DriverXboxCfg.flipLSx = Preferences::GetInstance()->GetBoolean("Driver::XBox::LeftStick::XInverted",false);

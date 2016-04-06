@@ -11,6 +11,7 @@
 #include "Joystick.h"
 #include <map>
 #include "Configurable.h"
+#include "Robot_Config.h"
 
 enum ButtonAction
 {
@@ -103,7 +104,7 @@ typedef struct XBOX_ButtonState
 class XBOX360_Controller : public Joystick, public Configurable
 {
 public:
-	XBOX360_Controller(std::string name, uint32_t port);
+	XBOX360_Controller(std::string name, uint32_t port, XboxCfg &cfg);
 	virtual ~XBOX360_Controller();
 	virtual void RetrieveConfig();
 	virtual void Configure();
@@ -137,13 +138,15 @@ private:
 	JoystickButton* m_X;
 	JoystickButton* m_B;
 	JoystickButton* m_Y;
-	float			LSxDZ, LSyDZ, RSxDZ, RSyDZ, LtrigDZ, RtrigDZ;
+
+	XboxCfg			_myCfg;
+/*	float			LSxDZ, LSyDZ, RSxDZ, RSyDZ, LtrigDZ, RtrigDZ;
 	int 			axisDelay;
 	bool			flipRSx;
 	bool 			flipRSy;
     bool            flipLSx;
 	bool 			flipLSy;
-
+*/
     std::map<int,JoystickButton*> buttonMap;
 };
 

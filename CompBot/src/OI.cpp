@@ -53,8 +53,8 @@
 OI::OI() : Configurable("OI") {
     // Process operator interface input here.
 
-	driverInterface.reset(new XBOX360_Controller("Driver",0));
-	operatorInterface.reset(new XBOX360_Controller("Operator",1));
+	driverInterface.reset(new XBOX360_Controller("Driver",0,Robot::theConfig->_DriverXboxCfg));
+	operatorInterface.reset(new XBOX360_Controller("Operator",1,Robot::theConfig->_OperatorXboxCfg));
 
 	CheckConfig("Dummy");
 	Configure();

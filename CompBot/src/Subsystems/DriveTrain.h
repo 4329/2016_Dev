@@ -123,6 +123,10 @@ public:
 	void Set_VoltageMode();
 	float Limit(float num);
 
+	int rmastCANID;
+	int rslaveCANID;
+	int lmastCANID;
+	int lslaveCANID;
 };
 
 #endif
